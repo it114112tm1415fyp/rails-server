@@ -1,16 +1,23 @@
-class ConveyorController < ApplicationController
-
-	def send_message
-		return unless check_parameters(:conveyor_name, :message)
-		json_response(ConveyorHelper.send_message(params[:conveyor_name], params[:message]))
-	rescue
-		json_response_error('unknown', error: $!.message)
+class ConveyorController < StaffMobileApplicationController
+	before_action(:check_conveyor, except: get_list)
+	def get_control
+		Conveyor.get_control(@conveyor, session[:user_id])
+		Conveyor.send_message(@conveyor, '')
 	end
-
 	def get_list
-		json_response(ConveyorHelper.get_list)
-	rescue
-		json_response_error('unknown', error: $!.message)
+		json_response_success(list: Conveyor.get_list)
 	end
-
+	def send_message
+		json_response_success(message: {ch: Array.new(4) {rand(6)}, cr: Array.new(2) {rand(3)}, mr: rand(3), st: Array.new(8) {rand(2)}})
+	end
+	def send_message_r
+		params_require(:message)
+		json_response_success(message: Conveyor.send_message(@conveyor, params[:message]))
+	end
+	private
+	def check_conveyor
+		params_require(:conveyor_name)
+		@conveyor = Conveyor.find_by_name(params[:conveyor_name])
+		error('conveyor not exist') unless @conveyor
+	end
 end

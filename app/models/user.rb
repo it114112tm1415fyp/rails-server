@@ -15,4 +15,26 @@ class User < ActiveRecord::Base
 	validates_length_of(:username, minimum: 5, if: proc { user_type.can_login if user_type })
 #	validates_presence_of(:token, if: proc { user_type.can_login if user_type })
 	validates_uniqueness_of(:user_type_id, if: proc { user_type.is_unique if user_type })
+	class << self
+		def customer_login(username, password)
+			user = find_by_username(username)
+			error('username not exist') unless user
+			error('wrong password') unless user.password == password
+			error('account frozen') if user.is_freeze
+			user
+		end
+		def customer_register(username, password, name, email, phone, addresses)
+			ActiveRecord::Base.transaction do
+				addresses = ActiveSupport::JSON.decode(addresses)
+				raise(ParameterError) unless addresses.size > 0 and addresses.size <= 6
+				error('username used') if find_by_username(username)
+				user = create!(username: username, password: password, is_freeze: 0, name: name, email: email, phone: phone, user_type: UserType.find_by_name('client'))
+				addresses.each do |address|
+					address = Address.find_or_create_by!(address: address, address_type: AddressType.find_by_name('specify'))
+					AddressUserShip.create!(address: address, user: user)
+				end
+				user
+			end
+		end
+	end
 end

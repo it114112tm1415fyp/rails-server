@@ -32,3 +32,23 @@ module FYP
 		end
 	end
 end
+
+class Error < Exception
+	def initialize(error, hash={})
+		@error = error
+		@detail = hash
+	end
+	def detail
+		@detail
+	end
+	def error
+		@error
+	end
+end
+
+class ParameterError < StandardError
+end
+
+def error(*arg)
+	raise(Error.new(*arg))
+end
