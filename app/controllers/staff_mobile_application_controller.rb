@@ -1,5 +1,5 @@
 class StaffMobileApplicationController < MobileApplicationController
-	before_action(:check_login)
+	#before_action(:check_login)
 	private
 	def check_login
 		@user = User.find(session[:user_id])

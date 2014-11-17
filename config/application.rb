@@ -12,7 +12,7 @@ module FYP
 			if defined?(Rails::Server)
 				puts('open ports to accept conveyor connection')
 				$conveyor_server = []
-				for conveyor in Conveyor.where(passive: true)
+				Conveyor.where(passive: true).each do |conveyor|
 					puts("open port '#{conveyor.server_port}' to accept conveyor '#{conveyor.name}' connection")
 					Thread.new(conveyor.id, Addrinfo.ip(conveyor.server_ip), conveyor.name, conveyor.server_port, TCPServer.new('it114112tm1415fyp1.redirectme.net', conveyor.server_port)) do |id, ip, name, port, server|
 						loop do
@@ -27,7 +27,6 @@ module FYP
 						end
 					end
 				end
-				puts('after_initialize done')
 			end
 		end
 	end
@@ -46,9 +45,14 @@ class Error < Exception
 	end
 end
 
-class ParameterError < StandardError
+class NotInDevelopmentModeError < StandardError
+	def initialize
+		super('This method can only call in development mode.')
+	end
 end
 
+class ParameterError < StandardError
+end
 def error(*arg)
 	raise(Error.new(*arg))
 end

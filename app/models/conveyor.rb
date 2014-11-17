@@ -1,6 +1,7 @@
 class Conveyor < ActiveRecord::Base
 	belongs_to(:address)
 	validates_numericality_of(:server_port, greater_than_or_equal_to: 0, less_than: 65536)
+
 	class << self
 		def get_list
 			all.collect { |x| x.name }.sort
@@ -13,7 +14,8 @@ class Conveyor < ActiveRecord::Base
 				socket = TCPSocket.new(conveyor.server_ip, conveyor.server_port)
 			end
 			begin
-				Timeout.timeout(2) {socket.puts(message)}
+				Timeout.timeout(2) { socket.puts(message) }
+				Timeout.timeout(2) { socket.gets }
 			rescue
 				$conveyor_server[conveyor.id] = socket.close
 				raise
@@ -43,4 +45,5 @@ class Conveyor < ActiveRecord::Base
 			end
 		end
 	end
+
 end

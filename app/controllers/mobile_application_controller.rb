@@ -6,22 +6,26 @@ class MobileApplicationController < ApplicationController
 	end
 	rescue_from(Error) { |x| json_response_error(x.error, x.detail) }
 	rescue_from(ActionView::MissingTemplate) { json_response_success }
-	before_action :verify_session
-	after_action :put_verifier
+	def view_session
+		only_available_in_development_mode
+		@json_response[:session] = {}
+		session.keys.each { |x| @json_response[:session][x] = session[x] }
+	end
+	def destroy_session
+		only_available_in_development_mode
+		session.destroy
+	end
 	private
 	def initialize
 		@json_response = {}
 	end
-	def verify_session
-		session.destroy if session.loaded? && session[:remote_addr] != @_request.remote_addr
-	end
-	def put_verifier
-		session[:remote_addr] = @_request.remote_addr
-	end
 	def json_response_success(hash={})
-		render(json: ActiveSupport::JSON.encode(@json_response.update(hash.update({success: true}))))
+		render(json: ActiveSupport::JSON.encode(@json_response.update(hash.update({ success: true }))))
 	end
 	def json_response_error(error, hash={})
-		render(json: ActiveSupport::JSON.encode(hash.update({success: false, error: error})))
+		render(json: ActiveSupport::JSON.encode(hash.update({ success: false, error: error })))
+	end
+	def only_available_in_development_mode
+		raise(NotInDevelopmentModeError) unless ENV['rails_env'] == 'development'
 	end
 end

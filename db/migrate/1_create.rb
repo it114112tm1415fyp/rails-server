@@ -99,7 +99,6 @@ class Create < ActiveRecord::Migration
 		execute('ALTER TABLE `permission_user_ships` ADD FOREIGN KEY (`user_id`)         REFERENCES `users`         (`id`);')
 		execute('ALTER TABLE `users`                 ADD FOREIGN KEY (`user_type_id`)    REFERENCES `user_types`    (`id`);')
 	end
-
 	def down
 		execute('SET FOREIGN_KEY_CHECKS = 0;')
 		execute("SELECT GROUP_CONCAT(' `', `table_schema`, '`.`', `table_name`, '`') INTO @tables FROM `information_schema`.`tables` WHERE `table_schema` = '#{Rails.configuration.database_configuration[Rails.env]['database']}' && `table_name` <> 'schema_migrations';")
