@@ -14,7 +14,6 @@ namespace(:db) do
 				tasks.each { |x| x.reenable }
 				Rake::Task['db:refresh'].invoke
 			end
-			p tasks
 		end
 	end
 end

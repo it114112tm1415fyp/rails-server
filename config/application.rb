@@ -1,27 +1,30 @@
-require File.expand_path('../boot', __FILE__)
+require(File.expand_path('../boot', __FILE__))
 
-require 'rails/all'
+require('rails/all')
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+require(File.expand_path('../config', __FILE__))
+
 module FYP
 	class Application < Rails::Application
+		$server_host = Addrinfo.ip($server_host).ip_address
 		config.after_initialize do
 			if defined?(Rails::Server)
 				puts('open ports to accept conveyor connection')
 				$conveyor_server = []
 				Conveyor.where(passive: true).each do |conveyor|
 					puts("open port '#{conveyor.server_port}' to accept conveyor '#{conveyor.name}' connection")
-					Thread.new(conveyor.id, Addrinfo.ip(conveyor.server_ip), conveyor.name, conveyor.server_port, TCPServer.new('it114112tm1415fyp1.redirectme.net', conveyor.server_port)) do |id, ip, name, port, server|
+					Thread.new(conveyor.id, Addrinfo.ip(conveyor.server_ip).ip_address, conveyor.name, conveyor.server_port, TCPServer.new($server_host, conveyor.server_port)) do |id, ip, name, port, server|
 						loop do
 							connection = server.accept
-							if connection.remote_address.ip_address == ip.ip_address
+							if connection.remote_address.ip_address == ip || connection.remote_address.ip_address == $server_host
 								puts("conveyor '#{name}' connect to port '#{port}' at '#{connection.remote_address.ip_address}'")
 								$conveyor_server[id] = connection
 							else
-								puts("someone connect to port '#{port}' at '#{connection.remote_address.ip_address}' not match '#{ip.ip_address}'")
+								puts("someone connect to port '#{port}' at '#{connection.remote_address.ip_address}' not match '#{ip}'")
 								connection.close
 							end
 						end

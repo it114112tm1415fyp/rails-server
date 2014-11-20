@@ -6,13 +6,11 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
-AddressType.create!(name: 'shipping', has_size: false, is_unique: true)
-AddressType.create!(name: 'store', has_size: true)
-AddressType.create!(name: 'shop', has_size: true)
-AddressType.create!(name: 'specify', has_size: false)
+store_address = StoreAddress.create!(address: '18 Tsing Wun Road, Tuen Mun, New Territories', size: 40)
 
-Address.create!(address: '--', address_type_id: 1)
-Address.create!(address: 'TM IVE', address_type_id: 2, size: 40)
+specify_address = SpecifyAddress.create!(address: 'Flat 1, 23/F, Heng Wan House, Tin Heng Estate, Tin Shui Wai, New Territories') # to-delete
+
+Admin.create!(password: Digest::MD5.hexdigest(Digest::MD5.hexdigest('admin')))
 
 CheckAction.create!(name: 'count')
 CheckAction.create!(name: 'in')
@@ -22,16 +20,15 @@ CheckAction.create!(name: 'unload')
 CheckAction.create!(name: 'receive')
 CheckAction.create!(name: 'finish')
 
-Conveyor.create!(name: 'TM IVE Conveyor', location_id: 2, server_ip: 'it114112tm1415fyp2.redirectme.net', server_port: 8001, passive: true)
-
-UserType.create!(name: 'admin', is_unique: true)
-UserType.create!(name: 'temp', can_login: false)
-UserType.create!(name: 'staff')
-UserType.create!(name: 'client')
+Conveyor.create!(name: 'TM IVE Conveyor', store_address: store_address, server_ip: 'it114112tm1415fyp2.redirectme.net', server_port: 8001, passive: true)
+Conveyor.create!(name: 'C2', store_address: store_address, server_ip: 'localhost', server_port: 8002, passive: false) # to-delete
 
 Permission.create!(name: 'control_conveyor')
 Permission.create!(name: 'count_good')
 Permission.create!(name: 'find_good')
 Permission.create!(name: 'receive_good')
 
-User.create!(username: 'admin', password: Digest::MD5.hexdigest(Digest::MD5.hexdigest('admin')), is_freeze: false, name: 'admin', email: 'admin@system.com', phone: '+852-00000000', user_type_id: 1)
+ShopAddress.create!(address: 'TM IVE')
+
+Staff.create!(username: 'staff0', password: Digest::MD5.hexdigest(Digest::MD5.hexdigest('staff0')), is_freeze: false, name:'staff0', email: 'staff0@1415fyp.com', phone: '+852-00000000', specify_addresses: [specify_address]) # to-delete
+Staff.create!(username: 'staff1', password: Digest::MD5.hexdigest(Digest::MD5.hexdigest('staff1')), is_freeze: false, name:'staff1', email: 'staff1@1415fyp.com', phone: '+852-11111111', specify_addresses: [specify_address]) # to-delete

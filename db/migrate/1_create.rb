@@ -1,21 +1,11 @@
 class Create < ActiveRecord::Migration
 	def up
-		create_table(:addresses) do |x|
-			x.column(:address, :string, null: false)
-			x.column(:size, :integer)
-			x.references(:address_type, null: false)
-			x.timestamps
-			x.index(:address, unique: true)
+		create_table(:specify_addresses_user_ships, id: false) do |x|
+			x.references(:specify_address, null: false)
+			x.references(:user, polymorphic: true, null: false)
 		end
-		create_table(:address_types) do |x|
-			x.column(:name, :string, null: false)
-			x.column(:has_size, :boolean, null: false)
-			x.column(:is_unique, :boolean, null: false, default: false)
-			x.index(:name, unique: true)
-		end
-		create_table(:address_user_ships, id: false) do |x|
-			x.references(:address, null: false)
-			x.references(:user, null: false)
+		create_table(:admins) do |x|
+			x.column(:password, :string, limit: 32, null: false)
 		end
 		create_table(:check_actions) do |x|
 			x.column(:name, :string, null: false)
@@ -24,21 +14,31 @@ class Create < ActiveRecord::Migration
 		create_table(:check_logs, id: false) do |x|
 			x.column(:time, :timestamp, null: false)
 			x.references(:good, null: false)
-			x.references(:location, null: false)
+			x.references(:location, polymorphic: true, null: false)
 			x.references(:check_action, null: false)
 			x.references(:staff, null: false)
 		end
 		create_table(:conveyors) do |x|
 			x.column(:name, :string, limit: 40, null: false)
-			x.references(:location, null: false)
+			x.references(:store_address, null: false)
 			x.column(:server_ip, :string, null: false)
 			x.column(:server_port, :integer, limit: 5, null: false)
 			x.column(:passive, :boolean, null: false)
 			x.index(:name, unique: true)
 		end
+		create_table(:conveyor_control_actions) do |x|
+			x.column(:name, :string, null: false)
+			x.index(:name, unique: true)
+		end
+		create_table(:conveyor_control_logs, id: false) do |x|
+			x.column(:time, :timestamp, null: false)
+			x.references(:conveyor, null: false)
+			x.references(:conveyor_control_action, :string, null: false)
+			x.references(:staff, null: false)
+		end
 		create_table(:goods) do |x|
 			x.references(:order, null: false)
-			x.references(:location, null: false)
+			x.references(:location, polymorphic: true, null: false)
 			x.column(:rfid_tag, :string, limit: 40, null: false)
 			x.column(:weight, :float, null: false)
 			x.column(:fragile, :boolean, null: false)
@@ -58,46 +58,55 @@ class Create < ActiveRecord::Migration
 			x.column(:name, :string, limit: 40, null: false)
 			x.index(:name, unique: true)
 		end
-		create_table(:permission_user_ships, id: false) do |x|
+		create_table(:permission_staff_ships, id: false) do |x|
 			x.references(:permission, null: false)
-			x.references(:user, null: false)
+			x.references(:staff, null: false)
 		end
-		create_table(:users) do |x|
+		create_table(:shop_addresses) do |x|
+			x.column(:address, :string, null: false)
+			x.index(:address, unique: true)
+		end
+		create_table(:specify_addresses) do |x|
+			x.column(:address, :string, null: false)
+			x.index(:address, unique: true)
+		end
+		create_table(:store_addresses) do |x|
+			x.column(:address, :string, null: false)
+			x.column(:size, :integer)
+			x.index(:address, unique: true)
+		end
+		create_table(:public_receivers) do |x|
+			x.column(:name, :string, limit: 40)
+			x.column(:email, :string)
+			x.column(:phone, :string, limit: 17)
+		end
+		create_table(:registered_users) do |x|
 			x.column(:username, :string, limit: 20)
 			x.column(:password, :string, limit: 32)
 			x.column(:is_freeze, :boolean)
 			x.column(:name, :string, limit: 40, null: false)
 			x.column(:email, :string, null: false)
 			x.column(:phone, :string, limit: 17, null: false)
-			x.references(:user_type, null: false)
+			x.column(:type, :string, limit: 40, null: false)
 			x.timestamps
 			x.index(:username, unique: true)
 		end
-		create_table(:user_types) do |x|
-			x.column(:name, :string, null: false)
-			x.column(:is_unique, :boolean, null: false, default: false)
-			x.column(:can_login, :boolean, null: false, default: true)
-			x.index(:name, unique: true)
-		end
-		execute('ALTER TABLE `address_user_ships`    ADD PRIMARY KEY (`address_id`,`user_id`);')
-		execute('ALTER TABLE `permission_user_ships` ADD PRIMARY KEY (`permission_id`,`user_id`);')
-		execute('ALTER TABLE `addresses`             ADD FOREIGN KEY (`address_type_id`) REFERENCES `address_types` (`id`);')
-		execute('ALTER TABLE `address_user_ships`    ADD FOREIGN KEY (`address_id`)      REFERENCES `addresses`     (`id`);')
-		execute('ALTER TABLE `address_user_ships`    ADD FOREIGN KEY (`user_id`)         REFERENCES `users`         (`id`);')
-		execute('ALTER TABLE `check_logs`            ADD FOREIGN KEY (`check_action_id`) REFERENCES `check_actions` (`id`);')
-		execute('ALTER TABLE `check_logs`            ADD FOREIGN KEY (`good_id`)         REFERENCES `goods`         (`id`);')
-		execute('ALTER TABLE `check_logs`            ADD FOREIGN KEY (`staff_id`)        REFERENCES `users`         (`id`);')
-		execute('ALTER TABLE `check_logs`            ADD FOREIGN KEY (`location_id`)     REFERENCES `addresses`     (`id`);')
-		execute('ALTER TABLE `conveyors`             ADD FOREIGN KEY (`location_id`)     REFERENCES `addresses`     (`id`);')
-		execute('ALTER TABLE `goods`                 ADD FOREIGN KEY (`order_id`)        REFERENCES `orders`        (`id`);')
-		execute('ALTER TABLE `goods`                 ADD FOREIGN KEY (`location_id`)     REFERENCES `addresses`     (`id`);')
-		execute('ALTER TABLE `orders`                ADD FOREIGN KEY (`payer_id`)        REFERENCES `users`         (`id`);')
-		execute('ALTER TABLE `orders`                ADD FOREIGN KEY (`receiver_id`)     REFERENCES `users`         (`id`);')
-		execute('ALTER TABLE `orders`                ADD FOREIGN KEY (`sender_id`)       REFERENCES `users`         (`id`);')
-		execute('ALTER TABLE `orders`                ADD FOREIGN KEY (`staff_id`)        REFERENCES `users`         (`id`);')
-		execute('ALTER TABLE `permission_user_ships` ADD FOREIGN KEY (`permission_id`)   REFERENCES `permissions`   (`id`);')
-		execute('ALTER TABLE `permission_user_ships` ADD FOREIGN KEY (`user_id`)         REFERENCES `users`         (`id`);')
-		execute('ALTER TABLE `users`                 ADD FOREIGN KEY (`user_type_id`)    REFERENCES `user_types`    (`id`);')
+		execute('ALTER TABLE `specify_addresses_user_ships` ADD PRIMARY KEY (`specify_address_id`,`user_id`);')
+		execute('ALTER TABLE `permission_staff_ships`       ADD PRIMARY KEY (`permission_id`,`staff_id`);')
+		execute('ALTER TABLE `specify_addresses_user_ships` ADD FOREIGN KEY (`specify_address_id`)         REFERENCES `specify_addresses`        (`id`);')
+		execute('ALTER TABLE `check_logs`                   ADD FOREIGN KEY (`check_action_id`)            REFERENCES `check_actions`            (`id`);')
+		execute('ALTER TABLE `check_logs`                   ADD FOREIGN KEY (`good_id`)                    REFERENCES `goods`                    (`id`);')
+		execute('ALTER TABLE `check_logs`                   ADD FOREIGN KEY (`staff_id`)                   REFERENCES `registered_users`         (`id`);')
+		execute('ALTER TABLE `conveyors`                    ADD FOREIGN KEY (`store_address_id`)           REFERENCES `store_addresses`          (`id`);')
+		execute('ALTER TABLE `conveyor_control_logs`        ADD FOREIGN KEY (`conveyor_id`)                REFERENCES `conveyors`                (`id`);')
+		execute('ALTER TABLE `conveyor_control_logs`        ADD FOREIGN KEY (`conveyor_control_action_id`) REFERENCES `conveyor_control_actions` (`id`);')
+		execute('ALTER TABLE `conveyor_control_logs`        ADD FOREIGN KEY (`staff_id`)                   REFERENCES `registered_users`         (`id`);')
+		execute('ALTER TABLE `goods`                        ADD FOREIGN KEY (`order_id`)                   REFERENCES `orders`                   (`id`);')
+		execute('ALTER TABLE `orders`                       ADD FOREIGN KEY (`payer_id`)                   REFERENCES `registered_users`         (`id`);')
+		execute('ALTER TABLE `orders`                       ADD FOREIGN KEY (`sender_id`)                  REFERENCES `registered_users`         (`id`);')
+		execute('ALTER TABLE `orders`                       ADD FOREIGN KEY (`staff_id`)                   REFERENCES `registered_users`         (`id`);')
+		execute('ALTER TABLE `permission_staff_ships`       ADD FOREIGN KEY (`permission_id`)              REFERENCES `permissions`              (`id`);')
+		execute('ALTER TABLE `permission_staff_ships`       ADD FOREIGN KEY (`staff_id`)                   REFERENCES `registered_users`         (`id`);')
 	end
 	def down
 		execute('SET FOREIGN_KEY_CHECKS = 0;')
