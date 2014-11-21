@@ -9,6 +9,7 @@ class RegisteredUser < ActiveRecord::Base
 	def check_password(password)
 		error('wrong password') unless self.password == password
 	end
+	#@return [RegisteredUser]
 	def edit_profile(hash={})
 		ActiveRecord::Base.transaction do
 			check_password(hash[:password])
@@ -26,6 +27,7 @@ class RegisteredUser < ActiveRecord::Base
 	end
 
 	class << self
+		#@return [RegisteredUser]
 		def change_address(user, addresses)
 			user.specify_addresses = []
 			addresses = ActiveSupport::JSON.decode(addresses)
@@ -34,6 +36,7 @@ class RegisteredUser < ActiveRecord::Base
 			user.save!
 			user
 		end
+		#@return [RegisteredUser]
 		def login(username, password)
 			user = find_by_username(username)
 			error('username not exist') unless user

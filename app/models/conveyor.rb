@@ -2,10 +2,12 @@ class Conveyor < ActiveRecord::Base
 	belongs_to(:store_address)
 	has_many(:conveyor_control_logs)
 	validates_numericality_of(:server_port, greater_than_or_equal_to: 0, less_than: 65536)
+	#@return [Hash]
 	def get_control(staff, raise_if_error)
 		Control.occupy(id, staff.id)
 		send_message('', raise_if_error)
 	end
+	#@return [Hash]
 	def send_message(message, raise_if_error)
 		if passive
 			socket = $conveyor_server[id]
@@ -21,7 +23,7 @@ class Conveyor < ActiveRecord::Base
 			raise
 		end
 		socket.close unless passive
-		result
+		return result
 	rescue
 		$conveyor_server[id] = nil if passive
 		socket.close if socket && !socket.closed?

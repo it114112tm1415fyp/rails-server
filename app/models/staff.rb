@@ -5,6 +5,7 @@ class Staff < RegisteredUser
 	has_many(:permissions, through: :permission_staff_ships)
 
 	class << self
+		#@return [Staff]
 		def login(username, password)
 			staff = find_by_username(username)
 			error('username not exist') unless staff
