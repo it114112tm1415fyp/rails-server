@@ -4,10 +4,9 @@ class Conveyor < ActiveRecord::Base
 	validates_numericality_of(:server_port, greater_than_or_equal_to: 0, less_than: 65536)
 	def get_control(staff, raise_if_error)
 		Control.occupy(id, staff.id)
-		send_message(staff, '', raise_if_error)
+		send_message('', raise_if_error)
 	end
-	def send_message(staff, message, raise_if_error)
-		Control.check(id, staff.id)
+	def send_message(message, raise_if_error)
 		if passive
 			socket = $conveyor_server[id]
 			raise unless socket
@@ -29,6 +28,7 @@ class Conveyor < ActiveRecord::Base
 		raise if raise_if_error
 		error('offline')
 	end
+
 	class << self
 		def get_list
 			all.collect { |x| x.name }.sort
