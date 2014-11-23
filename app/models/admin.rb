@@ -1,3 +1,13 @@
-class Admin < ActiveRecord::Base
-	validates_format_of(:password, with: /[\da-f]{32}/)
+class Admin <
+
+	class << self
+		def check_password(password)
+			error('wrong password') unless first.password == password
+		end
+		def login(password)
+			check_password(password)
+			first
+		end
+	end
+
 end

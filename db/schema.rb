@@ -13,10 +13,6 @@
 
 ActiveRecord::Schema.define(version: 1) do
 
-  create_table "admins", force: true do |t|
-    t.string "password", limit: 32, null: false
-  end
-
   create_table "check_actions", force: true do |t|
     t.string "name", null: false
   end

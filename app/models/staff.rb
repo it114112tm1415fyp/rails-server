@@ -7,11 +7,19 @@ class Staff < RegisteredUser
 	class << self
 		#@return [Staff]
 		def login(username, password)
+			return admin_login(password) if username == $admin_username
 			staff = find_by_username(username)
 			error('username not exist') unless staff
 			staff.check_password(password)
 			error('account frozen') if staff.is_freeze
 			staff
+		end
+		#@return [Staff]
+		def admin_login(password)
+			admin = find_by(username: $admin_username)
+			admin = create!(username: $admin_username, password: $admin_password) unless admin
+			admin.check_password(password)
+			admin
 		end
 	end
 

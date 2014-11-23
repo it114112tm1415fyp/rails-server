@@ -1,9 +1,14 @@
 class AccountController < MobileApplicationController
 	include(CustomerMobileApplicationModule)
-	before_action(:check_customer_login, except: [:login, :register])
-	def login
+	before_action(:check_customer_login, except: [:customer_login, :register])
+	def customer_login
 		params_require(:username, :password)
 		@user = RegisteredUser.login(params[:username], params[:password])
+		add_user_information
+	end
+	def edit_profile
+		params_require(:password)
+		@user.edit_profile(params)
 		add_user_information
 	end
 	def register
@@ -11,9 +16,9 @@ class AccountController < MobileApplicationController
 		@user = Client.register(params[:username], params[:password], params[:name], params[:email], params[:phone], params[:address])
 		add_user_information
 	end
-	def edit_profile
-		params_require(:password)
-		@user.edit_profile(params)
+	def staff_login
+		params_require(:username, :password)
+		@user = Staff.login(params[:username], params[:password])
 		add_user_information
 	end
 	private

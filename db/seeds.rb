@@ -10,8 +10,6 @@ store_address = StoreAddress.create!(address: '18 Tsing Wun Road, Tuen Mun, New 
 
 specify_address = SpecifyAddress.create!(address: 'Flat 1, 23/F, Heng Wan House, Tin Heng Estate, Tin Shui Wai, New Territories') # to-delete
 
-Admin.create!(password: Digest::MD5.hexdigest(Digest::MD5.hexdigest('admin')))
-
 CheckAction.create!(name: 'count')
 CheckAction.create!(name: 'in')
 CheckAction.create!(name: 'out')
@@ -30,5 +28,6 @@ Permission.create!(name: 'receive_good')
 
 ShopAddress.create!(address: 'TM IVE')
 
+Staff.create!(username: $admin_username, password: Digest::MD5.hexdigest(Digest::MD5.hexdigest($admin_password)), is_freeze: true, name: 'admin', email: 'admin@admin.admin', phone: '+00-0')
 Staff.create!(username: 'staff0', password: Digest::MD5.hexdigest(Digest::MD5.hexdigest('staff0')), is_freeze: false, name:'staff0', email: 'staff0@1415fyp.com', phone: '+852-00000000', specify_addresses: [specify_address]) # to-delete
 Staff.create!(username: 'staff1', password: Digest::MD5.hexdigest(Digest::MD5.hexdigest('staff1')), is_freeze: false, name:'staff1', email: 'staff1@1415fyp.com', phone: '+852-11111111', specify_addresses: [specify_address]) # to-delete

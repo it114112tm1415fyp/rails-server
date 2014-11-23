@@ -4,9 +4,6 @@ class Create < ActiveRecord::Migration
 			x.references(:specify_address, null: false)
 			x.references(:user, polymorphic: true, null: false)
 		end
-		create_table(:admins) do |x|
-			x.column(:password, :string, limit: 32, null: false)
-		end
 		create_table(:check_actions) do |x|
 			x.column(:name, :string, null: false)
 			x.index(:name, unique: true)

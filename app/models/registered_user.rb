@@ -4,8 +4,8 @@ class RegisteredUser < ActiveRecord::Base
 	validates_format_of(:email, with: /("[^"]+?"|[\da-z]|[\da-z](\.?[\w\$\*\+\-\/\?\^\{\|\}!#%&'=`~]+)*[\da-z])@(\[((0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5])\.){3}(0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5])\]|(([\da-z]|[\da-z][\w\-]*[\da-z])\.)+[\da-z]{2,24})/i)
 	validates_format_of(:password, with: /[\da-f]{32}/)
 	validates_format_of(:phone, with: /\+852-\d{8}|\+\d{2,4}-\d{,11}/)
-	validates_format_of(:username, without: /admin/)
 	validates_length_of(:username, minimum: 5)
+	validates_length_of(:specify_addresses, maximum: 6)
 	def check_password(password)
 		error('wrong password') unless self.password == password
 	end
@@ -31,7 +31,7 @@ class RegisteredUser < ActiveRecord::Base
 		def change_address(user, addresses)
 			user.specify_addresses = []
 			addresses = ActiveSupport::JSON.decode(addresses)
-			raise(ParameterError) unless addresses.size > 0 and addresses.size <= 6
+			raise(ParameterError) if addresses.size == 0
 			addresses.each { |address| user.specify_addresses << SpecifyAddress.find_or_create_by!(address: address) }
 			user.save!
 			user
