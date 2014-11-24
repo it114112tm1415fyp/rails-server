@@ -1,6 +1,6 @@
 class AccountController < MobileApplicationController
 	include(CustomerMobileApplicationModule)
-	before_action(:check_customer_login, except: [:customer_login, :register])
+	before_action(:check_customer_login, except: [:customer_login, :staff_login, :register])
 	def customer_login
 		params_require(:username, :password)
 		@user = RegisteredUser.login(params[:username], params[:password])

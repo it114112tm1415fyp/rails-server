@@ -39,15 +39,14 @@ class Conveyor < ActiveRecord::Base
 
 	class Control
 		@control = []
-		EXPIRED_TIME = 10
 		attr_reader(:staff_id)
-		attr_reader(:time)
+		attr_reader(:expiry_time)
 		def initialize(staff_id)
 			@staff_id = staff_id
-			@time = Time.now
+			@expiry_time = $conveyor_control_expiry_time.from_now
 		end
 		def unexpired?
-			Time.now - @time <= EXPIRED_TIME
+			@expiry_time.past?
 		end
 		class << self
 			def check(conveyor_id, staff_id)

@@ -37,14 +37,11 @@ end
 
 class Error < Exception
 	def initialize(error, hash={})
-		@error = error
+		super(error)
 		@detail = hash
 	end
 	def detail
 		@detail
-	end
-	def error
-		@error
 	end
 end
 
