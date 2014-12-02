@@ -1,52 +1,21 @@
-
-body {
+body#login {
   height: 100%;
-  margin: 0;
 }
 
-div.message {
-  padding: 0.8em 1em;
-  border: #333 solid 1px;
-  margin: 0.4em 0;
-  border-radius: 6px;
-  box-shadow: 0 1px 1px #fff inset;
-}
-
-div.error_message {
-  @extend div.message;
-  background: #ffb6c1;
-}
-
-div.warning_message {
-  @extend div.message;
-  background: #fdffb1;
-}
-
-div.info_message {
-  @extend div.message;
-  background: #c2efbf;
-}
-
-div#content {
+div#login_content {
   width: 24em;
   margin: 0 auto;
 }
 
-div#footer {
-  text-align: right;
-
-  fieldset {
-    display: inline-block;
-    width: auto;
-    padding: 0.5em 1em;
-    border: #aaa solid 1px;
-    margin: 0;
-    background: #D3DCE3;
-    border-radius: 0 0 8px 8px;
-    border-top-width: 0;
-    color: #000;
-  }
-
+div#admin_left_bar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 20em;
+  height: 100%;
+  border: #aaa solid 0;
+  border-right-width: 1px;
+  background: #d1e2fe;
 }
 
 div#placeholder {
@@ -56,51 +25,11 @@ div#placeholder {
   margin-bottom: -18em;
 }
 
-form fieldset {
-  padding: 2em;
-  border: #aaa solid 1px;
-  margin: 2em auto 0 auto;
-  background: #eee;
-  border-radius: 8px 8px 0 8px;
-  box-shadow: 1px 1px 2px #fff inset;
-
-  div {
-    text-align: justify;
-    height: 28px;
-
-    input {
-      width: 10em;
-    }
-
-  }
-
-  div:after {
-    display: inline-block;
-    width: 100%;
-    height: 0;
-    content: '';
-  }
-
+div#title {
+  margin: 8px auto 2em auto;
+  text-align: center;
 }
 
-html {
+html#login {
   height: 90%;
-}
-
-input[type="submit"] {
-  padding: 2px 8px;
-  border: #aaa solid 1px;
-  background: #eee;
-  border-radius: 8px;
-  font-weight: bold;
-}
-
-legend {
-  padding: 5px 10px;
-  border: 1px solid #aaa;
-  background: #fff;
-  border-radius: 4px;
-  box-shadow: 3px 3px 15px #bbb;
-  color: #444;
-  font-weight: bold;
 }

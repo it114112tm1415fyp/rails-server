@@ -4,6 +4,7 @@ module CustomerMobileApplicationModule
 		@user = RegisteredUser.find(session[:user_id])
 		raise unless @user
 	rescue
-		error('need login')
+		error('Connection expired') if @expired
+		error('Need login')
 	end
 end

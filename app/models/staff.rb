@@ -9,9 +9,9 @@ class Staff < RegisteredUser
 		def login(username, password)
 			return admin_login(password) if username == $admin_username
 			staff = find_by_username(username)
-			error('username not exist') unless staff
+			error('Username not exist') unless staff
 			staff.check_password(password)
-			error('account frozen') if staff.is_freeze
+			error('Account frozen') if staff.is_freeze
 			staff
 		end
 		#@return [Staff]

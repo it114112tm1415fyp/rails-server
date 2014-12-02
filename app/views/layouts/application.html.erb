@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html>
-<head>
+<html <%= "id=\"#{ action_name }\"".html_safe %><%= yield(:html_attr) %>>
+<head <%= "id=\"#{ action_name }\"".html_safe %><%= yield(:head_attr) %>>
   <title>FYP</title>
-  <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track' => true %>
-  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <%= stylesheet_link_tag('application', media: 'all', 'data-turbolinks-track' => true) %>
+  <%= javascript_include_tag('application', 'data-turbolinks-track' => true) %>
   <%= csrf_meta_tags %>
+  <%= yield(:head_content) %>
 </head>
-<body>
-
+<body <%= "id=\"#{ action_name }\"".html_safe %><%= yield(:body_attr) %>>
 <%= yield %>
-
 </body>
 </html>

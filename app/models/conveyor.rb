@@ -24,7 +24,7 @@ class Conveyor < ActiveRecord::Base
 		end
 		socket.close unless passive
 		return result
-	rescue
+	rescue Exception
 		$conveyor_server[id] = nil if passive
 		socket.close if socket && !socket.closed?
 		raise if raise_if_error
@@ -46,7 +46,7 @@ class Conveyor < ActiveRecord::Base
 			@expiry_time = $conveyor_control_expiry_time.from_now
 		end
 		def unexpired?
-			@expiry_time.past?
+			@expiry_time.future?
 		end
 		class << self
 			def check(conveyor_id, staff_id)

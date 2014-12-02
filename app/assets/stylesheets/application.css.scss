@@ -1,0 +1,111 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any styles
+ * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
+ * file per style scope.
+ *
+ *= require_tree .
+ *= require_self
+ */
+
+body {
+  margin: 0;
+  color: #333;
+  font-family: "Arial", sans-serif;
+  font-size: 80%;
+}
+
+div.error_message {
+  @extend div.message;
+  background: #ffb6c1;
+}
+
+div.info_message {
+  @extend div.message;
+  background: #c2efbf;
+}
+
+div.message {
+  padding: 0.8em 1em;
+  border: #333 solid 1px;
+  margin: 0.4em 0;
+  border-radius: 6px;
+  box-shadow: 0 1px 1px #fff inset;
+}
+
+div.warning_message {
+  @extend div.message;
+  background: #fdffb1;
+}
+
+form {
+
+  div.form_footer {
+    text-align: right;
+
+    fieldset {
+      display: inline-block;
+      width: auto;
+      padding: 0.5em 1em;
+      border: #aaa solid 1px;
+      margin: 0;
+      background: #d3dce3;
+      border-radius: 0 0 8px 8px;
+      border-top-width: 0;
+      color: #000;
+    }
+
+  }
+
+  fieldset {
+    padding: 2em;
+    border: #aaa solid 1px;
+    margin: 2em auto 0 auto;
+    background: #eee;
+    border-radius: 8px 8px 0 8px;
+    box-shadow: 1px 1px 2px #fff inset;
+
+    div {
+      text-align: justify;
+      height: 28px;
+
+      input {
+        width: 10em;
+      }
+
+    }
+
+    div:after {
+      display: inline-block;
+      width: 100%;
+      height: 0;
+      content: '';
+    }
+
+  }
+
+}
+
+input[type="submit"] {
+  padding: 2px 8px;
+  border: #aaa solid 1px;
+  background: #eee;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+legend {
+  padding: 5px 10px;
+  border: 1px solid #aaa;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 3px 3px 15px #bbb;
+  color: #444;
+  font-weight: bold;
+}

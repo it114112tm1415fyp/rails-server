@@ -17,14 +17,14 @@ module FYP
 				$conveyor_server = []
 				Conveyor.where(passive: true).each do |conveyor|
 					puts("open port '#{conveyor.server_port}' to accept conveyor '#{conveyor.name}' connection")
-					Thread.new(conveyor.id, Addrinfo.ip(conveyor.server_ip).ip_address, conveyor.name, conveyor.server_port, TCPServer.new($server_host, conveyor.server_port)) do |id, ip, name, port, server|
+					Thread.new(conveyor.id, conveyor.server_ip, conveyor.name, conveyor.server_port, TCPServer.new($server_host, conveyor.server_port)) do |id, ip, name, port, server|
 						loop do
 							connection = server.accept
-							if connection.remote_address.ip_address == ip || connection.remote_address.ip_address == $server_host
+							if connection.remote_address.ip_address == Addrinfo.ip(ip).ip_address || connection.remote_address.ip_address == $server_host
 								puts("conveyor '#{name}' connect to port '#{port}' at '#{connection.remote_address.ip_address}'")
 								$conveyor_server[id] = connection
 							else
-								puts("someone connect to port '#{port}' at '#{connection.remote_address.ip_address}' not match '#{ip}'")
+								puts("someone connect to port '#{port}' at '#{connection.remote_address.ip_address}' not match '#{Addrinfo.ip(ip).ip_address}'")
 								connection.close
 							end
 						end

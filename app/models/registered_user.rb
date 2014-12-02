@@ -7,7 +7,7 @@ class RegisteredUser < ActiveRecord::Base
 	validates_length_of(:username, minimum: 5)
 	validates_length_of(:specify_addresses, maximum: 6)
 	def check_password(password)
-		error('wrong password') unless self.password == password
+		error('Wrong password') unless self.password == password
 	end
 	#@return [RegisteredUser]
 	def edit_profile(hash={})
@@ -39,9 +39,9 @@ class RegisteredUser < ActiveRecord::Base
 		#@return [RegisteredUser]
 		def login(username, password)
 			user = find_by_username(username)
-			error('username not exist') unless user
+			error('Username not exist') unless user
 			user.check_password(password)
-			error('account frozen') if user.is_freeze
+			error('Account frozen') if user.is_freeze
 			user
 		end
 	end
