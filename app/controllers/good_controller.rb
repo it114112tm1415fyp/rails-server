@@ -1,0 +1,2 @@
+class GoodController < MobileApplicationController
+end

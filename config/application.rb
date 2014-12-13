@@ -52,7 +52,15 @@ class NotInDevelopmentModeError < StandardError
 end
 
 class ParameterError < StandardError
+	def initialize(parameter = nil)
+		if parameter
+			super("Invalid parameter \"#{parameter}\"")
+		else
+			super('There is an invalid parameter')
+		end
+	end
 end
+
 def error(*arg)
 	raise(Error.new(*arg))
 end

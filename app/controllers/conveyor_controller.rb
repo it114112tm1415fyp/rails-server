@@ -4,14 +4,12 @@ class ConveyorController < MobileApplicationController
 	before_action(:check_conveyor, except: :get_list)
 	before_action(:check_control, only: :send_message)
 	def get_control
-		#params_require(:conveyor_name)
 		json_response_success(message: @conveyor.get_control(@staff, @_request.get?))
 	end
 	def get_list
 		json_response_success(list: Conveyor.get_list)
 	end
 	def send_message
-		#params_require(:conveyor_name)
 		params_require(:message)
 		json_response_success(message: @conveyor.send_message(params[:message], @_request.get?))
 	end

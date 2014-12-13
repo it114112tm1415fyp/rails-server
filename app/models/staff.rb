@@ -2,6 +2,7 @@ class Staff < RegisteredUser
 	has_many(:permission_staff_ships)
 	has_many(:check_logs)#, foreign_key: :staff_id)
 	has_many(:conveyor_control_logs)
+	has_many(:orders)
 	has_many(:permissions, through: :permission_staff_ships)
 
 	class << self

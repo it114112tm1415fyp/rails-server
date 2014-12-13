@@ -20,10 +20,6 @@ class MobileApplicationController < ApplicationController
 		end
 		json_response_success
 	end
-	# @param [ActiveSupport::Callbacks::Callback] ab
-	def a(ab)
-		ab
-	end
 	def edit_session
 		only_available_at_development
 		params_require(:key, :value)

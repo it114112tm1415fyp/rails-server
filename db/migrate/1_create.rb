@@ -44,10 +44,10 @@ class Create < ActiveRecord::Migration
 		end
 		create_table(:orders) do |x|
 			x.references(:sender, null: false)
-			x.references(:receiver, null: false)
+			x.references(:receiver, polymorphic: true, null: false)
 			x.column(:receive_time, :timestamp)
 			x.references(:staff, null: false)
-			x.references(:payer, null: false)
+			x.column(:pay_form_receiver, :boolean, null: false)
 			x.column(:pay_time, :timestamp)
 			x.timestamps
 		end
@@ -99,7 +99,6 @@ class Create < ActiveRecord::Migration
 		execute('ALTER TABLE `conveyor_control_logs`        ADD FOREIGN KEY (`conveyor_control_action_id`) REFERENCES `conveyor_control_actions` (`id`);')
 		execute('ALTER TABLE `conveyor_control_logs`        ADD FOREIGN KEY (`staff_id`)                   REFERENCES `registered_users`         (`id`);')
 		execute('ALTER TABLE `goods`                        ADD FOREIGN KEY (`order_id`)                   REFERENCES `orders`                   (`id`);')
-		execute('ALTER TABLE `orders`                       ADD FOREIGN KEY (`payer_id`)                   REFERENCES `registered_users`         (`id`);')
 		execute('ALTER TABLE `orders`                       ADD FOREIGN KEY (`sender_id`)                  REFERENCES `registered_users`         (`id`);')
 		execute('ALTER TABLE `orders`                       ADD FOREIGN KEY (`staff_id`)                   REFERENCES `registered_users`         (`id`);')
 		execute('ALTER TABLE `permission_staff_ships`       ADD FOREIGN KEY (`permission_id`)              REFERENCES `permissions`              (`id`);')

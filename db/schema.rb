@@ -76,17 +76,17 @@ ActiveRecord::Schema.define(version: 1) do
   add_index "goods", ["order_id"], name: "order_id", using: :btree
 
   create_table "orders", force: true do |t|
-    t.integer  "sender_id",    null: false
-    t.integer  "receiver_id",  null: false
+    t.integer  "sender_id",         null: false
+    t.integer  "receiver_id",       null: false
+    t.string   "receiver_type",     null: false
     t.datetime "receive_time"
-    t.integer  "staff_id",     null: false
-    t.integer  "payer_id",     null: false
+    t.integer  "staff_id",          null: false
+    t.boolean  "pay_form_receiver", null: false
     t.datetime "pay_time"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "orders", ["payer_id"], name: "payer_id", using: :btree
   add_index "orders", ["sender_id"], name: "sender_id", using: :btree
   add_index "orders", ["staff_id"], name: "staff_id", using: :btree
 

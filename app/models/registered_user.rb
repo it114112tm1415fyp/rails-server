@@ -1,6 +1,8 @@
 class RegisteredUser < ActiveRecord::Base
 	has_many(:specify_addresses_user_ships, as: :user)
 	has_many(:specify_addresses, through: :specify_addresses_user_ships)
+	has_many(:receive_orders, class_name: 'Order', as: :receiver_id)
+	has_many(:send_orders, class_name: 'Order', foreign_key: :sender_id)
 	validates_format_of(:email, with: /("[^"]+?"|[\da-z]|[\da-z](\.?[\w\$\*\+\-\/\?\^\{\|\}!#%&'=`~]+)*[\da-z])@(\[((0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5])\.){3}(0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5])\]|(([\da-z]|[\da-z][\w\-]*[\da-z])\.)+[\da-z]{2,24})/i)
 	validates_format_of(:password, with: /[\da-f]{32}/)
 	validates_format_of(:phone, with: /\+852-\d{8}|\+\d{2,4}-\d{,11}/)
@@ -11,7 +13,7 @@ class RegisteredUser < ActiveRecord::Base
 	end
 	#@return [RegisteredUser]
 	def edit_profile(hash={})
-		ActiveRecord::Base.transaction do
+		transaction do
 			check_password(hash[:password])
 			self.password = hash[:new_password] if hash[:new_password]
 			self.name = hash[:name] if hash[:name]
@@ -30,8 +32,6 @@ class RegisteredUser < ActiveRecord::Base
 		#@return [RegisteredUser]
 		def change_address(user, addresses)
 			user.specify_addresses = []
-			addresses = ActiveSupport::JSON.decode(addresses)
-			raise(ParameterError) if addresses.size == 0
 			addresses.each { |address| user.specify_addresses << SpecifyAddress.find_or_create_by!(address: address) }
 			user.save!
 			user
