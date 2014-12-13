@@ -13,6 +13,16 @@
 
 ActiveRecord::Schema.define(version: 1) do
 
+  create_table "cars", force: true do |t|
+    t.integer "driver_id"
+    t.integer "partner_id"
+    t.string  "vehicle_registration_mark", limit: 8, null: false
+  end
+
+  add_index "cars", ["driver_id"], name: "driver_id", using: :btree
+  add_index "cars", ["partner_id"], name: "partner_id", using: :btree
+  add_index "cars", ["vehicle_registration_mark"], name: "index_cars_on_vehicle_registration_mark", unique: true, using: :btree
+
   create_table "check_actions", force: true do |t|
     t.string "name", null: false
   end
@@ -81,7 +91,7 @@ ActiveRecord::Schema.define(version: 1) do
     t.string   "receiver_type",     null: false
     t.datetime "receive_time"
     t.integer  "staff_id",          null: false
-    t.boolean  "pay_form_receiver", null: false
+    t.boolean  "pay_from_receiver", null: false
     t.datetime "pay_time"
     t.datetime "created_at"
     t.datetime "updated_at"

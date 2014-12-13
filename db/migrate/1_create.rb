@@ -1,8 +1,10 @@
 class Create < ActiveRecord::Migration
 	def up
-		create_table(:specify_addresses_user_ships, id: false) do |x|
-			x.references(:specify_address, null: false)
-			x.references(:user, polymorphic: true, null: false)
+		create_table(:cars) do |x|
+			x.references(:driver)
+			x.references(:partner)
+			x.column(:vehicle_registration_mark, :string, limit: 8, null: false)
+			x.index(:vehicle_registration_mark, unique: true)
 		end
 		create_table(:check_actions) do |x|
 			x.column(:name, :string, null: false)
@@ -47,7 +49,7 @@ class Create < ActiveRecord::Migration
 			x.references(:receiver, polymorphic: true, null: false)
 			x.column(:receive_time, :timestamp)
 			x.references(:staff, null: false)
-			x.column(:pay_form_receiver, :boolean, null: false)
+			x.column(:pay_from_receiver, :boolean, null: false)
 			x.column(:pay_time, :timestamp)
 			x.timestamps
 		end
@@ -59,6 +61,11 @@ class Create < ActiveRecord::Migration
 			x.references(:permission, null: false)
 			x.references(:staff, null: false)
 		end
+		create_table(:public_receivers) do |x|
+			x.column(:name, :string, limit: 40)
+			x.column(:email, :string)
+			x.column(:phone, :string, limit: 17)
+		end
 		create_table(:shop_addresses) do |x|
 			x.column(:address, :string, null: false)
 			x.index(:address, unique: true)
@@ -67,15 +74,14 @@ class Create < ActiveRecord::Migration
 			x.column(:address, :string, null: false)
 			x.index(:address, unique: true)
 		end
+		create_table(:specify_addresses_user_ships, id: false) do |x|
+			x.references(:specify_address, null: false)
+			x.references(:user, polymorphic: true, null: false)
+		end
 		create_table(:store_addresses) do |x|
 			x.column(:address, :string, null: false)
 			x.column(:size, :integer)
 			x.index(:address, unique: true)
-		end
-		create_table(:public_receivers) do |x|
-			x.column(:name, :string, limit: 40)
-			x.column(:email, :string)
-			x.column(:phone, :string, limit: 17)
 		end
 		create_table(:registered_users) do |x|
 			x.column(:username, :string, limit: 20)
@@ -88,9 +94,10 @@ class Create < ActiveRecord::Migration
 			x.timestamps
 			x.index(:username, unique: true)
 		end
-		execute('ALTER TABLE `specify_addresses_user_ships` ADD PRIMARY KEY (`specify_address_id`,`user_id`);')
 		execute('ALTER TABLE `permission_staff_ships`       ADD PRIMARY KEY (`permission_id`,`staff_id`);')
-		execute('ALTER TABLE `specify_addresses_user_ships` ADD FOREIGN KEY (`specify_address_id`)         REFERENCES `specify_addresses`        (`id`);')
+		execute('ALTER TABLE `specify_addresses_user_ships` ADD PRIMARY KEY (`specify_address_id`,`user_id`);')
+		execute('ALTER TABLE `cars`                         ADD FOREIGN KEY (`driver_id`)                  REFERENCES `registered_users`         (`id`);')
+		execute('ALTER TABLE `cars`                         ADD FOREIGN KEY (`partner_id`)                 REFERENCES `registered_users`         (`id`);')
 		execute('ALTER TABLE `check_logs`                   ADD FOREIGN KEY (`check_action_id`)            REFERENCES `check_actions`            (`id`);')
 		execute('ALTER TABLE `check_logs`                   ADD FOREIGN KEY (`good_id`)                    REFERENCES `goods`                    (`id`);')
 		execute('ALTER TABLE `check_logs`                   ADD FOREIGN KEY (`staff_id`)                   REFERENCES `registered_users`         (`id`);')
@@ -103,6 +110,7 @@ class Create < ActiveRecord::Migration
 		execute('ALTER TABLE `orders`                       ADD FOREIGN KEY (`staff_id`)                   REFERENCES `registered_users`         (`id`);')
 		execute('ALTER TABLE `permission_staff_ships`       ADD FOREIGN KEY (`permission_id`)              REFERENCES `permissions`              (`id`);')
 		execute('ALTER TABLE `permission_staff_ships`       ADD FOREIGN KEY (`staff_id`)                   REFERENCES `registered_users`         (`id`);')
+		execute('ALTER TABLE `specify_addresses_user_ships` ADD FOREIGN KEY (`specify_address_id`)         REFERENCES `specify_addresses`        (`id`);')
 	end
 	def down
 		execute('SET FOREIGN_KEY_CHECKS = 0;')
