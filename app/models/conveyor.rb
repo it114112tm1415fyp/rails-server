@@ -17,7 +17,8 @@ class Conveyor < ActiveRecord::Base
 		end
 		begin
 			Timeout.timeout(2) { socket.puts(message) }
-			result = Timeout.timeout(2) { ActiveSupport::JSON.decode(socket.gets) }
+			nil until (result = socket.gets) != "\r\n"
+			result = Timeout.timeout(2) { ActiveSupport::JSON.decode(result) }
 		rescue Timeout::Error
 			$conveyor_server[id] = socket.close
 			raise
@@ -33,7 +34,7 @@ class Conveyor < ActiveRecord::Base
 
 	class << self
 		def get_list
-			all.collect { |x| x.name }.sort
+			all.collect { |x| {id: x.id, name: x.name} }
 		end
 	end
 

@@ -72,13 +72,14 @@ ActiveRecord::Schema.define(version: 1) do
   add_index "conveyors", ["store_address_id"], name: "store_address_id", using: :btree
 
   create_table "goods", force: true do |t|
-    t.integer  "order_id",                 null: false
-    t.integer  "location_id",              null: false
-    t.string   "location_type",            null: false
-    t.string   "rfid_tag",      limit: 40, null: false
-    t.float    "weight",        limit: 24, null: false
-    t.boolean  "fragile",                  null: false
-    t.boolean  "flammable",                null: false
+    t.integer  "order_id",                  null: false
+    t.integer  "location_id",               null: false
+    t.string   "location_type",             null: false
+    t.integer  "last_action_id",            null: false
+    t.string   "rfid_tag",       limit: 29, null: false
+    t.float    "weight",         limit: 24, null: false
+    t.boolean  "fragile",                   null: false
+    t.boolean  "flammable",                 null: false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -89,6 +90,10 @@ ActiveRecord::Schema.define(version: 1) do
     t.integer  "sender_id",         null: false
     t.integer  "receiver_id",       null: false
     t.string   "receiver_type",     null: false
+    t.integer  "departure_id",      null: false
+    t.string   "departure_type",    null: false
+    t.integer  "destination_id",    null: false
+    t.string   "destination_type",  null: false
     t.datetime "receive_time"
     t.integer  "staff_id",          null: false
     t.boolean  "pay_from_receiver", null: false

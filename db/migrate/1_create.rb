@@ -38,7 +38,8 @@ class Create < ActiveRecord::Migration
 		create_table(:goods) do |x|
 			x.references(:order, null: false)
 			x.references(:location, polymorphic: true, null: false)
-			x.column(:rfid_tag, :string, limit: 40, null: false)
+			x.references(:last_action, null: false)
+			x.column(:rfid_tag, :string, limit: 29, null: false)
 			x.column(:weight, :float, null: false)
 			x.column(:fragile, :boolean, null: false)
 			x.column(:flammable, :boolean, null: false)
@@ -47,6 +48,8 @@ class Create < ActiveRecord::Migration
 		create_table(:orders) do |x|
 			x.references(:sender, null: false)
 			x.references(:receiver, polymorphic: true, null: false)
+			x.references(:departure, polymorphic: true, null: false)
+			x.references(:destination, polymorphic: true, null: false)
 			x.column(:receive_time, :timestamp)
 			x.references(:staff, null: false)
 			x.column(:pay_from_receiver, :boolean, null: false)

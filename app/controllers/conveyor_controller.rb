@@ -18,8 +18,8 @@ class ConveyorController < MobileApplicationController
 		Conveyor::Control.check(@conveyor.id, @staff.id)
 	end
 	def check_conveyor
-		params_require(:conveyor_name)
-		@conveyor = Conveyor.find_by_name(params[:conveyor_name])
+		params_require(:conveyor_id)
+		@conveyor = Conveyor.find(params[:conveyor_id])
 		error('conveyor not exist') unless @conveyor
 	end
 end
