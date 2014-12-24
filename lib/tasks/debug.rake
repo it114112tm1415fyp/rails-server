@@ -22,7 +22,7 @@ namespace(:debug) do
 		task(:passive) do
 			port = (ENV['port'] || 8001).to_i
 			begin
-				connection = TCPSocket.new($server_host, port)
+				connection = TCPSocket.new('localhost', port)
 				puts("connected to server'")
 				loop do
 					puts("receive : #{connection.gets}")
