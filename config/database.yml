@@ -15,8 +15,8 @@ default: &default
   pool: 5
   username: fyp
   password: u44ySvt3zB8npMR2
-  host: tlserver6y.redirectme.net
-  port: 8082
+  host: localhost
+  port: 6080
 
 development:
   <<: *default
