@@ -4,6 +4,7 @@ class Order < ActiveRecord::Base
 	belongs_to(:receiver, polymorphic: true)
 	belongs_to(:sender, class_name: 'RegisteredUser', foreign_key: :sender_id)
 	belongs_to(:staff, class_name: 'Staff', foreign_key: :staff_id)
+	has_many(:goods)
 	@receive = CheckAction.find_by_name('receive')
 
 	class << self

@@ -18,8 +18,12 @@ class Good < ActiveRecord::Base
 	@action_before[@issue] = [@inspect, @warehouse, @unload]
 
 	class << self
+		def get_detail(id)
+			good = find(id)
+			{location: good.location.display_name, rfid_tag: good.rfid_tag, weight: good.weight, fragile: good.fragile, flammable: good.flammable, last_action: good.last_action.name, last_action_time: good.updated_at, actions_log: good.check_logs.collect { |x| {time: x.time, location: x.location.display_name, action: x.check_action.name} }}
+		end
 		def get_list
-			all.collect { |x| {good_id: x.id, order_id: x.order.id, location: x.location.display_name, location_type: x.location_type, last_action: x.last_action.name, departure: x.order.departure.display_name, destination: x.order.destination.display_name, rfid_tag: x.rfid_tag, weight: x.weight, fragile: x.fragile, flammable: x.flammable, order_time: x.created_at} }
+			{list: all.collect { |x| {good_id: x.id, order_id: x.order.id, location: x.location.display_name, location_type: x.location_type, last_action: x.last_action.name, departure: x.order.departure.display_name, destination: x.order.destination.display_name, rfid_tag: x.rfid_tag, weight: x.weight, fragile: x.fragile, flammable: x.flammable, order_time: x.created_at} }}
 		end
 		def inspect(good_id, store_id, staff)
 			store = StoreAddress.find(store_id)
@@ -48,7 +52,7 @@ class Good < ActiveRecord::Base
 			result = {}
 			transaction do
 				good = Good.find(good_id)
-				#@action_before[check_action].include?(good.last_action)
+				error("action '#{check_action}' can not be done after '#{good.last_action}'") unless @action_before[check_action].include?(good.last_action)
 				CheckLog.create!(good: good, location: location, check_action: check_action, staff: staff)
 				result[:update_time] = good.updated_at
 				good.location = location
