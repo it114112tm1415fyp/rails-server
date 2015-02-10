@@ -3,9 +3,13 @@ class GoodController < MobileApplicationController
 	include(StaffMobileApplicationModule)
 	before_action(:check_customer_login, only: :get_good_detail)
 	before_action(:check_staff_login, only: [:get_list, :inspect, :warehouse, :leave, :load, :unload])
-	def get_detail
+	def get_qr_code
 		params_require(:id)
-		json_response_success(Good.get_detail(params[:id]))
+		render(text: Good.get_qr_code(params[:id]))
+	end
+	def get_details
+		params_require(:id)
+		json_response_success(Good.get_display_details(params[:id]))
 	end
 	def get_list
 		json_response_success(Good.get_list)

@@ -1,7 +1,10 @@
 class Conveyor < ActiveRecord::Base
-	belongs_to(:store_address)
+	belongs_to(:store)
 	has_many(:conveyor_control_logs)
 	validates_numericality_of(:server_port, greater_than_or_equal_to: 0, less_than: 65536)
+	def can_destroy
+		conveyor_control_logs.size == 0
+	end
 	#@return [Hash]
 	def get_control(staff, raise_if_error)
 		Control.occupy(id, staff.id)

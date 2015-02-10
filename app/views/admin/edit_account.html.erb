@@ -1,0 +1,58 @@
+<% content_for(:script_content, edit_account_script_content) %>
+<%= render('admin/left_bar') %>
+<%= render('admin/title', title: @account ? 'Edit Account' : 'New Account') %>
+<div class="content">
+  <%= error_message_div %>
+  <%= form_tag('', onsubmit: 'editAccountOnSubmit();') do %>
+      <table id="table_addresses">
+        <% if @account %>
+            <tr>
+              <th>id：</th>
+              <td><%= @account.id %></td>
+            </tr>
+        <% end %>
+        <tr>
+          <th><label for="input_username">username：</label></th>
+          <td><input id="input_username" type="text" name="username" size="40" value="<%= @username %>" maxlength="20" pattern=".{5,}" title="at least 5 character" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_password1">new password：</label></th>
+          <td><input id="input_password1" type="password" name="password" size="40" pattern=".{8,}" title="at least 8 character" onchange="validatePassword();"<%= ' required' unless @account %> /></td>
+        </tr>
+        <tr>
+          <th><label for="input_password2">confirm password：</label></th>
+          <td><input id="input_password2" type="password" name="password" size="40" onchange="validatePassword();"<%= ' required' unless @account %> /></td>
+        </tr>
+        <tr>
+          <th><label for="input_name">name：</label></th>
+          <td><input id="input_name" type="text" name="name" size="40" value="<%= @name %>" maxlength="40" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_email">email：</label></th>
+          <td><input id="input_email" type="email" name="email" size="40" value="<%= @email %>" maxlength="255" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_phone">phone：</label></th>
+          <td><input id="input_phone" type="text" name="phone" size="40" value="<%= @phone %>" maxlength="17" pattern="\+852-\d{8}|\+(?!852)\d{2,4}-\d{0,11}" required /></td>
+        </tr>
+        <% if @account.is_a?(Staff) %>
+            <tr>
+              <th>car：</th>
+              <td><%= link_to("#{@account.car.display_name} - #{@account.role}", action: :edit_car, car_id: @account.car_id) if @account.car %></td>
+            </tr>
+        <% end %>
+        <tr>
+          <th><label for="input_is_freeze">is_freeze：</label></th>
+          <td><input id="input_is_freeze" type="checkbox" name="is_freeze"<%= ' checked' if @is_freeze %> /></td>
+        </tr>
+        <tr>
+          <th id="th_addresses" rowspan="2"><label for="input_addresses1">addresses：</label></th>
+        </tr>
+        <tr id="tr_add_addresses">
+          <td>
+            <input id="input_add_addresses" type="button" onclick="editAccountAddAddressesRow();" value="+" /></td>
+        </tr>
+      </table>
+      <input id="input_submit" type="submit" value="<%= @account ? 'Edit' : 'New' %>" onkeypress="validatePassword();" />
+  <% end %>
+</div>

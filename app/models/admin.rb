@@ -1,12 +1,18 @@
-class Admin <
+class Admin < Staff
+	def can_destroy
+		false
+	end
 
 	class << self
-		def check_password(password)
-			error('wrong password') unless first.password == password
+		def try_login(username, password)
+			admin = find_by_username(username)
+			return unless admin
+			admin.check_password(password)
 		end
-		def login(password)
-			check_password(password)
-			first
+		def login(username, password)
+			admin = find_by_username(username)
+			error('Username not exist') unless admin
+			admin.check_password(password)
 		end
 	end
 

@@ -1,0 +1,20 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <table class="admin_table">
+    <tr>
+      <th>id</th>
+      <th>username</th>
+      <th>name</th>
+      <th>email</th>
+      <th>phone</th>
+      <th>car</th>
+      <th>driver</th>
+      <th colspan="2">partner</th>
+      <th class="admin_table_th">register_time</th>
+      <th class="admin_table_th" colspan="3">management</th>
+    </tr>
+    <%= staff_accounts_table_contents %>
+  </table>
+  <%= link_to('New staff account', action: :new_staff_account) %>
+</div>

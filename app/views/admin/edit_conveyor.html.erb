@@ -1,0 +1,40 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <%= error_message_div %>
+  <%= form_tag('') do %>
+      <table>
+        <% if @conveyor %>
+            <tr>
+              <th>id：</th>
+              <td><%= @conveyor.id %></td>
+            </tr>
+        <% end %>
+        <tr>
+          <th><label for="input_name">name：</label></th>
+          <td><input id="input_name" type="text" name="name" size="40" value="<%= @name %>" maxlength="40" required /></td>
+        </tr>
+        <tr>
+          <th><label for="select_store">store：</label></th>
+          <td>
+            <select id="select_store" name="store">
+              <%= conveyors_select_options %>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <th><label for="input_server_ip">server_ip：</label></th>
+          <td><input id="input_server_ip" type="text" name="server_ip" size="40" value="<%= @server_ip %>" maxlength="255" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_server_port">server_port：</label></th>
+          <td><input id="input_server_port" type="number" name="server_port" size="40" value="<%= @server_port %>" min="0" max="65535" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_passive_connection">passive_connection：</label></th>
+          <td><input id="input_passive_connection" type="checkbox" name="passive_connection"<%= ' checked' if @passive_connection %> /></td>
+        </tr>
+      </table>
+      <input id="input_submit" type="submit" value="<%= @account ? 'Edit' : 'New' %>" onkeypress="validatePassword();" />
+  <% end %>
+</div>

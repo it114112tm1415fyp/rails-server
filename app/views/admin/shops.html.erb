@@ -1,0 +1,14 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <table class="admin_table">
+    <tr>
+      <th>id</th>
+      <th>address</th>
+      <th>region</th>
+      <th colspan="2">management</th>
+    </tr>
+    <%= shops_table_contents %>
+  </table>
+  <%= link_to('New shop', action: :new_shop) %>
+</div>

@@ -1,0 +1,31 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <%= error_message_div %>
+  <%= form_tag('') do %>
+      <table>
+        <% if @shop %>
+            <tr>
+              <th>id：</th>
+              <td><%= @shop.id %></td>
+            </tr>
+        <% end %>
+        <tr>
+          <th><label for="input_address">address：</label></th>
+          <td><textarea id="input_address" name="address" rows="4" cols="41" required><%= @address %></textarea></td>
+        </tr>
+        <tr>
+          <th><label for="input_region">region：</label></th>
+          <td>
+            <select id="input_region" name="region" required>
+              <option value disabled>--</option>
+              <% Region.get_map.each do |k, v| %>
+                  <option value=<%= k %><%= ' selected'.html_safe if @region == k %>><%= v %></option>
+              <% end %>
+            </select>
+          </td>
+        </tr>
+      </table>
+      <input id="input_submit" type="submit" value="<%= @shop ? 'Edit' : 'New' %>" />
+  <% end %>
+</div>

@@ -1,0 +1,24 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <%= error_message_div %>
+  <%= form_tag('') do %>
+      <table>
+        <% if @store %>
+            <tr>
+              <th>id：</th>
+              <td><%= @store.id %></td>
+            </tr>
+        <% end %>
+        <tr>
+          <th><label for="input_address">address：</label></th>
+          <td><textarea id="input_address" name="address" rows="4" cols="41" required><%= @address %></textarea></td>
+        </tr>
+        <tr>
+          <th><label for="input_size">size：</label></th>
+          <td><input id="input_size" type="number" name="size" size="40" value="<%= @size %>" min="1" required /></td>
+        </tr>
+      </table>
+      <input id="input_submit" type="submit" value="<%= @store ? 'Edit' : 'New' %>" />
+  <% end %>
+</div>

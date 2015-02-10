@@ -7,20 +7,8 @@ div#login_content {
   margin: 0 auto;
 }
 
-div#admin_left_bar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 20em;
-  height: 100%;
-  border: #aaa solid 0;
-  border-right-width: 1px;
-  background: #d1e2fe;
-}
-
 div#login_title {
   margin: 8px auto 2em auto;
-  text-align: center;
 }
 
 div#placeholder {
@@ -32,4 +20,8 @@ div#placeholder {
 
 html#login {
   height: 90%;
+}
+
+textarea {
+  resize: none;
 }

@@ -1,0 +1,17 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <table class="admin_table">
+    <tr>
+      <th>id</th>
+      <th>name</th>
+      <th colspan="2">store</th>
+      <th>server_ip</th>
+      <th>server_port</th>
+      <th>passive_connection</th>
+      <th colspan="2">management</th>
+    </tr>
+    <%= conveyors_table_contents %>
+  </table>
+  <%= link_to('New Conveyor', action: :new_conveyor) %>
+</div>

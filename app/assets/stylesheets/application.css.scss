@@ -21,6 +21,11 @@ body {
   font-size: 80%;
 }
 
+body.has_left_bar {
+  margin: 0 0 0 20em;
+  padding: 0 16px 0 17px;
+}
+
 div.error_message {
   @extend div.message;
   background: #ffb6c1;
@@ -29,6 +34,28 @@ div.error_message {
 div.info_message {
   @extend div.message;
   background: #c2efbf;
+}
+
+div.left_bar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 20em;
+  height: 100%;
+  border: #aaa solid 0;
+  border-right-width: 1px;
+  box-shadow: -1px 1px 1px #fff inset;
+  background: #d1e2fe;
+  text-align: center;
+
+  div.left_bar_bottom {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 20em;
+    height: 6em;
+  }
+
 }
 
 div.message {
@@ -42,6 +69,10 @@ div.message {
 div.warning_message {
   @extend div.message;
   background: #fdffb1;
+}
+
+div.title {
+  text-align: center;
 }
 
 form {
@@ -108,4 +139,35 @@ legend {
   box-shadow: 3px 3px 15px #bbb;
   color: #444;
   font-weight: bold;
+}
+
+table.admin_table {
+  border-radius: 5px;
+  box-shadow: 3px 3px 5px #888;
+  border: 1px solid #555;
+  margin: 0 0 10px;
+  background: #aaa;
+
+  tr {
+
+    th {
+      padding: 1px 5px;
+      background: #DBE9FF;
+    }
+
+    td {
+      padding: 1px 5px;
+      background: #fff;
+    }
+
+  }
+
+  tr:nth-child(odd) {
+
+    td {
+      background: #eeefff;
+    }
+
+  }
+
 }

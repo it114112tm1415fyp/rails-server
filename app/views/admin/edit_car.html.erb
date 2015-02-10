@@ -1,0 +1,20 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <%= error_message_div %>
+  <%= form_tag('') do %>
+      <table>
+        <% if @car %>
+            <tr>
+              <th>id：</th>
+              <td><%= @car.id %></td>
+            </tr>
+        <% end %>
+        <tr>
+          <th><label for="input_vehicle_registration_mark">vehicle_registration_mark：</label></th>
+          <td><input id="input_vehicle_registration_mark" name="vehicle_registration_mark" value="<%= @vehicle_registration_mark %>" maxlength="8" required /></td>
+        </tr>
+      </table>
+      <input id="input_submit" type="submit" value="<%= @car ? 'Edit' : 'New' %>" />
+  <% end %>
+</div>

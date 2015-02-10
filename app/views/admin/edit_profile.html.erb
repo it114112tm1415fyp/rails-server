@@ -1,0 +1,42 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <%= error_message_div %>
+  <%= form_tag('', onsubmit: 'editProfileOnSubmit();') do %>
+      <table>
+        <tr>
+          <th>id：</th>
+          <td><%= @admin.id %></td>
+        </tr>
+        <tr>
+          <th>username：</th>
+          <td><%= @admin.username %></td>
+        </tr>
+        <tr>
+          <th><label for="input_password">old password：</label></th>
+          <td><input id="input_password" type="password" name="password" size="40" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_password1">new password：</label></th>
+          <td><input id="input_password1" type="password" name="new_password" size="40" pattern=".{8,}" title="at least 8 character" onchange="validatePassword();" /></td>
+        </tr>
+        <tr>
+          <th><label for="input_password2">confirm password：</label></th>
+          <td><input id="input_password2" type="password" name="new_password" size="40" onchange="validatePassword();" /></td>
+        </tr>
+        <tr>
+          <th><label for="input_name">name：</label></th>
+          <td><input id="input_name" type="text" name="name" size="40" value="<%= @name %>" maxlength="40" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_email">email：</label></th>
+          <td><input id="input_email" type="email" name="email" size="40" value="<%= @email %>" maxlength="255" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_phone">phone：</label></th>
+          <td><input id="input_phone" type="text" name="phone" size="40" value="<%= @phone %>" maxlength="17" pattern="\+852-\d{8}|\+(?!852)\d{2,4}-\d{0,11}" required /></td>
+        </tr>
+      </table>
+      <input id="input_submit" type="submit" onkeypress="validatePassword();" />
+  <% end %>
+</div>

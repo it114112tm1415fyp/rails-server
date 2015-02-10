@@ -4,9 +4,9 @@ class Client < RegisteredUser
 		#@return [RegisteredUser]
 		def register(username, password, name, email, phone, addresses)
 			ActiveRecord::Base.transaction do
-				error('username used') if find_by_username(username)
+				error('username used') if RegisteredUser.find_by_username(username)
 				client = create!(username: username, password: password, is_freeze: 0, name: name, email: email, phone: phone)
-				change_address(client, addresses)
+				client.change_address(addresses)
 			end
 		end
 	end

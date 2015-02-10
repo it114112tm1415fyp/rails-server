@@ -1,4 +1,38 @@
-<%= render('/admin_left_bar', selected: action_name) %>
-<%= render('/admin_title') %>
-<div class="admin_content">
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <table>
+    <tr>
+      <td>Rails version</td>
+      <td><%= Rails::Info.properties.value_for('Rails version') %></td>
+    </tr>
+    <tr>
+      <td>Rails environment</td>
+      <td><%= Rails::Info.properties.value_for('Environment') %></td>
+    </tr>
+    <tr>
+      <td>Ruby version</td>
+      <td><%= Rails::Info.properties.value_for('Ruby version') %></td>
+    </tr>
+    <tr>
+      <td>Database host</td>
+      <td><%= Rails.configuration.database_configuration[Rails.env]['host'] %></td>
+    </tr>
+    <tr>
+      <td>Database port</td>
+      <td><%= Rails.configuration.database_configuration[Rails.env]['port'] %></td>
+    </tr>
+    <tr>
+      <td>Database name</td>
+      <td><%= Rails.configuration.database_configuration[Rails.env]['database'] %></td>
+    </tr>
+    <tr>
+      <td>Database encoding</td>
+      <td><%= Rails.configuration.database_configuration[Rails.env]['encoding'] %></td>
+    </tr>
+    <tr>
+      <td>Database schema version</td>
+      <td><%= Rails::Info.properties.value_for('Database schema version') %></td>
+    </tr>
+  </table>
 </div>

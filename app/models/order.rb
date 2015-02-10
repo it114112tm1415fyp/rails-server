@@ -9,9 +9,8 @@ class Order < ActiveRecord::Base
 
 	class << self
 		def make(sender_id, receiver, staff, pay_from_receiver, goods, departure_id, departure_type, destination_id, destination_type)
-			p departure_type
-			raise(ParameterError, 'departure_type') unless ['ShopAddress', 'SpecifyAddress'].include?(departure_type)
-			raise(ParameterError, 'destination_type') unless ['ShopAddress', 'SpecifyAddress'].include?(destination_type)
+			raise(ParameterError, 'departure_type') unless [Shop.to_s, SpecifyAddress.to_s].include?(departure_type)
+			raise(ParameterError, 'destination_type') unless [Shop.to_s, SpecifyAddress.to_s].include?(destination_type)
 			raise(ParameterError, 'receiver') unless receiver.is_a?(Hash)
 			raise(ParameterError, 'goods') unless goods.is_a?(Array)
 			goods.each_with_index do |value, index|
@@ -31,7 +30,7 @@ class Order < ActiveRecord::Base
 					CheckLog.create!(good: good, location: departure, check_action: @receive, staff: staff)
 					result = {}
 					result[:id] = good.id
-					result[:qr_content] = 'it114112tm1415fyp' + ActiveSupport::JSON.encode({good_id: good.id, order_id: order.id, departure: departure.display_name, destination: destination.display_name, rfid_tag: good.rfid_tag, weight: good.weight, fragile: good.fragile, flammable: good.flammable, order_time: good.created_at})
+					result[:qr_content] = good.qr_code
 					result
 				end
 				{order: order.id, goods: goods}

@@ -1,0 +1,16 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <table class="admin_table">
+    <tr>
+      <th>id</th>
+      <th>username</th>
+      <th>name</th>
+      <th>email</th>
+      <th>phone</th>
+      <th class="admin_table_th">register_time</th>
+      <th class="admin_table_th" colspan="2">management</th>
+    </tr>
+    <%= client_accounts_table_contents %>
+  </table>
+</div>
