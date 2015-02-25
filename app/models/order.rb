@@ -1,39 +1,78 @@
 class Order < ActiveRecord::Base
 	belongs_to(:departure, polymorphic: true)
 	belongs_to(:destination, polymorphic: true)
+	belongs_to(:order_state)
 	belongs_to(:receiver, polymorphic: true)
-	belongs_to(:sender, class_name: 'RegisteredUser', foreign_key: :sender_id)
-	belongs_to(:staff, class_name: 'Staff', foreign_key: :staff_id)
+	belongs_to(:sender, class_name: RegisteredUser.to_s, foreign_key: :sender_id)
+	belongs_to(:staff)
+	has_many(:free_times)
 	has_many(:goods)
-	@receive = CheckAction.find_by_name('receive')
+	validates_numericality_of(:goods_number, greater_than_or_equal_to: 1)
+	def can_edit
+		[OrderState.after_contact, OrderState.submitted].include?(order_state)
+	end
+	def cancel(staff)
+		if self.order_state == OrderState.submitted || staff
+			self.order_state = OrderState.canceled
+			save!
+		else
+			error('cannot cancel order after contact, please contact staff to cancel this order')
+		end
+	end
+	def confirm(sender_sign)
+		self.sender_sign = sender_sign
+		self.order_state = OrderState.sending
+		save!
+	end
+	def contact
+		self.order_state = OrderState.after_contact if order_state == OrderState.submitted
+	end
+	def edit(receiver, goods_number, departure_id, departure_type, destination_id, destination_type, staff)
+		raise(ParameterError, 'departure_type') if departure_type && ![Shop.to_s, SpecifyAddress.to_s].include?(departure_type)
+		raise(ParameterError, 'destination_type') if departure_type && ![Shop.to_s, SpecifyAddress.to_s].include?(departure_type)
+		raise(ParameterError, 'receiver') if receiver && !receiver.is_a?(Hash)
+		if receiver
+			if receiver.has_key?(:id)
+				self.receiver = RegisteredUser.find(receiver[:id])
+			else
+				self.receiver = PublicReceiver.find_or_create_by!(name: receiver[:name], email: receiver[:email], phone: receiver[:phone])
+			end
+		end
+		self.goods_number = goods_number if goods_number
+		if departure_id && departure_type
+			if self.order_state == OrderState.submitted || staff
+				self.departure = Object.const_get(departure_type).find(departure_id)
+				goods.each do |x|
+					x.location = departure
+					x.save!
+				end
+			else
+				error('cannot edit order departure after contact, please contact staff to do this change')
+			end
+		end
+		self.destination = Object.const_get(destination_type).find(destination_id) if destination_id && destination_type
+		error('departure do not match sender address') if departure.is_a?(SpecifyAddress) && !sender.specify_addresses.include?(departure) && !staff
+		error('destination do not match receive address') if destination.is_a?(SpecifyAddress) && receiver.is_a?(RegisteredUser) && !receiver.specify_addresses.include?(destination)
+		save!
+	end
 
 	class << self
-		def make(sender_id, receiver, staff, pay_from_receiver, goods, departure_id, departure_type, destination_id, destination_type)
+		def make(sender, receiver, goods_number, departure_id, departure_type, destination_id, destination_type, time)
 			raise(ParameterError, 'departure_type') unless [Shop.to_s, SpecifyAddress.to_s].include?(departure_type)
 			raise(ParameterError, 'destination_type') unless [Shop.to_s, SpecifyAddress.to_s].include?(destination_type)
 			raise(ParameterError, 'receiver') unless receiver.is_a?(Hash)
-			raise(ParameterError, 'goods') unless goods.is_a?(Array)
-			goods.each_with_index do |value, index|
-				raise(ParameterError.new("goods[#{index}]")) unless value.is_a?(Hash)
-			end
 			transaction do
 				departure = const_get(departure_type).find(departure_id)
 				destination = const_get(destination_type).find(destination_id)
 				if receiver.has_key?(:id)
 					receiver = RegisteredUser.find(receiver[:id])
 				else
-					receiver = PublicReceiver.first_or_create!(name: receiver[:name], email: receiver[:email], phone: receiver[:phone])
+					receiver = PublicReceiver.find_or_create_by!(name: receiver[:name], email: receiver[:email], phone: receiver[:phone])
 				end
-				order = create!(sender_id: sender_id, receiver: receiver, departure: departure, destination: destination, staff: staff, pay_from_receiver: pay_from_receiver)
-				goods.collect! do |x|
-					good = Good.create!(order: order, location: departure, last_action: @receive, rfid_tag: x[:rfid_tag], weight: x[:weight], fragile: x[:fragile], flammable: x[:flammable])
-					CheckLog.create!(good: good, location: departure, check_action: @receive, staff: staff)
-					result = {}
-					result[:id] = good.id
-					result[:qr_content] = good.qr_code
-					result
-				end
-				{order: order.id, goods: goods}
+				error('departure do not match sender address') if departure.is_a?(SpecifyAddress) && !sender.specify_addresses.include?(departure)
+				error('destination do not match receive address') if destination.is_a?(SpecifyAddress) && receiver.is_a?(RegisteredUser) && !receiver.specify_addresses.include?(destination)
+				order = create!(sender: sender, receiver: receiver, departure: departure, destination: destination, goods_number: goods_number, order_state: OrderState.submitted)
+				{id: order.id}
 			end
 		end
 	end

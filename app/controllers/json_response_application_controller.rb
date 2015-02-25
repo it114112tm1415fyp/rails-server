@@ -6,14 +6,14 @@ class JsonResponseApplicationController < ApplicationController
 	end
 	rescue_from(Error) { |x| json_response_error(x.message, x.detail) }
 	rescue_from(ActionView::MissingTemplate) do
-		_process_action_callbacks.find_all { |x| x.kind == :after }.collect(&:raw_filter).each do |x|
-			case x
+		_process_action_callbacks.find_all { |x| x.kind == :after && x.send(:conditions_lambdas).all? { |x| x.call(self, nil) } }.each do |x|
+			case x.raw_filter
 				when Class
-					x.filter
+					x.raw_filter.filter
 				when Symbol
-					method(x).call
+					method(x.raw_filter).call
 				when Proc
-					x.call
+					x.raw_filter.call
 				else
 					raise('Unknown filter type')
 			end

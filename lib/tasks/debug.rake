@@ -9,7 +9,7 @@ namespace(:debug) do
 					connection = server.accept
 					puts("FYP server connect from '#{connection.remote_address.ip_address}'")
 					puts("receive : #{connection.gets}")
-					status = ActiveSupport::JSON.encode({ ch: Array.new(4) { rand(6) }, cr: Array.new(2) { rand(3) }, mr: rand(3), st: Array.new(8) { rand(2) } })
+					status = ActiveSupport::JSON.encode({ch: Array.new(4) { rand(6) }, cr: Array.new(2) { rand(3) }, mr: rand(3), st: Array.new(8) { rand(2) }})
 					connection.puts(status)
 					puts("send : #{status}")
 					connection.close
@@ -26,7 +26,7 @@ namespace(:debug) do
 				puts("connected to server'")
 				loop do
 					puts("receive : #{connection.gets}")
-					status = ActiveSupport::JSON.encode({ ch: Array.new(4) { rand(6) }, cr: Array.new(2) { rand(3) }, mr: rand(3), st: Array.new(8) { rand(2) } })
+					status = ActiveSupport::JSON.encode({ch: Array.new(4) { rand(6) }, cr: Array.new(2) { rand(3) }, mr: rand(3), st: Array.new(8) { rand(2) }})
 					connection.puts(status)
 					puts("send : #{status}")
 				end

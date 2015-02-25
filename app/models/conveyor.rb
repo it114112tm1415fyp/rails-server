@@ -1,10 +1,6 @@
 class Conveyor < ActiveRecord::Base
 	belongs_to(:store)
-	has_many(:conveyor_control_logs)
 	validates_numericality_of(:server_port, greater_than_or_equal_to: 0, less_than: 65536)
-	def can_destroy
-		conveyor_control_logs.size == 0
-	end
 	#@return [Hash]
 	def get_control(staff, raise_if_error)
 		Control.occupy(id, staff.id)
@@ -21,7 +17,7 @@ class Conveyor < ActiveRecord::Base
 		begin
 			Timeout.timeout(2) { socket.puts(message) }
 			nil until (result = socket.gets) != "\r\n"
-			result = Timeout.timeout(2) { ActiveSupport::JSON.decode(result) }
+			result = Timeout.timeout(2) {ActiveSupport::JSON.decode(result)}
 		rescue Timeout::Error
 			$conveyor_server[id] = socket.close
 			raise

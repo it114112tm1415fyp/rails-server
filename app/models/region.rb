@@ -5,13 +5,14 @@ class Region < ActiveRecord::Base
 
 	class << self
 		def get_list
-			all.collect {|x| {id: x.id, name: x.name} }
+			all.collect { |x| {id: x.id, name: x.name} }
 		end
 		def get_map
-			region_list = {}
-			Region.find_each do |x|
-				region_list[x.id.to_s] = x.name
+			map = {}
+			find_each do |x|
+				map[x.id.to_s] = x.name
 			end
+			map
 		end
 	end
 

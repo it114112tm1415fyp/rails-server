@@ -37,20 +37,32 @@
         </tr>
         <% if @account.is_a?(Staff) %>
             <tr>
-              <th>car：</th>
-              <td><%= link_to("#{@account.car.display_name} - #{@account.role}", action: :edit_car, car_id: @account.car_id) if @account.car %></td>
+              <th><label for="input_workplace">workplace：</label></th>
+              <td>
+                <select id="input_workplace_type" name="workplace_type" onchange="editAccountOnChangeWorkplaceType();" required>
+                  <%= '<option value disabled selected>--</option>' unless @account %>
+                  <option<%= ' selected' if @account.workplace.class == Car %>>Car</option>
+                  <option<%= ' selected' if @account.workplace.class == Shop %>>Shop</option>
+                  <option<%= ' selected' if @account.workplace.class == Store %>>Store</option>
+                </select>
+                <select id="input_workplace" name="workplace_id" required>
+                  <%= '<option value disabled selected>--</option>' unless @account %>
+                  <% @account.workplace.class.get_map.each do |x1, x2| %>
+                      <option<%= ' selected' if @account.workplace.id.to_s == x1 %>><%= x1 %> - <%= x2 %></option>
+                  <% end %>
+                </select>
+              </td>
             </tr>
         <% end %>
-        <tr>
-          <th><label for="input_is_freeze">is_freeze：</label></th>
-          <td><input id="input_is_freeze" type="checkbox" name="is_freeze"<%= ' checked' if @is_freeze %> /></td>
-        </tr>
         <tr>
           <th id="th_addresses" rowspan="2"><label for="input_addresses1">addresses：</label></th>
         </tr>
         <tr id="tr_add_addresses">
-          <td>
-            <input id="input_add_addresses" type="button" onclick="editAccountAddAddressesRow();" value="+" /></td>
+          <td><input id="input_add_addresses" type="button" onclick="editAccountAddAddressesRow();" value="+" /></td>
+        </tr>
+        <tr>
+          <th><label for="input_enable">enable：</label></th>
+          <td><input id="input_enable" type="checkbox" name="enable"<%= ' checked' if @enable != false %> /></td>
         </tr>
       </table>
       <input id="input_submit" type="submit" value="<%= @account ? 'Edit' : 'New' %>" onkeypress="validatePassword();" />

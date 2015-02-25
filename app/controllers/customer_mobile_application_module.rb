@@ -1,8 +1,8 @@
 module CustomerMobileApplicationModule
 	private
 	def check_customer_login
-		@user = RegisteredUser.find(session[:user_id])
-		raise unless @user
+		@customer = RegisteredUser.find(session[:user_id])
+		raise unless @customer
 	rescue
 		error('Connection expired') if @expired
 		error('Need login')

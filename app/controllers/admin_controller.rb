@@ -38,7 +38,7 @@ class AdminController < WebApplicationController
 	def edit_profile
 		@admin = Admin.find(session[:admin])
 		if params_exist(:password, :new_password, :name, :email, :phone)
-			@admin.edit_profile(params)
+			@admin.edit_profile(params[:password], params[:new_password], params[:name], params[:email], params[:phone], nil)
 		end
 	rescue Error
 		@error_message = [$!.message]
@@ -47,16 +47,17 @@ class AdminController < WebApplicationController
 		@email = params[:email] || @admin.email
 		@phone = params[:phone] || @admin.phone
 	end
-	def freeze_account
-		params_require(:account_id)
-		account = RegisteredUser.find(params[:account_id])
-		account.is_freeze = !account.is_freeze
-		account.save!
-		redirect_to(action: account.type.downcase + '_accounts')
+	def enable_or_disable
+		params_require(:object_type, :object_id, :redirect)
+		raise(ParameterError, 'object_type') unless [Car.to_s, RegisteredUser.to_s, Shop.to_s, Store.to_s].include?(params[:object_type])
+		object = Object.const_get(params[:object_type]).find(params[:object_id])
+		object.enable = !object.enable
+		object.save!
+		redirect_to(action: params[:redirect])
 	end
 	def new_staff_account
 		if params_exist(:username, :password, :name, :email, :phone, :addresses)
-			Staff.register(params[:username], params[:password], params[:name], params[:email], params[:phone], params_exist(:is_freeze), params[:addresses])
+			Staff.register(params[:username], params[:password], params[:name], params[:email], params[:phone], params_exist(:enable), params[:addresses])
 			redirect_to(action: :staff_accounts)
 		end
 		@phone = '+852-'
@@ -67,7 +68,7 @@ class AdminController < WebApplicationController
 		@name = params[:name]
 		@email = params[:email]
 		@phone = params[:phone]
-		@is_freeze = params_exist(:is_freeze)
+		@enable = params_exist(:enable)
 		@addresses = params[:addresses]
 	ensure
 		render(template: 'admin/edit_account') unless performed?
@@ -76,9 +77,13 @@ class AdminController < WebApplicationController
 		params_require(:account_id)
 		@account = RegisteredUser.find(params[:account_id])
 		if params_exist(:username, :password, :name, :email, :phone, :addresses)
-			@is_freeze = params_exist(:is_freeze)
+			@enable = params_exist(:enable)
 			params[:password] = @account.password if params[:password].empty?
-			@account.edit_account(params[:username], params[:password], params[:name], params[:email], params[:phone], params[:addresses], @is_freeze)
+			if @account.is_a?(Staff) && params_exist(:workplace_type, :workplace_id)
+				@account.edit_account(params[:username], params[:password], params[:name], params[:email], params[:phone], params[:workplace_type], params[:workplace_id], params[:addresses], @enable)
+			else
+				@account.edit_account(params[:username], params[:password], params[:name], params[:email], params[:phone], params[:addresses], @enable)
+			end
 			redirect_to(action: @account.type.downcase + '_accounts')
 		end
 	rescue Error
@@ -88,14 +93,45 @@ class AdminController < WebApplicationController
 		@name = params[:name] || @account.name
 		@email = params[:email] || @account.email
 		@phone = params[:phone] || @account.phone
-		@is_freeze ||= @account.is_freeze
-		@addresses = params[:addresses] || @account.specify_addresses.collect {|x| {address: x.display_name, region: x.region.id.to_s} }
+		@enable ||= @account.enable
+		@addresses = params[:addresses] || @account.specify_addresses.collect { |x| {address: x.address, region: x.region.id.to_s} }
 	end
 	def delete_account
 		params_require(:account_id)
 		account = RegisteredUser.find(params[:account_id])
 		account.destroy if account.can_destroy
 		redirect_to(action: account.type.downcase + '_accounts')
+	end
+	def new_car
+		if params_exist(:vehicle_registration_mark)
+			error('This car already exist') if Car.find_by_vehicle_registration_mark(params[:vehicle_registration_mark])
+			Car.create!(vehicle_registration_mark: params[:vehicle_registration_mark])
+			redirect_to(action: :cars)
+		end
+	rescue Error
+		@error_message = [$!.message]
+		@vehicle_registration_mark = params[:vehicle_registration_mark]
+	ensure
+		render(template: 'admin/edit_car') unless performed?
+	end
+	def edit_car
+		params_require(:car_id)
+		@car = Car.find(params[:car_id])
+		if params_exist(:vehicle_registration_mark)
+			error('This car already exist') if @car.vehicle_registration_mark != params[:vehicle_registration_mark] && Car.find_by_vehicle_registration_mark(params[:vehicle_registration_mark])
+			@car.vehicle_registration_mark = params[:vehicle_registration_mark]
+			@car.save!
+			redirect_to(action: :cars)
+		end
+	rescue Error
+		@error_message = [$!.message]
+	ensure
+		@vehicle_registration_mark = params[:vehicle_registration_mark] || @car.vehicle_registration_mark
+	end
+	def delete_car
+		params_require(:car_id)
+		Car.find(params[:car_id]).destroy
+		redirect_to(action: :cars)
 	end
 	def new_shop
 		if params_exist(:address, :region)
@@ -123,7 +159,7 @@ class AdminController < WebApplicationController
 	rescue Error
 		@error_message = [$!.message]
 	ensure
-		@address = params[:address] || @shop.display_name
+		@address = params[:address] || @shop.long_name
 		@region = params[:region] || @shop.region.id.to_s
 	end
 	def delete_shop
@@ -158,7 +194,7 @@ class AdminController < WebApplicationController
 	rescue Error
 		@error_message = [$!.message]
 	ensure
-		@address = params[:address] || @store.display_name
+		@address = params[:address] || @store.long_name
 		@size = params[:size] || @store.size
 	end
 	def delete_store
@@ -211,37 +247,6 @@ class AdminController < WebApplicationController
 		conveyor = Conveyor.find(params[:conveyor_id])
 		conveyor.destroy if conveyor.can_destroy
 		redirect_to(action: :conveyors)
-	end
-	def new_car
-		if params_exist(:vehicle_registration_mark)
-			error('This car already exist') if Car.find_by_vehicle_registration_mark(params[:vehicle_registration_mark])
-			Car.create!(vehicle_registration_mark: params[:vehicle_registration_mark])
-			redirect_to(action: :cars)
-		end
-	rescue Error
-		@error_message = [$!.message]
-		@vehicle_registration_mark = params[:vehicle_registration_mark]
-	ensure
-		render(template: 'admin/edit_car') unless performed?
-	end
-	def edit_car
-		params_require(:car_id)
-		@car = Car.find(params[:car_id])
-		if params_exist(:vehicle_registration_mark)
-			error('This car already exist') if @car.vehicle_registration_mark != params[:vehicle_registration_mark] && Car.find_by_vehicle_registration_mark(params[:vehicle_registration_mark])
-			@car.vehicle_registration_mark = params[:vehicle_registration_mark]
-			@car.save!
-			redirect_to(action: :cars)
-		end
-	rescue Error
-		@error_message = [$!.message]
-	ensure
-		@vehicle_registration_mark = params[:vehicle_registration_mark] || @car.vehicle_registration_mark
-	end
-	def delete_car
-		params_require(:car_id)
-		Car.find(params[:car_id]).destroy
-		redirect_to(action: :cars)
 	end
 	private
 	def check_login

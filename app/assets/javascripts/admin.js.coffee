@@ -7,6 +7,7 @@ EditAccountMaxAddressesRow = 6
 editAccountAddressesRow = 0
 
 window.regionList = {}
+window.workplaceList = {}
 window.editAccountAddAddressesRow = (address = "", region = "") ->
   if editAccountAddressesRow < EditAccountMaxAddressesRow
     editAccountAddressesRow++
@@ -31,7 +32,7 @@ window.editAccountAddAddressesRow = (address = "", region = "") ->
     td_addresses.appendChild(break_link)
     input_region = document.createElement("select")
     input_region.id = "input_region#{editAccountAddressesRow}"
-    input_region.name = "addresses[][region]"
+    input_region.name = "addresses[][region_id]"
     input_region.required = true
     input_region_option = document.createElement("option")
     input_region_option.value = ""
@@ -77,6 +78,7 @@ window.editAccountRemoveAddressesRow = (row) ->
   document.getElementById("input_add_addresses").removeAttribute("disabled")
   null
 window.editAccountOnLoad = (addresses) ->
+  editAccountAddressesRow = 0
   if addresses.length is 0
     editAccountAddAddressesRow()
   else
@@ -88,9 +90,28 @@ window.editAccountOnSubmit = () ->
   for t in [1..EditAccountMaxAddressesRow]
     addresses = document.getElementById("input_addresses#{t}")
   true
+window.editAccountOnChangeWorkplaceType = () ->
+  input_workplace_type = document.getElementById("input_workplace_type")
+  workplace_type = input_workplace_type.selectedOptions.item(0).textContent
+  input_workplace = document.getElementById("input_workplace")
+  while (x = input_workplace.firstChild)
+    input_workplace.removeChild(x)
+  input_workplace_option = document.createElement("option")
+  input_workplace_option.value = ""
+  input_workplace_option.innerHTML = "--"
+  input_workplace_option.setAttribute("disabled", "")
+  input_workplace_option.setAttribute("selected", "")
+  input_workplace.appendChild(input_workplace_option)
+  for k, v of workplaceList[workplace_type]
+    input_workplace_option = document.createElement("option")
+    input_workplace_option.value = k
+    input_workplace_option.innerHTML = k + " - " + v
+    input_workplace.appendChild(input_workplace_option)
+  null
 window.editProfileOnSubmit = () ->
   md5Passwrod("input_password")
   md5Passwrod("input_password2")
+  true
 window.loginOnSubmit = () ->
   md5Passwrod("input_password")
   true

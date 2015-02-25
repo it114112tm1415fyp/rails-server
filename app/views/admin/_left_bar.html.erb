@@ -7,10 +7,10 @@
   <p><%= link_to_unless(selected == 'server_status', 'Server status', action: :server_status) %></p>
   <p><%= link_to_unless(selected == 'staff_accounts', 'Staff accounts', action: :staff_accounts) %></p>
   <p><%= link_to_unless(selected == 'client_accounts', 'Client accounts', action: :client_accounts) %></p>
+  <p><%= link_to_unless(selected == 'cars', 'Cars', action: :cars) %></p>
   <p><%= link_to_unless(selected == 'shops', 'Shops', action: :shops) %></p>
   <p><%= link_to_unless(selected == 'stores', 'Stores', action: :stores) %></p>
   <p><%= link_to_unless(selected == 'conveyors', 'Conveyors', action: :conveyors) %></p>
-  <p><%= link_to_unless(selected == 'cars', 'Cars', action: :cars) %></p>
   <div class="left_bar_bottom">
     <p><%= link_to_unless(selected == 'edit_profile', 'Edit profile', action: :edit_profile) %></p>
     <p><%= link_to('Logout', action: :logout) %></p>

@@ -14,7 +14,7 @@ class RegisteredUser < ActiveRecord::Base
 	#@return [RegisteredUser]
 	def change_address(addresses)
 		self.specify_addresses = []
-		addresses.each { |x| specify_addresses << SpecifyAddress.find_or_create_by!(address: x[:address], region_id: x[:region]) }
+		addresses.each { |x| specify_addresses << SpecifyAddress.find_or_create_by!(address: x[:address], region_id: x[:region_id]) }
 		save!
 		self
 	end
@@ -22,7 +22,7 @@ class RegisteredUser < ActiveRecord::Base
 		error('Wrong password') unless self.password == password
 		self
 	end
-	def edit_account(username, password, name, email, phone, addresses, freeze)
+	def edit_account(username, password, name, email, phone, addresses, enable)
 		transaction do
 			error('username used') if self.username != username && RegisteredUser.find_by_username(username)
 			self.username = username
@@ -30,20 +30,20 @@ class RegisteredUser < ActiveRecord::Base
 			self.name = name
 			self.email = email
 			self.phone = phone
-			self.is_freeze = freeze
+			self.enable = enable
 			change_address(addresses)
 		end
 	end
 	#@return [RegisteredUser]
-	def edit_profile(hash={})
+	def edit_profile(password, new_password, name, email, phone, addresses)
 		transaction do
-			check_password(hash[:password])
-			self.password = hash[:new_password] if hash[:new_password]
-			self.name = hash[:name] if hash[:name]
-			self.email = hash[:email] if hash[:email]
-			self.phone = hash[:phone] if hash[:phone]
-			if hash[:addresses]
-				change_address(hash[:addresses])
+			check_password(password)
+			self.password = new_password if new_password
+			self.name = name if name
+			self.email = email if email
+			self.phone = phone if phone
+			if addresses
+				change_address(addresses)
 			else
 				save!
 				self
@@ -51,24 +51,24 @@ class RegisteredUser < ActiveRecord::Base
 		end
 	end
 	def get_receive_orders
-		receive_orders.collect { |x1| {id: x1.id, sender: x1.sender.name, departure: x1.departure.display_name, destination: x1.destination.display_name, goods: x1.goods.collect { |x2| x2.id }, staff: x1.staff.name, update_time: x1.updated_at, order_time: x1.created_at} }
+		receive_orders.collect { |x1| {id: x1.id, sender: x1.sender.name, departure: {id: x1.departure.id, address: x1.departure.address, region: {id: x1.departure.region.id, name: x1.departure.region.name}}, destination: {id: x1.destination.id, address: x1.destination.address, region: {id: x1.destination.region.id, name: x1.destination.region.name}}, goods: x1.goods.collect { |x2| x2.string_id }, state: x1.order_state.name, update_time: x1.updated_at, order_time: x1.created_at} }
 	end
 	def get_send_orders
-		send_orders.collect { |x1| {id: x1.id, receiver: x1.receiver.name, departure: x1.departure.display_name, destination: x1.destination.display_name, goods: x1.goods.collect { |x2| x2.id }, staff: x1.staff.name, update_time: x1.updated_at, order_time: x1.created_at} }
+		send_orders.collect { |x1| {id: x1.id, receiver: x1.receiver.name, departure: {id: x1.departure.id, address: x1.departure.address, region: {id: x1.departure.region.id, name: x1.departure.region.name}}, destination: {id: x1.destination.id, address: x1.destination.address, region: {id: x1.destination.region.id, name: x1.destination.region.name}}, goods_number: x1.goods_number, goods: x1.goods.collect { |x2| x2.string_id }, state: x1.order_state.name, update_time: x1.updated_at, order_time: x1.created_at} }
 	end
 
 	class << self
 		def find_user_info(username, phone)
 			user = find_by_username(username)
 			error('User not found') unless user && user.phone == phone
-			{id: user.id, name: user.name, address: user.specify_addresses.collect { |x| x.display_name }}
+			{id: user.id, name: user.name, address: user.specify_addresses.collect { |x| {id: x.id, address: x.address, region: {id: x.region.id, name: x.region.name}} }}
 		end
 		#@return [RegisteredUser]
 		def login(username, password)
 			user = find_by_username(username)
 			error('Username not exist') unless user
 			user.check_password(password)
-			error('Account frozen') if user.is_freeze
+			error('Account frozen') unless user.enable
 			user
 		end
 	end
