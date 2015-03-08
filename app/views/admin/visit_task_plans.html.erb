@@ -1,0 +1,18 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <table class="admin_table">
+    <tr>
+      <th>id</th>
+      <th>day</th>
+      <th>time</th>
+      <th colspan="2">car</th>
+      <th colspan="2">store</th>
+      <th>handle_order</th>
+      <th>max_send_order</th>
+      <th colspan="2">management</th>
+    </tr>
+    <%= visit_task_plans_table_contents %>
+  </table>
+  <%= link_to('New visit task plan', action: :new_visit_task_plan) %>
+</div>

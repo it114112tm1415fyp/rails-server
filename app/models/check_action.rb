@@ -8,10 +8,10 @@ class CheckAction < ActiveRecord::Base
 	class << self
 		def inspect
 			unless @inspect
-				@inspect = find_by_name('inspect')
+				@inspect = find_by_name!('inspect')
 				class << @inspect
 					def can_done_after(check_action)
-						check_action == inspect || check_action == warehouse
+						check_action == CheckAction.inspect || check_action == CheckAction.warehouse
 					end
 				end
 			end
@@ -19,10 +19,10 @@ class CheckAction < ActiveRecord::Base
 		end
 		def issue
 			unless @issue
-				@issue = find_by_name('issue')
+				@issue = find_by_name!('issue')
 				class << @issue
 					def can_done_after(check_action)
-						check_action == unload || check_action == warehouse
+						check_action == CheckAction.unload || check_action == CheckAction.warehouse
 					end
 				end
 			end
@@ -30,10 +30,10 @@ class CheckAction < ActiveRecord::Base
 		end
 		def leave
 			unless @leave
-				@leave = find_by_name('leave')
+				@leave = find_by_name!('leave')
 				class << @leave
 					def can_done_after(check_action)
-						check_action == inspect || check_action == receive || check_action == warehouse
+						check_action == CheckAction.inspect || check_action == CheckAction.receive || check_action == CheckAction.warehouse
 					end
 				end
 			end
@@ -41,21 +41,21 @@ class CheckAction < ActiveRecord::Base
 		end
 		def load
 			unless @load
-				@load = find_by_name('load')
+				@load = find_by_name!('load')
 				class << @load
 					def can_done_after(check_action)
-						check_action == leave || check_action == receive || check_action == unload
+						check_action == CheckAction.leave || check_action == CheckAction.receive || check_action == CheckAction.unload
 					end
 				end
 			end
 			@load
 		end
 		def receive
-			@receive ||= find_by_name('receive')
+			@receive ||= find_by_name!('receive')
 		end
 		def unload
 			unless @unload
-				@unload = find_by_name('unload')
+				@unload = find_by_name!('unload')
 				class << @unload
 					def can_done_after(check_action)
 						check_action == CheckAction.load
@@ -69,7 +69,7 @@ class CheckAction < ActiveRecord::Base
 				@warehouse = find_by_name('warehouse')
 				class << @warehouse
 					def can_done_after(check_action)
-						check_action == leave || check_action == unload
+						check_action == CheckAction.leave || check_action == CheckAction.unload
 					end
 				end
 			end

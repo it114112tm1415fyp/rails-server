@@ -6,8 +6,21 @@ EditAccountMaxAddressesRow = 6
 
 editAccountAddressesRow = 0
 
+window.buildingList = {}
 window.regionList = {}
+window.staffStoreList = {}
 window.workplaceList = {}
+window.dayChange = (changedDayIndex) ->
+  input_day = document.getElementById("input_day")
+  input_day.value = parseInt(input_day.value) ^ (1 << changedDayIndex)
+  day = document.getElementById("day" + changedDayIndex)
+  if (input_day.value >>> changedDayIndex) % 2 is 1
+    day.style.color = "green"
+    day.style.fontWeight = "bold"
+  else
+    day.style.color = "lightgrey"
+    day.style.fontWeight = ""
+  null
 window.editAccountAddAddressesRow = (address = "", region = "") ->
   if editAccountAddressesRow < EditAccountMaxAddressesRow
     editAccountAddressesRow++
@@ -21,6 +34,7 @@ window.editAccountAddAddressesRow = (address = "", region = "") ->
     input_addresses.cols = 41
     input_addresses.required = true
     input_addresses.value = address
+    input_addresses.setAttribute("oninput", "validateAddresses();")
     td_addresses.appendChild(input_addresses)
     input_remove_addresses = document.createElement("input")
     input_remove_addresses.id = "input_remove_addresses#{editAccountAddressesRow}"
@@ -34,23 +48,51 @@ window.editAccountAddAddressesRow = (address = "", region = "") ->
     input_region.id = "input_region#{editAccountAddressesRow}"
     input_region.name = "addresses[][region_id]"
     input_region.required = true
+    input_region.setAttribute("onchange", "validateAddresses();")
     input_region_option = document.createElement("option")
     input_region_option.value = ""
     input_region_option.innerHTML = "--"
     input_region_option.setAttribute("disabled", "")
-    input_region_option.setAttribute("selected", "")
     input_region.appendChild(input_region_option)
     for k, v of regionList
       input_region_option = document.createElement("option")
       input_region_option.value = k
       input_region_option.innerHTML = v
-      if k is region
-        input_region_option.setAttribute("selected", "")
+      input_region_option.setAttribute("selected", "") if k is region
       input_region.appendChild(input_region_option)
     td_addresses.appendChild(input_region)
     document.getElementById("th_addresses").setAttribute("rowspan", "#{editAccountAddressesRow + 2}")
-  if editAccountAddressesRow is EditAccountMaxAddressesRow
-    document.getElementById("input_add_addresses").setAttribute("disabled", "")
+  document.getElementById("input_add_addresses").setAttribute("disabled", "") if editAccountAddressesRow is EditAccountMaxAddressesRow
+  null
+window.editAccountOnLoad = (addresses) ->
+  editAccountAddressesRow = 0
+  if addresses.length is 0
+    editAccountAddAddressesRow()
+  else
+    for x in addresses
+      editAccountAddAddressesRow(x["address"], x["region"])
+  null
+window.editAccountOnSubmit = () ->
+  md5Passwrod("input_password2")
+  for t in [1..EditAccountMaxAddressesRow]
+    addresses = document.getElementById("input_addresses#{t}")
+  true
+window.editAccountOnChangeWorkplaceType = () ->
+  input_workplace_type = document.getElementById("input_workplace_type")
+  workplace_type = input_workplace_type.selectedOptions.item(0).textContent
+  input_workplace_id = document.getElementById("input_workplace_id")
+  while x = input_workplace_id.firstChild
+    input_workplace_id.removeChild(x)
+  input_workplace_option = document.createElement("option")
+  input_workplace_option.value = ""
+  input_workplace_option.innerHTML = "--"
+  input_workplace_option.setAttribute("disabled", "")
+  input_workplace_id.appendChild(input_workplace_option)
+  for k, v of workplaceList[workplace_type]
+    input_workplace_option = document.createElement("option")
+    input_workplace_option.value = k
+    input_workplace_option.innerHTML = k + " - " + v
+    input_workplace_id.appendChild(input_workplace_option)
   null
 window.editAccountRemoveAddressesRow = (row) ->
   editAccountAddressesRow--
@@ -77,52 +119,88 @@ window.editAccountRemoveAddressesRow = (row) ->
   document.getElementById("th_addresses").setAttribute("rowspan", "#{editAccountAddressesRow + 2}")
   document.getElementById("input_add_addresses").removeAttribute("disabled")
   null
-window.editAccountOnLoad = (addresses) ->
-  editAccountAddressesRow = 0
-  if addresses.length is 0
-    editAccountAddAddressesRow()
+window.editInspectTaskPlanOnChangeStaff = () ->
+  input_staff = document.getElementById("input_staff")
+  staff_id = input_staff.selectedOptions.item(0).value
+  input_store_option_default = document.getElementById("input_store_option_default")
+  if store = staffStoreList[staff_id]
+    input_store_option_default.value = store.id
+    input_store_option_default.textContent = store.id + " - " + store.name + " (workplace)"
+    input_store_option_default.removeAttribute("disabled")
   else
-    for x in addresses
-      editAccountAddAddressesRow(x["address"], x["region"])
-  null
-window.editAccountOnSubmit = () ->
-  md5Passwrod("input_password2")
-  for t in [1..EditAccountMaxAddressesRow]
-    addresses = document.getElementById("input_addresses#{t}")
-  true
-window.editAccountOnChangeWorkplaceType = () ->
-  input_workplace_type = document.getElementById("input_workplace_type")
-  workplace_type = input_workplace_type.selectedOptions.item(0).textContent
-  input_workplace = document.getElementById("input_workplace")
-  while (x = input_workplace.firstChild)
-    input_workplace.removeChild(x)
-  input_workplace_option = document.createElement("option")
-  input_workplace_option.value = ""
-  input_workplace_option.innerHTML = "--"
-  input_workplace_option.setAttribute("disabled", "")
-  input_workplace_option.setAttribute("selected", "")
-  input_workplace.appendChild(input_workplace_option)
-  for k, v of workplaceList[workplace_type]
-    input_workplace_option = document.createElement("option")
-    input_workplace_option.value = k
-    input_workplace_option.innerHTML = k + " - " + v
-    input_workplace.appendChild(input_workplace_option)
+    input_store_option_default.value = ""
+    input_store_option_default.textContent = "--"
+    input_store_option_default.setAttribute("disabled", "")
   null
 window.editProfileOnSubmit = () ->
   md5Passwrod("input_password")
   md5Passwrod("input_password2")
   true
+window.editTransferTaskPlanOnChangeFromType = () ->
+  input_from_type = document.getElementById("input_from_type")
+  from_type = input_from_type.selectedOptions.item(0).textContent
+  input_from_id = document.getElementById("input_from_id")
+  while x = input_from_id.firstChild
+    input_from_id.removeChild(x)
+  input_from_option = document.createElement("option")
+  input_from_option.value = ""
+  input_from_option.innerHTML = "--"
+  input_from_option.setAttribute("disabled", "")
+  input_from_id.appendChild(input_from_option)
+  for k, v of buildingList[from_type]
+    input_from_option = document.createElement("option")
+    input_from_option.value = k
+    input_from_option.innerHTML = k + " - " + v
+    input_from_id.appendChild(input_from_option)
+  null
+window.editTransferTaskPlanOnChangeToType = () ->
+  input_to_type = document.getElementById("input_to_type")
+  to_type = input_to_type.selectedOptions.item(0).textContent
+  input_to_id = document.getElementById("input_to_id")
+  while x = input_to_id.firstChild
+    input_to_id.removeChild(x)
+  input_to_option = document.createElement("option")
+  input_to_option.value = ""
+  input_to_option.innerHTML = "--"
+  input_to_option.setAttribute("disabled", "")
+  input_to_id.appendChild(input_to_option)
+  for k, v of buildingList[to_type]
+    input_to_option = document.createElement("option")
+    input_to_option.value = k
+    input_to_option.innerHTML = k + " - " + v
+    input_to_id.appendChild(input_to_option)
+  null
+window.editVisitTaskPlanOnChangeHandleOrder = () ->
+  document.getElementById("input_send_number").max = document.getElementById("input_send_receive_number").value
+  null
 window.loginOnSubmit = () ->
   md5Passwrod("input_password")
   true
 window.md5Passwrod = (elementId) ->
   element = document.getElementById(elementId)
-  if element.value
-    element.value = md5(md5(element.value))
+  element.value = md5(md5(element.value)) if element.value
   true
+window.validateAddresses = () ->
+  result = true
+  addresses = []
+  input_addresses = []
+  for t1 in [0...editAccountAddressesRow]
+    input_addresses[t1] = document.getElementById("input_addresses#{t1 + 1}")
+    input_addresses[t1].setCustomValidity("")
+    addresses[t1] = input_addresses[t1].value + document.getElementById("input_region#{t1 + 1}").selectedOptions.item(0).value
+    for t2 in [0...t1]
+      if addresses[t1] is addresses[t2]
+        result = false
+        input_addresses[t1].setCustomValidity("Address repeated")
+  result
 window.validatePassword = () ->
   input_password1 = document.getElementById("input_password1")
   input_password2 = document.getElementById("input_password2")
-  match = input_password1.value is input_password2.value
-  input_password2.setCustomValidity(if match then "" else "Passwords do not match")
-  match
+  result = input_password1.value is input_password2.value
+  input_password2.setCustomValidity(if result then "" else "Passwords do not match")
+  result
+window.validateTransferbuilding = () ->
+  input_to_id = document.getElementById("input_to_id")
+  result = document.getElementById("input_from_type").value isnt document.getElementById("input_to_type").value or document.getElementById("input_from_id").value isnt input_to_id.value
+  input_to_id.setCustomValidity(if result then "" else "Can not transfer to the same location")
+  result

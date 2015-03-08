@@ -1,3 +1,4 @@
+require_relative('seeds_binary_data.rb')
 Admin.create!(username: $admin_username, password: Digest::MD5.hexdigest(Digest::MD5.hexdigest($admin_password)), enable: false, name: 'admin', email: 'admin@admin.admin', phone: '+00-0')
 
 car1 = Car.create!(vehicle_registration_mark: 'EA5651')
@@ -40,23 +41,24 @@ staff2 = Staff.create!(username: 'likinlun', password: Digest::MD5.hexdigest(Dig
 staff3 = Staff.create!(username: 'lokifung', password: Digest::MD5.hexdigest(Digest::MD5.hexdigest('lokifung')), name: 'Lo Ki Fung', email: 'lokifung@yahoo.com.hk', phone: '+852-94464303', specify_addresses: [specify_address], workplace: shop1)
 staff4 = Staff.create!(username: 'lukwai', password: Digest::MD5.hexdigest(Digest::MD5.hexdigest('lukwai')), name: 'Luk Wai', email: 'lukwai@yahoo.com', phone: '+852-63884811', specify_addresses: [specify_address], workplace: car1)
 
-order_state_after_contact = OrderState.create!(name: 'after_contact')
 order_state_canceled = OrderState.create!(name: 'canceled')
+order_state_confirmed = OrderState.create!(name: 'confirmed')
 order_state_sending = OrderState.create!(name: 'sending')
 order_state_sent = OrderState.create!(name: 'sent')
 order_state_submitted = OrderState.create!(name: 'submitted')
 
 order1 = Order.create!(sender: staff3, sender_sign: '', receiver: staff4, goods_number: 2, departure: shop1, destination: specify_address, order_state: order_state_sending)
 order2 = Order.create!(sender: staff4, sender_sign: '', receiver: staff3, goods_number: 1, departure: specify_address, destination: shop2, order_state: order_state_sending)
+order3 = Order.create!(sender: staff1, sender_sign: '', receiver: staff3, goods_number: 1, departure: specify_address, destination: shop2, order_state: order_state_submitted)
 
 check_action_receive = CheckAction.create!(name: 'receive')
 check_action_warehouse = CheckAction.create!(name: 'warehouse')
 check_action_leave = CheckAction.create!(name: 'leave')
 check_action_load = CheckAction.create!(name: 'load')
 
-good1 = Good.create!(order: order1, string_id: '33pc1z', location: specify_address, staff: staff1, last_action: check_action_load, rfid_tag: 'AD83 1100 45CB 1D70 0E00 005E', weight: 1.2, fragile: false, flammable: true, picture: '')
-good2 = Good.create!(order: order1, string_id: 'ejqd5e', location: specify_address, staff: staff1, last_action: check_action_load, rfid_tag: 'AD83 1100 45CB 516F 0E00 0065', weight: 0.9, fragile: true, flammable: false, picture: '')
-good3 = Good.create!(order: order2, string_id: 'h0bw54', location: shop1, staff: staff1, last_action: check_action_receive, rfid_tag: 'AD83 1100 45CC E57C 1600 0099', weight: 1.5, fragile: false, flammable: false, picture: '')
+good1 = Good.create!(order: order1, string_id: '33pc1z', location: specify_address, staff: staff1, last_action: check_action_load, rfid_tag: 'AD83 1100 45CB 1D70 0E00 005E', weight: 1.2, fragile: false, flammable: true, picture: @picture)
+good2 = Good.create!(order: order1, string_id: 'ejqd5e', location: specify_address, staff: staff1, last_action: check_action_load, rfid_tag: 'AD83 1100 45CB 516F 0E00 0065', weight: 0.9, fragile: true, flammable: false, picture: @picture)
+good3 = Good.create!(order: order2, string_id: 'h0bw54', location: shop1, staff: staff1, last_action: check_action_receive, rfid_tag: 'AD83 1100 45CC E57C 1600 0099', weight: 1.5, fragile: false, flammable: false, picture: @picture)
 
 #
 
@@ -74,11 +76,6 @@ CheckLog.create!(time: Time.now, good: good2, location: shop1, check_action: che
 CheckLog.create!(time: Time.now, good: good2, location: shop1, check_action: check_action_leave, staff: staff2)
 CheckLog.create!(time: Time.now, good: good2, location: car1, check_action: check_action_load, staff: staff2)
 CheckLog.create!(time: Time.now, good: good3, location: shop2, check_action: check_action_receive, staff: staff2)
-
-Permission.create!(name: 'control_conveyor')
-Permission.create!(name: 'count_good')
-Permission.create!(name: 'find_good')
-Permission.create!(name: 'receive_good')
 
 ## delete this when demo
 

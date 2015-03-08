@@ -1,6 +1,6 @@
-<% content_for(:script_content, edit_account_script_content) %>
+<% content_for(:script_content, edit_account_script) %>
 <%= render('admin/left_bar') %>
-<%= render('admin/title', title: @account ? 'Edit Account' : 'New Account') %>
+<%= render('admin/title') %>
 <div class="content">
   <%= error_message_div %>
   <%= form_tag('', onsubmit: 'editAccountOnSubmit();') do %>
@@ -17,11 +17,11 @@
         </tr>
         <tr>
           <th><label for="input_password1">new password：</label></th>
-          <td><input id="input_password1" type="password" name="password" size="40" pattern=".{8,}" title="at least 8 character" onchange="validatePassword();"<%= ' required' unless @account %> /></td>
+          <td><input id="input_password1" type="password" name="password" size="40" pattern=".{8,}" title="at least 8 character" onchange="validatePassword();"<%= ' required'.html_safe unless @account %> /></td>
         </tr>
         <tr>
           <th><label for="input_password2">confirm password：</label></th>
-          <td><input id="input_password2" type="password" name="password" size="40" onchange="validatePassword();"<%= ' required' unless @account %> /></td>
+          <td><input id="input_password2" type="password" name="password" size="40" onchange="validatePassword();"<%= ' required'.html_safe unless @account %> /></td>
         </tr>
         <tr>
           <th><label for="input_name">name：</label></th>
@@ -35,20 +35,23 @@
           <th><label for="input_phone">phone：</label></th>
           <td><input id="input_phone" type="text" name="phone" size="40" value="<%= @phone %>" maxlength="17" pattern="\+852-\d{8}|\+(?!852)\d{2,4}-\d{0,11}" required /></td>
         </tr>
-        <% if @account.is_a?(Staff) %>
+        <% unless @account.is_a?(Client) %>
             <tr>
-              <th><label for="input_workplace">workplace：</label></th>
+              <th><label for="input_workplace_id">workplace：</label></th>
               <td>
                 <select id="input_workplace_type" name="workplace_type" onchange="editAccountOnChangeWorkplaceType();" required>
-                  <%= '<option value disabled selected>--</option>' unless @account %>
-                  <option<%= ' selected' if @account.workplace.class == Car %>>Car</option>
-                  <option<%= ' selected' if @account.workplace.class == Shop %>>Shop</option>
-                  <option<%= ' selected' if @account.workplace.class == Store %>>Store</option>
+                  <%= '<option value disabled>--</option>'.html_safe unless @workplace_type %>
+                  <%= [Car.to_s, Shop.to_s, Store.to_s].each do |x| %>
+                      <option<%= ' selected'.html_safe if @workplace_type && @workplace_type == x %>><%= x %></option>
+                  <% end %>
                 </select>
-                <select id="input_workplace" name="workplace_id" required>
-                  <%= '<option value disabled selected>--</option>' unless @account %>
-                  <% @account.workplace.class.get_map.each do |x1, x2| %>
-                      <option<%= ' selected' if @account.workplace.id.to_s == x1 %>><%= x1 %> - <%= x2 %></option>
+                <select id="input_workplace_id" name="workplace_id" required>
+                  <% if @workplace_type %>
+                      <% Object.const_get(@workplace_type).get_map.each do |x1, x2| %>
+                          <option<%= ' selected'.html_safe if @workplace_id.to_s == x1 %>><%= x1 %> - <%= x2 %></option>
+                      <% end %>
+                  <% else %>
+                      <option value disabled>--</option>
                   <% end %>
                 </select>
               </td>
@@ -62,9 +65,9 @@
         </tr>
         <tr>
           <th><label for="input_enable">enable：</label></th>
-          <td><input id="input_enable" type="checkbox" name="enable"<%= ' checked' if @enable != false %> /></td>
+          <td><input id="input_enable" type="checkbox" name="enable"<%= ' checked'.html_safe if @enable != false %> /></td>
         </tr>
       </table>
-      <input id="input_submit" type="submit" value="<%= @account ? 'Edit' : 'New' %>" onkeypress="validatePassword();" />
+      <input id="input_submit" type="submit" value="<%= @account ? 'Edit'.html_safe : 'New'.html_safe %>" onkeypress="validatePassword();" />
   <% end %>
 </div>

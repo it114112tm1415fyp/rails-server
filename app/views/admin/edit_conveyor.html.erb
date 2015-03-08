@@ -15,10 +15,11 @@
           <td><input id="input_name" type="text" name="name" size="40" value="<%= @name %>" maxlength="40" required /></td>
         </tr>
         <tr>
-          <th><label for="select_store">store：</label></th>
+          <th><label for="input_store">store：</label></th>
           <td>
-            <select id="select_store" name="store">
-              <%= conveyors_select_options %>
+            <select id="input_store" name="store" required>
+              <option value disabled>--</option>
+              <%= stores_select_options(@store) %>
             </select>
           </td>
         </tr>
@@ -35,6 +36,6 @@
           <td><input id="input_passive_connection" type="checkbox" name="passive_connection"<%= ' checked' if @passive_connection %> /></td>
         </tr>
       </table>
-      <input id="input_submit" type="submit" value="<%= @account ? 'Edit' : 'New' %>" onkeypress="validatePassword();" />
+      <input id="input_submit" type="submit" value="<%= @account ? 'Edit' : 'New' %>" />
   <% end %>
 </div>

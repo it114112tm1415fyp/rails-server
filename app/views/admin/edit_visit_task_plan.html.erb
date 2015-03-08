@@ -1,0 +1,50 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <%= error_message_div %>
+  <%= form_tag('') do %>
+      <table>
+        <% if @visit_task %>
+            <tr>
+              <th>id：</th>
+              <td><%= @visit_task.id %></td>
+            </tr>
+        <% end %>
+        <tr>
+          <th>day：</th>
+          <td><%= day_input %></td>
+        </tr>
+        <tr>
+          <th><label for="input_time">time：</label></th>
+          <td><input id="input_time" type="time" name="time" size="40" value="<%= @time %>" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_car">car：</label></th>
+          <td>
+            <select id="input_car" name="car" required>
+              <option value disabled>--</option>
+              <%= cars_select_options(@car) %>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <th><label for="input_store">store：</label></th>
+          <td>
+            <select id="input_store" name="store" required>
+              <option value disabled>--</option>
+              <%= stores_select_options(@store) %>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <th><label for="input_send_receive_number">handle_order：</label></th>
+          <td><input id="input_send_receive_number" type="number" name="send_receive_number" size="40" value="<%= @number %>" min="1" onchange="editVisitTaskPlanOnChangeHandleOrder();" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_send_number">max_send_order：</label></th>
+          <td><input id="input_send_number" type="number" name="send_number" size="40" value="<%= @number %>" min="0" required /></td>
+        </tr>
+      </table>
+      <input id="input_submit" type="submit" value="<%= @visit_task_plan ? 'Edit' : 'New' %>" />
+  <% end %>
+</div>

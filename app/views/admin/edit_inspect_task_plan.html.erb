@@ -1,0 +1,42 @@
+<% content_for(:script_content, edit_inspect_task_plan_script) %>
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <%= error_message_div %>
+  <%= form_tag('') do %>
+      <table>
+        <% if @inspect_task %>
+            <tr>
+              <th>id：</th>
+              <td><%= @inspect_task.id %></td>
+            </tr>
+        <% end %>
+        <tr>
+          <th>day：</th>
+          <td><%= day_input %></td>
+        </tr>
+        <tr>
+          <th><label for="input_time">time：</label></th>
+          <td><input id="input_time" type="time" size="40" name="time" value="<%= @time %>" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_staff">staff：</label></th>
+          <td>
+            <select id="input_staff" name="staff" required onchange="editInspectTaskPlanOnChangeStaff();">
+              <option value disabled>--</option>
+              <%= staffs_select_options(@staff) %>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <th><label for="input_store">store：</label></th>
+          <td>
+            <select id="input_store" name="store" required>
+              <%= stores_select_options_for_default_staff_workplace(@staff, @store) %>
+            </select>
+          </td>
+        </tr>
+      </table>
+      <input id="input_submit" type="submit" value="<%= @inspect_task_plan ? 'Edit' : 'New' %>" />
+  <% end %>
+</div>

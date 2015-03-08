@@ -1,0 +1,78 @@
+<% content_for(:script_content, edit_transfer_task_plan_script) %>
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <%= error_message_div %>
+  <%= form_tag('') do %>
+      <table>
+        <% if @transfer_task %>
+            <tr>
+              <th>id：</th>
+              <td><%= @transfer_task.id %></td>
+            </tr>
+        <% end %>
+        <tr>
+          <th>day：</th>
+          <td><%= day_input %></td>
+        </tr>
+        <tr>
+          <th><label for="input_time">time：</label></th>
+          <td><input id="input_time" type="time" name="time" size="40" value="<%= @time %>" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_car">car：</label></th>
+          <td>
+            <select id="input_car" name="car" required>
+              <option id="a" value disabled>--</option>
+              <%= cars_select_options(@car) %>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <th><label for="input_from_id">from：</label></th>
+          <td>
+            <select id="input_from_type" name="from_type" onchange="editTransferTaskPlanOnChangeFromType();" required>
+              <%= '<option value disabled>--</option>'.html_safe unless @from_type %>
+              <%= [Shop.to_s, Store.to_s].each do |x| %>
+                  <option<%= ' selected'.html_safe if @from_type && @from_type == x %>><%= x %></option>
+              <% end %>
+            </select>
+            <select id="input_from_id" name="from_id" onchange="validateTransferbuilding();" required>
+              <% if @from_type %>
+                  <% Object.const_get(@from_type).get_map.each do |x1, x2| %>
+                      <option<%= ' selected'.html_safe if @from_id.to_s == x1 %>><%= x1 %> - <%= x2 %></option>
+                  <% end %>
+              <% else %>
+                  <option value disabled>--</option>
+              <% end %>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <th><label for="input_to_id">to：</label></th>
+          <td>
+            <select id="input_to_type" name="to_type" onchange="editTransferTaskPlanOnChangeToType();" required>
+              <%= '<option value disabled>--</option>'.html_safe unless @to_type %>
+              <%= [Shop.to_s, Store.to_s].each do |x| %>
+                  <option<%= ' selected'.html_safe if @to_type && @to_type == x %>><%= x %></option>
+              <% end %>
+            </select>
+            <select id="input_to_id" name="to_id" onchange="validateTransferbuilding();" required>
+              <% if @to_type %>
+                  <% Object.const_get(@to_type).get_map.each do |x1, x2| %>
+                      <option<%= ' selected'.html_safe if @to_id.to_s == x1 %>><%= x1 %> - <%= x2 %></option>
+                  <% end %>
+              <% else %>
+                  <option value disabled>--</option>
+              <% end %>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <th><label for="input_number">goods_number：</label></th>
+          <td><input id="input_number" type="number" name="number" size="40" value="<%= @number %>" min="1" required /></td>
+        </tr>
+      </table>
+      <input id="input_submit" type="submit" value="<%= @transfer_task_plan ? 'Edit' : 'New' %>" />
+  <% end %>
+</div>

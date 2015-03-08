@@ -3,8 +3,8 @@ class OrderState < ActiveRecord::Base
 	has_many(:orders)
 
 	class << self
-		def after_contact
-			@after_contact ||= find_by_name('after_contact')
+		def confirmed
+			@confirmed ||= find_by_name('confirmed')
 		end
 		def canceled
 			@canceled ||= find_by_name('canceled')

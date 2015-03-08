@@ -5,6 +5,6 @@ module CustomerMobileApplicationModule
 		raise unless @customer
 	rescue
 		error('Connection expired') if @expired
-		error('Need login')
+		error('Login require')
 	end
 end

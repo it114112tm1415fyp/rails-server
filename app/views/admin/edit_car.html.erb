@@ -12,7 +12,7 @@
         <% end %>
         <tr>
           <th><label for="input_vehicle_registration_mark">vehicle_registration_mark：</label></th>
-          <td><input id="input_vehicle_registration_mark" name="vehicle_registration_mark" value="<%= @vehicle_registration_mark %>" maxlength="8" required /></td>
+          <td><input id="input_vehicle_registration_mark" type="text" name="vehicle_registration_mark" size="40" value="<%= @vehicle_registration_mark %>" maxlength="8" required /></td>
         </tr>
       </table>
       <input id="input_submit" type="submit" value="<%= @car ? 'Edit' : 'New' %>" />

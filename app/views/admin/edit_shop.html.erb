@@ -19,9 +19,7 @@
           <td>
             <select id="input_region" name="region" required>
               <option value disabled>--</option>
-              <% Region.get_map.each do |k, v| %>
-                  <option value=<%= k %><%= ' selected'.html_safe if @region == k %>><%= v %></option>
-              <% end %>
+              <%= regions_select_options(@region) %>
             </select>
           </td>
         </tr>

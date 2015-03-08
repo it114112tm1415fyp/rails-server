@@ -3,13 +3,13 @@ class Order < ActiveRecord::Base
 	belongs_to(:destination, polymorphic: true)
 	belongs_to(:order_state)
 	belongs_to(:receiver, polymorphic: true)
-	belongs_to(:sender, class_name: RegisteredUser.to_s, foreign_key: :sender_id)
+	belongs_to(:sender, class: RegisteredUser, foreign_key: :sender_id)
 	belongs_to(:staff)
 	has_many(:free_times)
 	has_many(:goods)
 	validates_numericality_of(:goods_number, greater_than_or_equal_to: 1)
 	def can_edit
-		[OrderState.after_contact, OrderState.submitted].include?(order_state)
+		[OrderState.confirmed, OrderState.submitted].include?(order_state)
 	end
 	def cancel(staff)
 		if self.order_state == OrderState.submitted || staff
@@ -57,6 +57,10 @@ class Order < ActiveRecord::Base
 	end
 
 	class << self
+		def get_details(order_id)
+			order = find(order_id)
+			{sender: {id: order.sender.id, name: order.sender.name}, receiver: {id: order.receiver.id, name: order.receiver.name}, departure: {type: order.departure.class.to_s, id: order.departure.id, short_name: x1.departure.short_name, long_name: x1.departure.long_name, region: {id: order.departure.region.id, name: order.departure.region.name}}, destination: {type: order.destination.class.to_s, id: order.destination.id, address: order.destination.address, region: {id: order.destination.region.id, name: order.destination.region.name}}, goods_number: order.goods_number, goods: order.goods.collect { |x| x.string_id }, state: order.order_state.name, update_time: order.updated_at, order_time: order.created_at}
+		end
 		def make(sender, receiver, goods_number, departure_id, departure_type, destination_id, destination_type, time)
 			raise(ParameterError, 'departure_type') unless [Shop.to_s, SpecifyAddress.to_s].include?(departure_type)
 			raise(ParameterError, 'destination_type') unless [Shop.to_s, SpecifyAddress.to_s].include?(destination_type)

@@ -2,6 +2,9 @@ class Region < ActiveRecord::Base
 	has_many(:shops)
 	has_many(:specify_addresses)
 	belongs_to(:store)
+	def can_destroy
+		(shops + specify_addresses).size == 0
+	end
 
 	class << self
 		def get_list

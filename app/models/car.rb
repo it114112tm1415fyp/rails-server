@@ -2,11 +2,13 @@ class Car < ActiveRecord::Base
 	has_many(:check_logs, as: :location)
 	has_many(:goods, as: :location)
 	has_many(:staffs, as: :workplace)
+	has_many(:transfer_task_plans)
+	has_many(:visit_task_plans)
 	scope(:enabled, Proc.new { where(enable: true) })
 	def can_destroy
 		(check_logs + goods + staffs).size == 0
 	end
-	def name
+	def short_name
 		vehicle_registration_mark
 	end
 	def long_name
@@ -20,7 +22,7 @@ class Car < ActiveRecord::Base
 		def get_map
 			map = {}
 			enabled.each do |x|
-				map[x.id.to_s] = x.name
+				map[x.id.to_s] = x.vehicle_registration_mark
 			end
 			map
 		end

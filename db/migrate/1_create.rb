@@ -44,6 +44,12 @@ class Create < ActiveRecord::Migration
 			x.index(:string_id, unique: true)
 			x.index(:rfid_tag, unique: true)
 		end
+		create_table(:metal_gateways, bulk: true) do |x|
+			x.column(:name, :string, limit: 40, null: false)
+			x.references(:store, null: false)
+			x.column(:server_ip, :string, null: false)
+			x.index(:name, unique: true)
+		end
 		create_table(:orders, bulk: true) do |x|
 			x.references(:sender, null: false)
 			x.column(:sender_sign, :binary)
@@ -59,14 +65,6 @@ class Create < ActiveRecord::Migration
 		create_table(:order_status, bulk: true) do |x|
 			x.column(:name, :string, limit: 40, null: false)
 			x.index(:name, unique: true)
-		end
-		create_table(:permissions, bulk: true) do |x|
-			x.column(:name, :string, limit: 40, null: false)
-			x.index(:name, unique: true)
-		end
-		create_table(:permission_staff_ships, id: false, bulk: true) do |x|
-			x.references(:permission, null: false)
-			x.references(:staff, null: false)
 		end
 		create_table(:public_receivers, bulk: true) do |x|
 			x.column(:name, :string, limit: 40, null: false)
@@ -114,21 +112,47 @@ class Create < ActiveRecord::Migration
 			x.column(:enable, :boolean, null: false, default: true)
 			x.index(:address, unique: true)
 		end
-		create_table(:inspect_task, bulk: true) do |x|
-			x.column(:time, :time, null: false)
+		create_table(:inspect_task_plans, bulk: true) do |x|
 			x.column(:day, :integer, null: false)
+			x.column(:time, :time, null: false)
 			x.references(:staff, null: false)
 			x.references(:store, null: false)
 		end
-		create_table(:transfer, bulk: true) do |x|
-			x.column(:time, :time, null: false)
+		create_table(:inspect_tasks, bulk: true) do |x|
+			x.column(:datetime, :datetime, null: false)
+			x.references(:staff, null: false)
+			x.references(:store, null: false)
+		end
+		create_table(:transfer_task_plans, bulk: true) do |x|
 			x.column(:day, :integer, null: false)
+			x.column(:time, :time, null: false)
 			x.references(:car, null: false)
-			x.references(:from, null: false)
-			x.references(:to)
+			x.references(:from, polymorphic: true, null: false)
+			x.references(:to, polymorphic: true, null: false)
 			x.column(:number, :integer, null: false)
 		end
-		execute('ALTER TABLE `permission_staff_ships`     ADD PRIMARY KEY (`permission_id`,`staff_id`);')
+		create_table(:transfer_tasks, bulk: true) do |x|
+			x.column(:datetime, :datetime, null: false)
+			x.references(:car, null: false)
+			x.references(:from, polymorphic: true, null: false)
+			x.references(:to, polymorphic: true, null: false)
+			x.column(:number, :integer, null: false)
+		end
+		create_table(:visit_task_plans, bulk: true) do |x|
+			x.column(:day, :integer, null: false)
+			x.column(:time, :time, null: false)
+			x.references(:car, null: false)
+			x.references(:store, null: false)
+			x.column(:send_receive_number, :integer, null: false)
+			x.column(:send_number, :integer, null: false)
+		end
+		create_table(:visit_tasks, bulk: true) do |x|
+			x.column(:datetime, :datetime, null: false)
+			x.references(:car, null: false)
+			x.references(:store, null: false)
+			x.column(:send_receive_number, :integer, null: false)
+			x.column(:send_number, :integer, null: false)
+		end
 		execute('ALTER TABLE `specify_address_user_ships` ADD PRIMARY KEY (`specify_address_id`,`user_id`);')
 		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`check_action_id`)    REFERENCES `check_actions`     (`id`);')
 		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`good_id`)            REFERENCES `goods`             (`id`) ON DELETE CASCADE;')
@@ -138,8 +162,6 @@ class Create < ActiveRecord::Migration
 		execute('ALTER TABLE `goods`                      ADD FOREIGN KEY (`order_id`)           REFERENCES `orders`            (`id`);')
 		execute('ALTER TABLE `orders`                     ADD FOREIGN KEY (`sender_id`)          REFERENCES `registered_users`  (`id`);')
 		execute('ALTER TABLE `orders`                     ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
-		execute('ALTER TABLE `permission_staff_ships`     ADD FOREIGN KEY (`permission_id`)      REFERENCES `permissions`       (`id`);')
-		execute('ALTER TABLE `permission_staff_ships`     ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
 		execute('ALTER TABLE `specify_address_user_ships` ADD FOREIGN KEY (`specify_address_id`) REFERENCES `specify_addresses` (`id`);')
 	end
 	def down

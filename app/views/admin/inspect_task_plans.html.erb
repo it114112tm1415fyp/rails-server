@@ -4,14 +4,13 @@
   <table class="admin_table">
     <tr>
       <th>id</th>
-      <th>name</th>
+      <th>day</th>
+      <th>time</th>
+      <th colspan="2">staff</th>
       <th colspan="2">store</th>
-      <th>server_ip</th>
-      <th>server_port</th>
-      <th>passive_connection</th>
       <th colspan="2">management</th>
     </tr>
-    <%= conveyors_table_contents %>
+    <%= inspect_task_plans_table_contents %>
   </table>
-  <%= link_to('New conveyor', action: :new_conveyor) %>
+  <%= link_to('New inspect task plan', action: :new_inspect_task_plan) %>
 </div>

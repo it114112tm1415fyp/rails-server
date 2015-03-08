@@ -6,6 +6,6 @@ module StaffMobileApplicationModule
 	rescue
 		error('Connection expired') if @expired
 		error('Staff only') if @customer
-		error('Need login')
+		error('Login require')
 	end
 end

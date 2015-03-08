@@ -78,12 +78,26 @@ ActiveRecord::Schema.define(version: 1) do
   add_index "goods", ["rfid_tag"], name: "index_goods_on_rfid_tag", unique: true, using: :btree
   add_index "goods", ["string_id"], name: "index_goods_on_string_id", unique: true, using: :btree
 
-  create_table "inspect_task", force: :cascade do |t|
-    t.time    "time",               null: false
+  create_table "inspect_task_plans", force: :cascade do |t|
     t.integer "day",      limit: 4, null: false
+    t.time    "time",               null: false
     t.integer "staff_id", limit: 4, null: false
     t.integer "store_id", limit: 4, null: false
   end
+
+  create_table "inspect_tasks", force: :cascade do |t|
+    t.datetime "datetime",           null: false
+    t.integer  "staff_id", limit: 4, null: false
+    t.integer  "store_id", limit: 4, null: false
+  end
+
+  create_table "metal_gateways", force: :cascade do |t|
+    t.string  "name",      limit: 40,  null: false
+    t.integer "store_id",  limit: 4,   null: false
+    t.string  "server_ip", limit: 255, null: false
+  end
+
+  add_index "metal_gateways", ["name"], name: "index_metal_gateways_on_name", unique: true, using: :btree
 
   create_table "order_status", force: :cascade do |t|
     t.string "name", limit: 40, null: false
@@ -110,19 +124,6 @@ ActiveRecord::Schema.define(version: 1) do
 
   add_index "orders", ["sender_id"], name: "sender_id", using: :btree
   add_index "orders", ["staff_id"], name: "staff_id", using: :btree
-
-  create_table "permission_staff_ships", id: false, force: :cascade do |t|
-    t.integer "permission_id", limit: 4, null: false
-    t.integer "staff_id",      limit: 4, null: false
-  end
-
-  add_index "permission_staff_ships", ["staff_id"], name: "staff_id", using: :btree
-
-  create_table "permissions", force: :cascade do |t|
-    t.string "name", limit: 40, null: false
-  end
-
-  add_index "permissions", ["name"], name: "index_permissions_on_name", unique: true, using: :btree
 
   create_table "public_receivers", force: :cascade do |t|
     t.string "name",  limit: 40,  null: false
@@ -185,13 +186,42 @@ ActiveRecord::Schema.define(version: 1) do
 
   add_index "stores", ["address"], name: "index_stores_on_address", unique: true, using: :btree
 
-  create_table "transfer", force: :cascade do |t|
-    t.time    "time",              null: false
-    t.integer "day",     limit: 4, null: false
-    t.integer "car_id",  limit: 4, null: false
-    t.integer "from_id", limit: 4, null: false
-    t.integer "to_id",   limit: 4
-    t.integer "number",  limit: 4, null: false
+  create_table "transfer_task_plans", force: :cascade do |t|
+    t.integer "day",       limit: 4,   null: false
+    t.time    "time",                  null: false
+    t.integer "car_id",    limit: 4,   null: false
+    t.integer "from_id",   limit: 4,   null: false
+    t.string  "from_type", limit: 255, null: false
+    t.integer "to_id",     limit: 4,   null: false
+    t.string  "to_type",   limit: 255, null: false
+    t.integer "number",    limit: 4,   null: false
+  end
+
+  create_table "transfer_tasks", force: :cascade do |t|
+    t.datetime "datetime",              null: false
+    t.integer  "car_id",    limit: 4,   null: false
+    t.integer  "from_id",   limit: 4,   null: false
+    t.string   "from_type", limit: 255, null: false
+    t.integer  "to_id",     limit: 4,   null: false
+    t.string   "to_type",   limit: 255, null: false
+    t.integer  "number",    limit: 4,   null: false
+  end
+
+  create_table "visit_task_plans", force: :cascade do |t|
+    t.integer "day",                 limit: 4, null: false
+    t.time    "time",                          null: false
+    t.integer "car_id",              limit: 4, null: false
+    t.integer "store_id",            limit: 4, null: false
+    t.integer "send_receive_number", limit: 4, null: false
+    t.integer "send_number",         limit: 4, null: false
+  end
+
+  create_table "visit_tasks", force: :cascade do |t|
+    t.datetime "datetime",                      null: false
+    t.integer  "car_id",              limit: 4, null: false
+    t.integer  "store_id",            limit: 4, null: false
+    t.integer  "send_receive_number", limit: 4, null: false
+    t.integer  "send_number",         limit: 4, null: false
   end
 
   add_foreign_key "check_logs", "check_actions", name: "check_logs_ibfk_1"
@@ -202,7 +232,5 @@ ActiveRecord::Schema.define(version: 1) do
   add_foreign_key "goods", "orders", name: "goods_ibfk_1"
   add_foreign_key "orders", "registered_users", column: "sender_id", name: "orders_ibfk_1"
   add_foreign_key "orders", "registered_users", column: "staff_id", name: "orders_ibfk_2"
-  add_foreign_key "permission_staff_ships", "permissions", name: "permission_staff_ships_ibfk_1"
-  add_foreign_key "permission_staff_ships", "registered_users", column: "staff_id", name: "permission_staff_ships_ibfk_2"
   add_foreign_key "specify_address_user_ships", "specify_addresses", name: "specify_address_user_ships_ibfk_1"
 end

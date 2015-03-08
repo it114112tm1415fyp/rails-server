@@ -1,9 +1,9 @@
 class OrderController < MobileApplicationController
 	include(CustomerMobileApplicationModule)
 	include(StaffMobileApplicationModule)
-	before_action(:check_customer_login, only: [:edit, :get_receive_orders, :get_send_orders, :make])
-	before_action(:check_staff_login, except: [:edit, :get_receive_orders, :get_send_orders, :make])
-	before_action(:check_order, except: [:get_receive_orders, :get_send_orders, :make])
+	before_action(:check_customer_login, only: [:edit, :get_details, :get_receive_orders, :get_send_orders, :make])
+	before_action(:check_staff_login, except: [:edit, :get_details, :get_receive_orders, :get_send_orders, :make])
+	before_action(:check_order, except: [:get_details, :get_receive_orders, :get_send_orders, :make])
 	def cancel
 		@order.cancel(@staff)
 	end
@@ -16,6 +16,9 @@ class OrderController < MobileApplicationController
 	end
 	def edit
 		@order.edit(params[:receiver], params[:goods_number], params[:departure_id], params[:departure_type], params[:destination_id], params[:destination_type], @staff)
+	end
+	def get_details
+		json_response_success(Order.get_details(params[:order_id]))
 	end
 	def get_receive_orders
 		json_response_success({receive_order: @customer.get_receive_orders})

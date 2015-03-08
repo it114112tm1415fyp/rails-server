@@ -1,0 +1,29 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <%= error_message_div %>
+  <%= form_tag('') do %>
+      <table>
+        <% if @region %>
+            <tr>
+              <th>id：</th>
+              <td><%= @region.id %></td>
+            </tr>
+        <% end %>
+        <tr>
+          <th><label for="input_name">name：</label></th>
+          <td><input id="input_name" type="text" name="name" size="40" value="<%= @name %>" maxlength="40" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_store">first store for goods handling：</label></th>
+          <td>
+            <select id="input_store" name="store" required>
+              <option value disabled>--</option>
+              <%= stores_select_options(@store) %>
+            </select>
+          </td>
+        </tr>
+      </table>
+      <input id="input_submit" type="submit" value="<%= @store ? 'Edit' : 'New' %>" />
+  <% end %>
+</div>
