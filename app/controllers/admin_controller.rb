@@ -296,7 +296,8 @@ class AdminController < WebApplicationController
 	end
 	def new_inspect_task_plan
 		if params_exist(:day, :time, :staff, :store)
-			InspectTaskPlan.create!(day: params[:day], time: params[:time], staff_id: params[:staff], store_id: params[:store])
+			raise(ParameterError, 'time') unless params[:time].to_time
+			InspectTaskPlan.create!(day: params[:day], time: params[:time].to_time, staff_id: params[:staff], store_id: params[:store])
 			redirect_to(action: :inspect_task_plans)
 		end
 	rescue Error
@@ -312,8 +313,9 @@ class AdminController < WebApplicationController
 		params_require(:inspect_task_plan_id)
 		@inspect_task_plan = InspectTaskPlan.find(params[:inspect_task_plan_id])
 		if params_exist(:day, :time, :staff, :store)
+			raise(ParameterError, 'time') unless params[:time].to_time
 			@inspect_task_plan.day = params[:day]
-			@inspect_task_plan.time = params[:time]
+			@inspect_task_plan.time = params[:time].to_time
 			@inspect_task_plan.staff_id = params[:staff]
 			@inspect_task_plan.store_id = params[:store]
 			@inspect_task_plan.save!
@@ -336,11 +338,12 @@ class AdminController < WebApplicationController
 	end
 	def new_transfer_task_plan
 		if params_exist(:day, :time, :car, :from_type, :from_id, :to_type, :to_id, :number)
+			raise(ParameterError, 'time') unless params[:time].to_time
 			raise(ParameterError, 'from_type') unless [Shop.to_s, Store.to_s].include?(params[:from_type])
 			raise(ParameterError, 'to_type') unless [Shop.to_s, Store.to_s].include?(params[:to_type])
 			from = Object.const_get(params[:from_type]).find(params[:from_id])
 			to = Object.const_get(params[:to_type]).find(params[:to_id])
-			TransferTaskPlan.create!(day: params[:day], time: params[:time], car_id: params[:car], from: from, to: to, number: params[:number])
+			TransferTaskPlan.create!(day: params[:day], time: params[:time].to_time, car_id: params[:car], from: from, to: to, number: params[:number])
 			redirect_to(action: :transfer_task_plans)
 		end
 	rescue Error
@@ -360,12 +363,13 @@ class AdminController < WebApplicationController
 		params_require(:transfer_task_plan_id)
 		@transfer_task_plan = TransferTaskPlan.find(params[:transfer_task_plan_id])
 		if params_exist(:day, :time, :car, :from_type, :from_id, :to_type, :to_id, :number)
+			raise(ParameterError, 'time') unless params[:time].to_time
 			raise(ParameterError, 'from_type') unless [Shop.to_s, Store.to_s].include?(params[:from_type])
 			raise(ParameterError, 'to_type') unless [Shop.to_s, Store.to_s].include?(params[:to_type])
 			from = Object.const_get(params[:from_type]).find(params[:from_id])
 			to = Object.const_get(params[:to_type]).find(params[:to_id])
 			@transfer_task_plan.day = params[:day]
-			@transfer_task_plan.time = params[:time]
+			@transfer_task_plan.time = params[:time].to_time
 			@transfer_task_plan.car_id = params[:car]
 			@transfer_task_plan.from = from
 			@transfer_task_plan.to = to
@@ -394,7 +398,8 @@ class AdminController < WebApplicationController
 	end
 	def new_visit_task_plan
 		if params_exist(:day, :time, :car, :store, :send_receive_number, :send_number)
-			VisitTaskPlan.create!(day: params[:day], time: params[:time], car_id: params[:car], store_id: params[:store], send_receive_number: params[:send_receive_number], send_number: params[:send_number])
+			raise(ParameterError, 'time') unless params[:time].to_time
+			VisitTaskPlan.create!(day: params[:day], time: params[:time].to_time, car_id: params[:car], store_id: params[:store], send_receive_number: params[:send_receive_number], send_number: params[:send_number])
 			redirect_to(action: :visit_task_plans)
 		end
 	rescue Error
@@ -412,8 +417,9 @@ class AdminController < WebApplicationController
 		params_require(:visit_task_plan_id)
 		@visit_task_plan = VisitTaskPlan.find(params[:visit_task_plan_id])
 		if params_exist(:day, :time, :car, :store, :send_receive_number, :send_number)
+			raise(ParameterError, 'time') unless params[:time].to_time
 			@visit_task_plan.day = params[:day]
-			@visit_task_plan.time = params[:time]
+			@visit_task_plan.time = params[:time].to_time
 			@visit_task_plan.car_id = params[:car]
 			@visit_task_plan.store_id = params[:store]
 			@visit_task_plan.send_receive_number = params[:send_receive_number]

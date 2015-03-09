@@ -133,6 +133,7 @@ class Create < ActiveRecord::Migration
 		end
 		create_table(:transfer_tasks, bulk: true) do |x|
 			x.column(:datetime, :datetime, null: false)
+			x.references(:staff, null: false)
 			x.references(:car, null: false)
 			x.references(:from, polymorphic: true, null: false)
 			x.references(:to, polymorphic: true, null: false)
@@ -148,6 +149,7 @@ class Create < ActiveRecord::Migration
 		end
 		create_table(:visit_tasks, bulk: true) do |x|
 			x.column(:datetime, :datetime, null: false)
+			x.references(:staff, null: false)
 			x.references(:car, null: false)
 			x.references(:store, null: false)
 			x.column(:send_receive_number, :integer, null: false)

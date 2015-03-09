@@ -199,6 +199,7 @@ ActiveRecord::Schema.define(version: 1) do
 
   create_table "transfer_tasks", force: :cascade do |t|
     t.datetime "datetime",              null: false
+    t.integer  "staff_id",  limit: 4,   null: false
     t.integer  "car_id",    limit: 4,   null: false
     t.integer  "from_id",   limit: 4,   null: false
     t.string   "from_type", limit: 255, null: false
@@ -218,6 +219,7 @@ ActiveRecord::Schema.define(version: 1) do
 
   create_table "visit_tasks", force: :cascade do |t|
     t.datetime "datetime",                      null: false
+    t.integer  "staff_id",            limit: 4, null: false
     t.integer  "car_id",              limit: 4, null: false
     t.integer  "store_id",            limit: 4, null: false
     t.integer  "send_receive_number", limit: 4, null: false

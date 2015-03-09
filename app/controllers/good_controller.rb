@@ -11,9 +11,6 @@ class GoodController < MobileApplicationController
 		params_require(:good_id)
 		Good.edit(params[:good_id], params[:weight], params[:fragile], params[:flammable], params[:picture], @staff)
 	end
-	def generate_temporary_qr_code
-		render(text: Good.generate_temporary_qr_code)
-	end
 	def generate_temporary_qr_codes
 		params_require(:number)
 		number = params[:number].to_i
@@ -29,7 +26,7 @@ class GoodController < MobileApplicationController
 	end
 	def get_qr_code
 		params_require(:good_id)
-		render(text: Good.get_qr_code(params[:good_id]))
+		json_response_success(qr_code: Good.get_qr_code(params[:good_id]))
 	end
 	def inspect
 		params_require(:good_id, :store_id)

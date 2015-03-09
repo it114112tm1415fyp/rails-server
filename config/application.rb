@@ -10,6 +10,7 @@ require(File.expand_path('../config', __FILE__))
 
 module FYP
 	class Application < Rails::Application
+		Date.beginning_of_week = :sunday
 		config.time_zone = 'Hong Kong'
 		config.after_initialize do
 			if defined?(Rails::Server)
@@ -36,6 +37,14 @@ module FYP
 						puts('OK')
 					end
 				end
+			end
+		end
+		Thread.new do
+			loop do
+				sleep(Date.tomorrow. - Time.now)
+				InspectTask.generate_today_task
+				TransferTask.generate_today_task
+				VisitTask.generate_today_task
 			end
 		end
 	end

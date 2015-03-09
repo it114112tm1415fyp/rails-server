@@ -1,6 +1,6 @@
 module AdminHelper
 	def action_name_for_display
-		action_name.split(/_/).collect(&:capitalize).join(' ')
+		action_name.titleize
 	end
 	def edit_account_script
 		"workplaceList = #{ActiveSupport::JSON.encode({Car: Car.get_map, Shop: Shop.get_map, Store: Store.get_map})};
