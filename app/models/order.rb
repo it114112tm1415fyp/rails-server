@@ -59,7 +59,7 @@ class Order < ActiveRecord::Base
 	class << self
 		def get_details(order_id)
 			order = find(order_id)
-			{sender: {id: order.sender.id, name: order.sender.name}, receiver: {id: order.receiver.id, name: order.receiver.name}, departure: {type: order.departure.class.to_s, id: order.departure.id, short_name: x1.departure.short_name, long_name: x1.departure.long_name, region: {id: order.departure.region.id, name: order.departure.region.name}}, destination: {type: order.destination.class.to_s, id: order.destination.id, address: order.destination.address, region: {id: order.destination.region.id, name: order.destination.region.name}}, goods_number: order.goods_number, goods: order.goods.collect { |x| x.string_id }, state: order.order_state.name, update_time: order.updated_at, order_time: order.created_at}
+			{sender: {id: order.sender.id, name: order.sender.name}, receiver: {id: order.receiver.id, name: order.receiver.name}, departure: {type: order.departure.class.to_s, id: order.departure.id, short_name: order.departure.short_name, long_name: order.departure.long_name, region: {id: order.departure.region.id, name: order.departure.region.name}}, destination: {type: order.destination.class.to_s, id: order.destination.id, address: order.destination.address, region: {id: order.destination.region.id, name: order.destination.region.name}}, goods_number: order.goods_number, goods: order.goods.collect { |x| x.string_id }, state: order.order_state.name, update_time: order.updated_at, order_time: order.created_at}
 		end
 		def make(sender, receiver, goods_number, departure_id, departure_type, destination_id, destination_type, time)
 			raise(ParameterError, 'departure_type') unless [Shop.to_s, SpecifyAddress.to_s].include?(departure_type)

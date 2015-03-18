@@ -69,7 +69,7 @@ ActiveRecord::Schema.define(version: 1) do
     t.float    "weight",         limit: 24,    null: false
     t.boolean  "fragile",        limit: 1,     null: false
     t.boolean  "flammable",      limit: 1,     null: false
-    t.binary   "picture",        limit: 65535, null: false
+    t.binary   "goods_photo",    limit: 65535, null: false
     t.datetime "created_at",                   null: false
     t.datetime "updated_at",                   null: false
   end

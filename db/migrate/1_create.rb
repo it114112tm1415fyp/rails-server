@@ -39,7 +39,7 @@ class Create < ActiveRecord::Migration
 			x.column(:weight, :float, null: false)
 			x.column(:fragile, :boolean, null: false)
 			x.column(:flammable, :boolean, null: false)
-			x.column(:picture, :binary, null: false)
+			x.column(:goods_photo, :binary, null: false)
 			x.timestamps(null: false)
 			x.index(:string_id, unique: true)
 			x.index(:rfid_tag, unique: true)

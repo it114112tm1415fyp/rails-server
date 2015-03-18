@@ -30,10 +30,14 @@ class Staff < RegisteredUser
 			all.each { |x| result[x.id.to_s] = {id: x.workplace.id, name: x.workplace.short_name} if x.workplace.is_a?(Store) }
 			result
 		end
+		#@param [String] username
+		#@param [String] password
 		#@return [Staff]
 		def login(username, password)
 			staff = find_by_username(username)
 			error('Username not exist') unless staff
+			transform = /\A~!@\$&\*\((.+?)\)\.md5\.md5\z/
+			password = Digest::MD5.hexdigest(Digest::MD5.hexdigest(p $1)) if Rails.env.development? && transform.match(password)
 			staff.check_password(password)
 			error('Account frozen') unless staff.enable
 			staff

@@ -38,13 +38,16 @@ module FYP
 					end
 				end
 			end
-		end
-		Thread.new do
-			loop do
-				sleep(Date.tomorrow. - Time.now)
-				InspectTask.generate_today_task
-				TransferTask.generate_today_task
-				VisitTask.generate_today_task
+			Thread.new do
+				loop do
+					begin
+						[InspectTask, TransferTask, VisitTask].each { |x| x.generate_today_task }
+						sleep(Date.tomorrow.beginning_of_day - Time.now)
+					rescue
+						puts($!)
+						puts('corn thread error')
+					end
+				end
 			end
 		end
 	end

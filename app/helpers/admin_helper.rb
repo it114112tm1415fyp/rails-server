@@ -100,7 +100,7 @@ editAccountOnLoad(#{ActiveSupport::JSON.encode(@addresses)});".html_safe
   <td>#{x.staff_id}</td>
   <td>#{x.staff.name}</td>
   <td>#{x.store_id}</td>
-  <td>#{x.store.name}</td>
+  <td>#{x.store.short_name}</td>
   <td>#{link_to('edit', action: :edit_inspect_task_plan, inspect_task_plan_id: x.id)}</td>
   <td>#{link_to('delete', action: :delete_inspect_task_plan, inspect_task_plan_id: x.id)}</td>
 </tr>"}.join("\n").html_safe
@@ -114,10 +114,10 @@ editAccountOnLoad(#{ActiveSupport::JSON.encode(@addresses)});".html_safe
   <td>#{x.car.short_name}</td>
   <td>#{x.from_type}</td>
   <td>#{x.from_id}</td>
-  <td>#{x.from.name}</td>
+  <td>#{x.from.short_name}</td>
   <td>#{x.to_type}</td>
   <td>#{x.to_id}</td>
-  <td>#{x.to.name}</td>
+  <td>#{x.to.short_name}</td>
   <td>#{x.number}</td>
   <td>#{link_to('edit', action: :edit_transfer_task_plan, transfer_task_plan_id: x.id)}</td>
   <td>#{link_to('delete', action: :delete_transfer_task_plan, transfer_task_plan_id: x.id)}</td>
@@ -129,9 +129,9 @@ editAccountOnLoad(#{ActiveSupport::JSON.encode(@addresses)});".html_safe
   <td>#{day_display_html(x.day)}</td>
   <td>#{x.time.to_s(:time)}</td>
   <td>#{x.car_id}</td>
-  <td>#{x.car.name}</td>
+  <td>#{x.car.short_name}</td>
   <td>#{x.store_id}</td>
-  <td>#{x.store.name}</td>
+  <td>#{x.store.short_name}</td>
   <td>#{x.send_receive_number}</td>
   <td>#{x.send_number}</td>
   <td>#{link_to('edit', action: :edit_visit_task_plan, visit_task_plan_id: x.id)}</td>

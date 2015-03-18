@@ -4,12 +4,12 @@ class GoodController < MobileApplicationController
 	before_action(:check_customer_login, only: :get_details)
 	before_action(:check_staff_login, except: :get_details)
 	def add
-		params_require(:good_id, :order_id, :weight, :fragile, :flammable, :picture)
-		json_response_success(Good.add(params[:good_id], params[:order_id], params[:weight], params[:fragile], params[:flammable], params[:picture], @staff))
+		params_require(:good_id, :order_id, :weight, :fragile, :flammable, :goods_photo)
+		json_response_success(Good.add(params[:good_id], params[:order_id], params[:weight], params[:fragile], params[:flammable], params[:goods_photo], @staff))
 	end
 	def edit
 		params_require(:good_id)
-		Good.edit(params[:good_id], params[:weight], params[:fragile], params[:flammable], params[:picture], @staff)
+		Good.edit(params[:good_id], params[:weight], params[:fragile], params[:flammable], params[:goods_photo], @staff)
 	end
 	def generate_temporary_qr_codes
 		params_require(:number)

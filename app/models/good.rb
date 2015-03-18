@@ -13,7 +13,7 @@ class Good < ActiveRecord::Base
 			order = Order.find(order_id)
 			error('cannot edit order information after confirm') unless order.can_edit
 			error('good_id used') if find_by_string_id(good_id)
-			good = create!(order: order, string_id: good_id, location: order.departure, staff: staff, last_action: CheckAction.receive, weight: weight, fragile: fragile, flammable: flammable, picture: picture)
+			good = create!(order: order, string_id: good_id, location: order.departure, staff: staff, last_action: CheckAction.receive, weight: weight, fragile: fragile, flammable: flammable, goods_photo: picture)
 			CheckLog.create!(good: good, location: good.location, check_action: CheckAction.receive, staff: staff)
 		end
 		def edit(good_id, weight, fragile, flammable, picture, staff)
