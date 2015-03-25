@@ -4,8 +4,24 @@ class TransferTask < ActiveRecord::Base
 	belongs_to(:from, polymorphic: true)
 	belongs_to(:to, polymorphic: true)
 	scope(:today, Proc.new { where(datetime: Date.today.beginning_of_day..Date.today.end_of_day) })
+	#@param [Staff] staff
+	def action_name(staff)
+		case staff.workplace
+			when car
+				'load'
+			when from
+				'leave'
+			when to
+				'warehouse'
+			else
+				'no action'
+		end
+	end
 
 	class << self
+		def get_details(id)
+			{}
+		end
 		def generate_today_task(force=false)
 			need_generate = need_generate_today_task
 			if result = need_generate || force

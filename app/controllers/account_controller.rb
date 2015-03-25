@@ -34,7 +34,7 @@ class AccountController < MobileApplicationController
 		@json_response[:email] = @customer.email
 		@json_response[:phone] = @customer.phone
 		@json_response[:addresses] = @customer.specify_addresses.collect { |x| {id: x.id, address: x.address, region: {id: x.region.id, name: x.region.name}} }
-		@json_response[:workplace] = {id: @staff.workplace.id, name: @staff.workplace.short_name} if @staff
+		@json_response[:workplace] = {id: @staff.workplace_id, type: @staff.workplace_type, name: @staff.workplace.short_name} if @staff
 		@json_response[:register_time] = @customer.created_at
 		@json_response[:last_modify_time] = @customer.updated_at
 	end
