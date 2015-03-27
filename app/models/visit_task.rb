@@ -23,6 +23,8 @@ class VisitTask < ActiveRecord::Base
 	end
 
 	class << self
+		def prepare
+		end
 		def get_details(id)
 			{}
 		end

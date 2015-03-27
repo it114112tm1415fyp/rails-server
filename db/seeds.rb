@@ -19,15 +19,15 @@ car5 = Car.create!(vehicle_registration_mark: 'UE9283')
 store1 = Store.create!(name: 'Kwai Hing Store', address: 'Flat 2, 10/F,
 Vanta Industrial Centre
 21-33 Tai Lin Pai Rd
-Kwai Hing', size: 40)
+Kwai Hing', shelf_number: 40)
 store2 = Store.create!(name: 'Kwun Tong Store', address: 'Flat A, 2/F,
 Kwun Tong Industrial Centre Phase 4,
 436-446 Kwun Tong Rd,
-Kwun Tong', size: 40)
+Kwun Tong', shelf_number: 40)
 store3 = Store.create!(name: 'Tuen Mun Store', address: 'Flat 5, 3/F,
 Luks Industrial Bldg,
 4 Kin Fung Circuit,
-Tuen Mun', size: 60)
+Tuen Mun', shelf_number: 60)
 
 region_hong_kong = Region.create!(name: 'Hong Kong', store: store1)
 region_kowloon = Region.create!(name: 'Kowloon', store: store2)
@@ -205,8 +205,8 @@ order9 = Order.create!(sender: staff1, sender_sign: '', receiver: staff10, goods
 order10 = Order.create!(sender: staff1, sender_sign: '', receiver: staff11, goods_number: 2, departure: shop5, destination: specify_address11, order_state: order_state_canceled)
 order11 = Order.create!(sender: staff12, sender_sign: '', receiver: staff1, goods_number: 3, departure: specify_address11, destination: specify_address12, order_state: order_state_submitted)
 
-good1 = Good.create!(order: order3, string_id: '33pc1z', location: store1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 1D70 0E00 005E', weight: 1.2, fragile: false, flammable: true, goods_photo: @goods_photo)
-good2 = Good.create!(order: order3, string_id: 'ejqd5e', location: store1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 516F 0E00 0065', weight: 0.9, fragile: true, flammable: false, goods_photo: @goods_photo)
+good1 = Good.create!(order: order3, string_id: '33pc1z', location: store1, shelf_id: 1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 1D70 0E00 005E', weight: 1.2, fragile: false, flammable: true, goods_photo: @goods_photo)
+good2 = Good.create!(order: order3, string_id: 'ejqd5e', location: store1, shelf_id: 1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 516F 0E00 0065', weight: 0.9, fragile: true, flammable: false, goods_photo: @goods_photo)
 good3 = Good.create!(order: order8, string_id: 'h0bw54', location: shop4, staff: staff12, last_action: check_action_receive, rfid_tag: 'AD83 1100 45CC E57C 1600 0099', weight: 1.5, fragile: false, flammable: false, goods_photo: @goods_photo)
 good4 = Good.create!(order: order4, string_id: '28hd3l', location: specify_address5, staff: staff1, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0001', weight: 2.1, fragile: false, flammable: false, goods_photo: @goods_photo)
 good5 = Good.create!(order: order9, string_id: '5hs6rw', location: shop8, staff: staff16, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0002', weight: 3.1, fragile: true, flammable: false, goods_photo: @goods_photo)

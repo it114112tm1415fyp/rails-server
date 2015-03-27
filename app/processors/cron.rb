@@ -1,34 +1,35 @@
 class Cron
 	ATTRIBUTE = [:tag, :time, :repeat]
-	@@tasks = []
+	@tasks = []
 	attr_accessor(*ATTRIBUTE)
-	def initialize(tag, time, repeat, &block)
+	def initialize(tag, time, repeat, *parameters, &block)
 		@tag = tag
 		@time = time
 		@repeat = repeat
+		@parameters = parameters
 		@action = block
 	end
 	def run
-		puts("run #{@tag} at ")
+		puts("run #{@tag} at #{@time.to_s}")
 		begin
-			@action.call(time)
+			@action.call(*@parameters, time)
 		rescue
 			puts('Corn error: ' + $!.message)
 		end
 		destroy unless @repeat
 	end
 	def destroy
-		@@tasks.delete(self)
+		Cron.tasks.delete(self)
 	end
 
 	class << self
+		attr_reader(:tasks)
 		def start
 			@thread ||= Thread.new do
 				loop do
 					do_task_at(CronTime.now)
 					now = Time.now
-					sleep(now.at_end_of_minute - now)
-					sleep(0.01)
+					sleep(now.at_end_of_minute - now + 0.000001)
 				end
 			end
 		end
@@ -39,8 +40,8 @@ class Cron
 			add_task(tag, time, true, *parameters, &block)
 		end
 		def find(condition={}, &block)
-			tasks = @@tasks
-			ATTRIBUTE.each { |x1| tasks.keep_if { |x2| condition[x1].nil? || condition[x1] == x2.tag } }
+			tasks = @tasks.clone
+			ATTRIBUTE.each { |x1| tasks.keep_if { |x2| condition[x1].nil? || condition[x1] == x2.instance_variable_get(?@ + x1.to_s) } }
 			tasks.keep_if(&block) if block
 			tasks
 		end
@@ -49,9 +50,10 @@ class Cron
 		end
 		private
 		def add_task(tag, time, repeat, *parameters, &block)
-			@@tasks << new(tag, time, repeat, *parameters, &block)
+			@tasks << new(tag, time, repeat, *parameters, &block)
 		end
 		def do_task_at(time)
+			puts("cron do task at #{time.to_s}")
 			find(time: time).each(&:run)
 		end
 	end

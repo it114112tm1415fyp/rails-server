@@ -13,6 +13,7 @@ module FYP
 		Date.beginning_of_week = :sunday
 		config.time_zone = 'Hong Kong'
 		config.after_initialize do
+			Dir[File.expand_path('../../extensions/*.rb', __FILE__)].each { |x| require(x) }
 			if defined?(Rails::Server)
 				puts('open ports to accept conveyor connection')
 				$conveyor_server = []
@@ -37,6 +38,7 @@ module FYP
 						puts('OK')
 					end
 				end
+				[InspectTask, TransferTask, VisitTask].each(&:prepare)
 				Cron.add_repeated_task(:generate_today_task, CronTime.new(0, 0)) do
 					Cron.delete(tag: :inspect_task_generate_good_list)
 					Cron.delete(tag: :transfer_task_generate_good_list)

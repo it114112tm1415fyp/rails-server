@@ -123,6 +123,8 @@ class Create < ActiveRecord::Migration
 			x.column(:datetime, :datetime, null: false)
 			x.references(:staff, null: false)
 			x.references(:store, null: false)
+			x.column(:generated, :boolean, null: false, default: false)
+			x.column(:complete, :boolean, null: false, default: false)
 		end
 		create_table(:inspect_task_goods, bulk: true) do |x|
 			x.references(:inspect_task, null: false)

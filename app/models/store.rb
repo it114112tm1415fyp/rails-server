@@ -9,7 +9,7 @@ class Store < ActiveRecord::Base
 	has_many(:transfer_in_tasks, as: :to, class: TransferTaskPlan)
 	has_many(:visit_task_plans)
 	scope(:enabled, Proc.new { where(enable: true) })
-	validates_numericality_of(:size, greater_than: 0)
+	validates_numericality_of(:shelf_number, greater_than: 0)
 	def can_destroy
 		(check_logs + conveyors + goods + staffs).size == 0
 	end
@@ -22,7 +22,7 @@ class Store < ActiveRecord::Base
 
 	class << self
 		def get_list
-			enabled.collect { |x| {id: x.id, name: x.name, address: x.address, size: x.size} }
+			enabled.collect { |x| {id: x.id, name: x.name, address: x.address, shelf_number: x.shelf_number} }
 		end
 		def get_map
 			map = {}

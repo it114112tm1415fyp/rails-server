@@ -62,6 +62,7 @@ ActiveRecord::Schema.define(version: 1) do
     t.integer  "order_id",       limit: 4,     null: false
     t.integer  "location_id",    limit: 4,     null: false
     t.string   "location_type",  limit: 255,   null: false
+    t.integer  "shelf_id",       limit: 4
     t.integer  "staff_id",       limit: 4,     null: false
     t.integer  "last_action_id", limit: 4,     null: false
     t.string   "string_id",      limit: 6,     null: false
@@ -78,6 +79,14 @@ ActiveRecord::Schema.define(version: 1) do
   add_index "goods", ["rfid_tag"], name: "index_goods_on_rfid_tag", unique: true, using: :btree
   add_index "goods", ["string_id"], name: "index_goods_on_string_id", unique: true, using: :btree
 
+  create_table "inspect_task_goods", force: :cascade do |t|
+    t.integer  "inspect_task_id", limit: 4,                 null: false
+    t.integer  "good_id",         limit: 4,                 null: false
+    t.boolean  "complete",        limit: 1, default: false, null: false
+    t.datetime "created_at",                                null: false
+    t.datetime "updated_at",                                null: false
+  end
+
   create_table "inspect_task_plans", force: :cascade do |t|
     t.integer "day",      limit: 4, null: false
     t.time    "time",               null: false
@@ -86,9 +95,11 @@ ActiveRecord::Schema.define(version: 1) do
   end
 
   create_table "inspect_tasks", force: :cascade do |t|
-    t.datetime "datetime",           null: false
-    t.integer  "staff_id", limit: 4, null: false
-    t.integer  "store_id", limit: 4, null: false
+    t.datetime "datetime",                            null: false
+    t.integer  "staff_id",  limit: 4,                 null: false
+    t.integer  "store_id",  limit: 4,                 null: false
+    t.boolean  "generated", limit: 1, default: false, null: false
+    t.boolean  "complete",  limit: 1, default: false, null: false
   end
 
   create_table "metal_gateways", force: :cascade do |t|
@@ -178,10 +189,10 @@ ActiveRecord::Schema.define(version: 1) do
   add_index "specify_addresses", ["address", "region_id"], name: "index_specify_addresses_on_address_and_region_id", unique: true, using: :btree
 
   create_table "stores", force: :cascade do |t|
-    t.string  "name",    limit: 40,                 null: false
-    t.string  "address", limit: 255,                null: false
-    t.integer "size",    limit: 4,                  null: false
-    t.boolean "enable",  limit: 1,   default: true, null: false
+    t.string  "name",         limit: 40,                 null: false
+    t.string  "address",      limit: 255,                null: false
+    t.integer "shelf_number", limit: 4,                  null: false
+    t.boolean "enable",       limit: 1,   default: true, null: false
   end
 
   add_index "stores", ["address"], name: "index_stores_on_address", unique: true, using: :btree

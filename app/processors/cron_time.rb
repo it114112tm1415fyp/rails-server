@@ -3,11 +3,17 @@ class CronTime
 		@hour = hour
 		@minute = minute
 	end
+	def inspect
+		to_s
+	end
 	def succ
 		self + 1
 	end
 	def to_i
 		@hour * 60 + @minute
+	end
+	def to_s
+		"#{'%02i' % @hour}:#{'%02i' % @minute}"
 	end
 	def +(other)
 		(to_i + other).to_ct
@@ -28,16 +34,4 @@ class CronTime
 		end
 	end
 
-end
-
-class Integer
-	def to_ct
-		CronTime.new(self / 60 % 24, self % 60)
-	end
-end
-
-class Time
-	def to_ct
-		CronTime.new(hour, min)
-	end
 end

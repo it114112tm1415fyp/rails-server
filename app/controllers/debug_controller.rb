@@ -29,6 +29,13 @@ class DebugController < ApplicationController
 		session[:expiry_time] = $session_expiry_time.ago.to_s
 		view_session
 	end
+	def new_inspect_task
+		params_require(:staff, :store)
+		render(text: InspectTask.add_debug_task(params[:staff], params[:store], params[:delay_time] || 0))
+	end
+	def view_cron_tasks
+		render(json: Cron.tasks.collect { |x| {tag: x.tag, time: x.time.to_s} })
+	end
 	def view_session
 		render(text: session.to_hash)
 	end

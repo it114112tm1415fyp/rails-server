@@ -4,7 +4,7 @@ class Good < ActiveRecord::Base
 	belongs_to(:order)
 	belongs_to(:staff)
 	has_many(:check_logs)
-	validate(:from_and_to_are_not_equal, if: :location_type_is_store )
+	validate(:shelf_id_is_less_than_shelf_number_of_store, if: :location_type_is_store )
 	validates_absence_of(:shelf_id, unless: :location_type_is_store)
 	validates_numericality_of(:shelf_id, greater_than_or_equal_to: 0, if: :location_type_is_store )
 	def qr_code
@@ -53,7 +53,7 @@ class Good < ActiveRecord::Base
 		end
 		def get_display_details(good_id)
 			good = find_by_string_id!(good_id)
-			{location: {type: good.location.class.to_s, short_name: good.location.short_name, long_name: good.location.long_name}, rfid_tag: good.rfid_tag, weight: good.weight, fragile: good.fragile, flammable: good.flammable, last_action: good.last_action.name, last_action_time: good.updated_at, actions_log: good.check_logs.collect { |x| {time: x.time, location: {type: x.location.class.to_s, short_name: x.location.short_name, long_name: x.location.long_name}, action: x.check_action.name} }}
+			{location: {id: good.location_id, type: good.location_type, short_name: good.location.short_name, long_name: good.location.long_name}, rfid_tag: good.rfid_tag, weight: good.weight, fragile: good.fragile, flammable: good.flammable, last_action: good.last_action.name, last_action_time: good.updated_at, actions_log: good.check_logs.collect { |x| {time: x.time, location: {type: x.location.class.to_s, short_name: x.location.short_name, long_name: x.location.long_name}, action: x.check_action.name} }}
 		end
 		def get_basic_details(rfid)
 			good = find_by_rfid_tag(rfid)
