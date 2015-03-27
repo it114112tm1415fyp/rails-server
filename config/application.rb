@@ -37,17 +37,13 @@ module FYP
 						puts('OK')
 					end
 				end
-			end
-			Thread.new do
-				loop do
-					begin
-						[InspectTask, TransferTask, VisitTask].each { |x| x.generate_today_task }
-						sleep(Date.tomorrow.beginning_of_day - Time.now)
-					rescue
-						puts($!)
-						puts('corn thread error')
-					end
+				Cron.add_repeated_task(:generate_today_task, CronTime.new(0, 0)) do
+					Cron.delete(tag: :inspect_task_generate_good_list)
+					Cron.delete(tag: :transfer_task_generate_good_list)
+					Cron.delete(tag: :visit_task_generate_order_list)
+					[InspectTask, TransferTask, VisitTask].each(&:generate_today_task)
 				end
+				Cron.start
 			end
 		end
 	end

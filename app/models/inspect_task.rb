@@ -19,11 +19,18 @@ class InspectTask < ActiveRecord::Base
 		def generate_today_task(force=false)
 			need_generate = need_generate_today_task
 			if result = need_generate || force
-				clear_today_task unless need_generate
+				unless need_generate
+					clear_today_task
+					Cron.delete(tag: :inspect_task_generate_good_list)
+				end
 				today = Date.today
+				today = {year: today.year, month: today.month, day: today.day}
 				day = today.cwday % 7
 				InspectTaskPlan.day(day).each do |x|
-					create!(datetime: x.time.change(year: today.year, month: today.month, day: today.day), staff_id: x.staff_id, store_id: x.store_id)
+					inspect_task = create!(datetime: x.time.change(today), staff_id: x.staff_id, store_id: x.store_id)
+					Cron.add_delayed_task(:inspect_task_generate_good_list, x.time.to_ct, inspect_task) do |x1|
+						Good.find_by_location(x1.store).each { |x2| InspectTaskGood.create!(inspect_task: x1, good: x2) }
+					end
 				end
 			end
 			result

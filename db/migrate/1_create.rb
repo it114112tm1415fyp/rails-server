@@ -32,6 +32,7 @@ class Create < ActiveRecord::Migration
 		create_table(:goods, bulk: true) do |x|
 			x.references(:order, null: false)
 			x.references(:location, polymorphic: true, null: false)
+			x.column(:shelf_id, :integer)
 			x.references(:staff, null: false)
 			x.references(:last_action, null: false)
 			x.column(:string_id, :string, limit: 6, null: false)
@@ -108,7 +109,7 @@ class Create < ActiveRecord::Migration
 		create_table(:stores, bulk: true) do |x|
 			x.column(:name, :string, limit: 40, null: false)
 			x.column(:address, :string, null: false)
-			x.column(:size, :integer, null: false)
+			x.column(:shelf_number, :integer, null: false)
 			x.column(:enable, :boolean, null: false, default: true)
 			x.index(:address, unique: true)
 		end
@@ -122,6 +123,12 @@ class Create < ActiveRecord::Migration
 			x.column(:datetime, :datetime, null: false)
 			x.references(:staff, null: false)
 			x.references(:store, null: false)
+		end
+		create_table(:inspect_task_goods, bulk: true) do |x|
+			x.references(:inspect_task, null: false)
+			x.references(:good, null: false)
+			x.column(:complete, :boolean, null: false, default: false)
+			x.timestamps(null: false)
 		end
 		create_table(:transfer_task_plans, bulk: true) do |x|
 			x.column(:day, :integer, null: false)

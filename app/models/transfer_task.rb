@@ -4,6 +4,8 @@ class TransferTask < ActiveRecord::Base
 	belongs_to(:from, polymorphic: true)
 	belongs_to(:to, polymorphic: true)
 	scope(:today, Proc.new { where(datetime: Date.today.beginning_of_day..Date.today.end_of_day) })
+	validate(:from_and_to_are_not_equal)
+	validates_numericality_of(:number, greater_than: 0)
 	#@param [Staff] staff
 	def action_name(staff)
 		case staff.workplace
@@ -16,6 +18,10 @@ class TransferTask < ActiveRecord::Base
 			else
 				'no action'
 		end
+	end
+	private
+	def from_and_to_are_not_equal
+		errors.add(:to, 'from and to are equal') if from == to
 	end
 
 	class << self

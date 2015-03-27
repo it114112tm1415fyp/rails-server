@@ -55,7 +55,7 @@ editAccountOnLoad(#{ActiveSupport::JSON.encode(@addresses)});".html_safe
   <td>#{x1.id}</td>
   <td>#{x1.address.gsub("\n", '<br />')}</td>
   <td>#{x1.region.name}</td>
-  <td>#{x1.staffs.collect { |x2| x2.name }.join(',<br />')}</td>
+  <td>#{x1.staffs.collect(&:name).join(',<br />')}</td>
   <td>#{link_to('edit', action: :edit_shop, shop_id: x1.id)}</td>
   <td>#{x1.can_destroy ? link_to('delete', action: :delete_shop, shop_id: x1.id) : link_to(x1.enable ? 'disable' : 'enable', action: :enable_or_disable, object_type: Shop.to_s, object_id: x1.id, redirect: :shops)}</td>
 </tr>" }.join("\n").html_safe
@@ -65,7 +65,7 @@ editAccountOnLoad(#{ActiveSupport::JSON.encode(@addresses)});".html_safe
   <td>#{x1.id}</td>
   <td>#{x1.address.gsub("\n", '<br />')}</td>
  <td>#{x1.size}</td>
-  <td>#{x1.staffs.collect { |x2| x2.name }.join(',<br />')}</td>
+  <td>#{x1.staffs.collect(&:name).join(',<br />')}</td>
   <td>#{link_to('edit', action: :edit_store, store_id: x1.id)}</td>
   <td>#{x1.can_destroy ? link_to('delete', action: :delete_store, store_id: x1.id) : link_to(x1.enable ? 'disable' : 'enable', action: :enable_or_disable, object_type: Store.to_s, object_id: x1.id, redirect: :stores)}</td>
 </tr>" }.join("\n").html_safe
@@ -74,7 +74,7 @@ editAccountOnLoad(#{ActiveSupport::JSON.encode(@addresses)});".html_safe
 		Car.all.collect { |x1| "<tr>
   <td>#{x1.id}</td>
   <td>#{x1.vehicle_registration_mark}</td>
-  <td>#{x1.staffs.collect { |x2| x2.name }.join(',<br />')}</td>
+  <td>#{x1.staffs.collect(&:name).join(',<br />')}</td>
   <td>#{link_to('edit', action: :edit_car, car_id: x1.id)}</td>
   <td>#{x1.can_destroy ? link_to('delete', action: :delete_car, car_id: x1.id) : link_to(x1.enable ? 'disable' : 'enable', action: :enable_or_disable, object_type: Car.to_s, object_id: x1.id, redirect: :cars)}</td>
 </tr>" }.join("\n").html_safe

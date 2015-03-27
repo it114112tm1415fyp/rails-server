@@ -4,8 +4,18 @@ class Good < ActiveRecord::Base
 	belongs_to(:order)
 	belongs_to(:staff)
 	has_many(:check_logs)
+	validate(:from_and_to_are_not_equal, if: :location_type_is_store )
+	validates_absence_of(:shelf_id, unless: :location_type_is_store)
+	validates_numericality_of(:shelf_id, greater_than_or_equal_to: 0, if: :location_type_is_store )
 	def qr_code
 		'it114112tm1415fyp.good' + ActiveSupport::JSON.encode({good_id: id, order_id: order.id, departure: order.departure.long_name, destination: order.destination.long_name, rfid_tag: rfid_tag, weight: weight, fragile: fragile, flammable: flammable, order_time: created_at})
+	end
+	private
+	def location_type_is_store
+		location_type == Store.to_s
+	end
+	def shelf_id_is_less_than_shelf_number_of_store
+		errors.add(:shelf_id, 'shelf_id is bigger than or equal to send_receive_number') if shelf_id > location.shelf_number
 	end
 
 	class << self
