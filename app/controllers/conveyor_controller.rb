@@ -15,7 +15,7 @@ class ConveyorController < MobileApplicationController
 	end
 	private
 	def check_control
-		Conveyor::Control.check(@conveyor.id, @staff.id)
+		ConveyorControlling.check(@conveyor.id, @staff.id)
 	end
 	def check_conveyor
 		params_require(:conveyor_id)

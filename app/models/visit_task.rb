@@ -6,7 +6,8 @@ class VisitTask < ActiveRecord::Base
 	validate(:send_number_is_less_than_or_equal_to_send_receive_number)
 	validates_numericality_of(:send_number, greater_than_or_equal_to: 0)
 	validates_numericality_of(:send_receive_number, greater_than: 0)
-	#@param [Staff] staff
+	# @param [Staff] staff
+	# @return [String]
 	def action_name(staff)
 		case staff.workplace
 			when car
@@ -28,6 +29,8 @@ class VisitTask < ActiveRecord::Base
 		def get_details(id)
 			{}
 		end
+		# @param [FalseClass, TrueClass] force
+		# @return [FalseClass, TrueClass]
 		def generate_today_task(force=false)
 			need_generate = need_generate_today_task
 			if result = need_generate || force

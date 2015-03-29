@@ -10,20 +10,25 @@ class Store < ActiveRecord::Base
 	has_many(:visit_task_plans)
 	scope(:enabled, Proc.new { where(enable: true) })
 	validates_numericality_of(:shelf_number, greater_than: 0)
+	# @return [FalseClass, TrueClass]
 	def can_destroy
 		(check_logs + conveyors + goods + staffs).size == 0
 	end
+	# @return [String]
 	def short_name
 		name
 	end
+	# @return [String]
 	def long_name
 		address
 	end
 
 	class << self
+		# @return [Array<Hash>]
 		def get_list
 			enabled.collect { |x| {id: x.id, name: x.name, address: x.address, shelf_number: x.shelf_number} }
 		end
+		# @return [Hash]
 		def get_map
 			map = {}
 			enabled.each do |x|

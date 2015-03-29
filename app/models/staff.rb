@@ -6,9 +6,11 @@ class Staff < RegisteredUser
 	has_many(:inspect_task_plans)
 	has_many(:orders)
 	validates_presence_of(:workplace)
+	# @return [FalseClass, TrueClass]
 	def can_destroy
 		check_logs.size == 0 && orders.size == 0
 	end
+	# @return [FalseClass, TrueClass]
 	def edit_account(username, password, name, email, phone, workplace_type, workplace_id, addresses, enable)
 		raise(ParameterError, 'workplace_type') unless [Car.to_s, Shop.to_s, Store.to_s].include?(workplace_type)
 		transaction do
@@ -25,14 +27,15 @@ class Staff < RegisteredUser
 	end
 
 	class << self
+		# @return [Hash]
 		def store_map
 			result = {}
 			all.each { |x| result[x.id.to_s] = {id: x.workplace.id, name: x.workplace.short_name} if x.workplace.is_a?(Store) }
 			result
 		end
-		#@param [String] username
-		#@param [String] password
-		#@return [Staff]
+		# @param [String] username
+		# @param [String] password
+		# @return [Staff]
 		def login(username, password)
 			staff = find_by_username(username)
 			error('Username not exist') unless staff
@@ -42,6 +45,15 @@ class Staff < RegisteredUser
 			error('Account frozen') unless staff.enable
 			staff
 		end
+		# @param [String] username
+		# @param [String] password
+		# @param [String] name
+		# @param [String] email
+		# @param [String] phone
+		# @param [String] workplace_type
+		# @param [Integer] workplace_id
+		# @param [String] addresses
+		# @param [FalseClass, TrueClass] enable
 		def register(username, password, name, email, phone, workplace_type, workplace_id, addresses, enable)
 			raise(ParameterError, 'workplace_type') unless [Car.to_s, Shop.to_s, Store.to_s].include?(workplace_type)
 			ActiveRecord::Base.transaction do

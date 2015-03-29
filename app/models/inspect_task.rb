@@ -3,7 +3,8 @@ class InspectTask < ActiveRecord::Base
 	belongs_to(:store)
 	has_many(:inspect_task_goods)
 	scope(:today, Proc.new { where(datetime: Date.today.beginning_of_day..Date.today.end_of_day) })
-	#@param [Staff] staff
+	# @param [Staff] staff
+	# @return [String]
 	def action_name(staff)
 		case staff
 			when self.staff
@@ -12,6 +13,7 @@ class InspectTask < ActiveRecord::Base
 				'no action'
 		end
 	end
+	# @return [Hash]
 	def get_details
 		{
 				datetime: datetime,
@@ -62,6 +64,10 @@ class InspectTask < ActiveRecord::Base
 				end
 			end
 		end
+		# @param [Integer] staff_id
+		# @param [Integer] store_id
+		# @param [Integer] delay_time
+		# @return [Integer]
 		def add_debug_task(staff_id, store_id, delay_time=0)
 			task_time = Time.now.at_end_of_minute + 0.000001 + delay_time.minutes
 			inspect_task = create!(datetime: task_time, staff_id: staff_id, store_id: store_id)
@@ -70,9 +76,13 @@ class InspectTask < ActiveRecord::Base
 			end
 			inspect_task.id
 		end
+		# @param [Integer] id
+		# @return [Hash]
 		def get_details(id)
 			find(id).get_details
 		end
+		# @param [FalseClass, TrueClass] force
+		# @return [FalseClass, TrueClass]
 		def generate_today_task(force=false)
 			need_generate = need_generate_today_task
 			if result = need_generate || force
@@ -82,7 +92,7 @@ class InspectTask < ActiveRecord::Base
 				end
 				today = Date.today
 				day = today.cwday % 7
-				today = {year: today.year, month: today.month, day: today.day}
+				today = { year: today.year, month: today.month, day: today.day }
 				InspectTaskPlan.day(day).each do |x1|
 					inspect_task = create!(datetime: x1.time.change(today), staff_id: x1.staff_id, store_id: x1.store_id)
 					p Time
@@ -99,6 +109,7 @@ class InspectTask < ActiveRecord::Base
 		def clear_today_task
 			today.destroy_all
 		end
+		# @return [FalseClass, TrueClass]
 		def need_generate_today_task
 			!today.any?
 		end

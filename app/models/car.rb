@@ -5,17 +5,21 @@ class Car < ActiveRecord::Base
 	has_many(:transfer_task_plans)
 	has_many(:visit_task_plans)
 	scope(:enabled, Proc.new { where(enable: true) })
+	# @return [FalseClass, TrueClass]
 	def can_destroy
 		(check_logs + goods + staffs).size == 0
 	end
+	# @return [String]
 	def short_name
 		vehicle_registration_mark
 	end
+	# @return [String]
 	def long_name
 		vehicle_registration_mark
 	end
 
 	class << self
+		# @return [Array<Hash>]
 		def get_list
 			enabled.collect { |x| {id: x.id, vehicle_registration_mark: x.vehicle_registration_mark} }
 		end

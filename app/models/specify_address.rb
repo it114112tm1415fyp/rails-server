@@ -6,9 +6,11 @@ class SpecifyAddress < ActiveRecord::Base
 	has_many(:in_orders, as: :destination, class: Order)
 	has_many(:out_orders, as: :departure, class: Order)
 	has_many(:registered_users, through: :specify_address_user_ships)
+	# @return [String]
 	def short_name
 		address + "\n" + region.name
 	end
+	# @return [String]
 	def long_name
 		address + "\n" + region.name
 	end

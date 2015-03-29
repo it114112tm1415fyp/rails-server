@@ -6,7 +6,8 @@ class TransferTask < ActiveRecord::Base
 	scope(:today, Proc.new { where(datetime: Date.today.beginning_of_day..Date.today.end_of_day) })
 	validate(:from_and_to_are_not_equal)
 	validates_numericality_of(:number, greater_than: 0)
-	#@param [Staff] staff
+	# @param [Staff] staff
+	# @return [String]
 	def action_name(staff)
 		case staff.workplace
 			when car
@@ -30,6 +31,8 @@ class TransferTask < ActiveRecord::Base
 		def get_details(id)
 			{}
 		end
+		# @param [FalseClass, TrueClass] force
+		# @return [FalseClass, TrueClass]
 		def generate_today_task(force=false)
 			need_generate = need_generate_today_task
 			if result = need_generate || force
