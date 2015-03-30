@@ -1,6 +1,11 @@
 class Conveyor < ActiveRecord::Base
 	belongs_to(:store)
 	validates_numericality_of(:server_port, greater_than_or_equal_to: 0, less_than: 65536)
+	# @param [Hash] options
+	# @return [Hash]
+	def as_json(options={})
+		super(Options.new(options, {only: [:id, :name], include: :store}))
+	end
 	# @param [Staff] staff
 	# @param [FalseClass, TrueClass] raise_if_error
 	# @return [Hash]

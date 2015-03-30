@@ -6,6 +6,11 @@ class VisitTask < ActiveRecord::Base
 	validate(:send_number_is_less_than_or_equal_to_send_receive_number)
 	validates_numericality_of(:send_number, greater_than_or_equal_to: 0)
 	validates_numericality_of(:send_receive_number, greater_than: 0)
+	# @param [Hash] options
+	# @return [Hash]
+	def as_json(options={})
+		super(Options.new(options, {except: [:staff_id, :car_id, :store_id], include: [:staff, :car, :store]}))
+	end
 	# @param [Staff] staff
 	# @return [String]
 	def action_name(staff)

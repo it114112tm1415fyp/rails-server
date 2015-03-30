@@ -3,6 +3,11 @@ class InspectTask < ActiveRecord::Base
 	belongs_to(:store)
 	has_many(:inspect_task_goods)
 	scope(:today, Proc.new { where(datetime: Date.today.beginning_of_day..Date.today.end_of_day) })
+	# @param [Hash] options
+	# @return [Hash]
+	def as_json(options={})
+		super(Options.new(options, {except: [:staff_id, :store_id], include: [:staff, :store]}))
+	end
 	# @param [Staff] staff
 	# @return [String]
 	def action_name(staff)
@@ -35,16 +40,16 @@ class InspectTask < ActiveRecord::Base
 						long_name: store.long_name
 				},
 				goods: inspect_task_goods.collect { |x| {
-						id: x.good.string_id,
-						order_id: x.good.order_id,
+						id: x.goods.string_id,
+						order_id: x.goods.order_id,
 						location: {
-								id: x.good.location_id,
-								type: x.good.location_type,
-								short_name: x.good.location.short_name,
-								long_name: x.good.location.long_name
+								id: x.goods.location_id,
+								type: x.goods.location_type,
+								short_name: x.goods.location.short_name,
+								long_name: x.goods.location.long_name
 						},
-						last_action: x.good.last_action.name,
-						last_action_staff: x.good.staff,
+						last_action: x.goods.last_action.name,
+						last_action_staff: x.goods.staff,
 						complete: x.complete
 				} },
 				generated: generated,
@@ -56,10 +61,10 @@ class InspectTask < ActiveRecord::Base
 		def prepare
 			unless generate_today_task
 				today.find_all { |x| x.datetime.future? }.each do |x1|
-					Cron.add_delayed_task(:inspect_task_generate_good_list, x1.datetime.to_ct, x1) do |x2|
+					Cron.add_delayed_task(:inspect_task_generate_goods_list, x1.datetime.to_ct, x1) do |x2|
 						x2.generated = true
 						x2.save!
-						Good.find_by_location(x2.store).each { |x3| InspectTaskGood.create!(inspect_task: x2, good: x3) }
+						Goods.find_by_location(x2.store).each { |x3| InspectTaskgoods.create!(inspect_task: x2, goods: x3) }
 					end
 				end
 			end
@@ -71,8 +76,8 @@ class InspectTask < ActiveRecord::Base
 		def add_debug_task(staff_id, store_id, delay_time=0)
 			task_time = Time.now.at_end_of_minute + 0.000001 + delay_time.minutes
 			inspect_task = create!(datetime: task_time, staff_id: staff_id, store_id: store_id)
-			Cron.add_delayed_task(:inspect_task_generate_good_list, task_time.to_ct, inspect_task) do |x1|
-				Good.where(location_id: x1.store, location_type: Store.to_s).each { |x2| InspectTaskGood.create!(inspect_task: x1, good: x2) }
+			Cron.add_delayed_task(:inspect_task_generate_goods_list, task_time.to_ct, inspect_task) do |x1|
+				Goods.where(location_id: x1.store, location_type: Store.to_s).each { |x2| InspectTaskgoods.create!(inspect_task: x1, goods: x2) }
 			end
 			inspect_task.id
 		end
@@ -88,19 +93,17 @@ class InspectTask < ActiveRecord::Base
 			if result = need_generate || force
 				unless need_generate
 					clear_today_task
-					Cron.delete(tag: :inspect_task_generate_good_list)
+					Cron.delete(tag: :inspect_task_generate_goods_list)
 				end
 				today = Date.today
 				day = today.cwday % 7
 				today = { year: today.year, month: today.month, day: today.day }
 				InspectTaskPlan.day(day).each do |x1|
 					inspect_task = create!(datetime: x1.time.change(today), staff_id: x1.staff_id, store_id: x1.store_id)
-					p Time
-					p x1.time.class
-					Cron.add_delayed_task(:inspect_task_generate_good_list, x1.time.to_ct, inspect_task) do |x2|
+					Cron.add_delayed_task(:inspect_task_generate_goods_list, x1.time.to_ct, inspect_task) do |x2|
 						x2.generated = true
 						x2.save!
-						Good.find_by_location(x2.store).each { |x3| InspectTaskGood.create!(inspect_task: x2, good: x3) }
+						Goods.find_by_location(x2.store).each { |x3| InspectTaskgoods.create!(inspect_task: x2, goods: x3) }
 					end
 				end
 			end

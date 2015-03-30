@@ -6,6 +6,11 @@ class SpecifyAddress < ActiveRecord::Base
 	has_many(:in_orders, as: :destination, class: Order)
 	has_many(:out_orders, as: :departure, class: Order)
 	has_many(:registered_users, through: :specify_address_user_ships)
+	# @param [Hash] options
+	# @return [Hash]
+	def as_json(options={})
+		super(Options.new(options, {except: :region_id, include: :region}))
+	end
 	# @return [String]
 	def short_name
 		address + "\n" + region.name

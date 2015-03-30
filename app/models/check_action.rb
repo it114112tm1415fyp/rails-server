@@ -1,6 +1,11 @@
 class CheckAction < ActiveRecord::Base
 	has_many(:check_logs)
 	has_many(:goods)
+	# @param [Hash] options
+	# @return [String]
+	def as_json(options={})
+		name
+	end
 	# @param [self] check_action
 	# @return [FalseClass, TrueClass]
 	def can_done_after(check_action)

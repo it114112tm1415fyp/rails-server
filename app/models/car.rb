@@ -5,6 +5,11 @@ class Car < ActiveRecord::Base
 	has_many(:transfer_task_plans)
 	has_many(:visit_task_plans)
 	scope(:enabled, Proc.new { where(enable: true) })
+	# @param [Hash] options
+	# @return [Hash]
+	def as_json(options={})
+		super(Options.new(options, {only: :id, methods: [:type, :short_name, :long_name]}))
+	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
 		(check_logs + goods + staffs).size == 0

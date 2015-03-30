@@ -19,11 +19,11 @@ class DebugController < ApplicationController
 		render(text: VisitTask.generate_today_task(params_exist(:force)))
 	end
 	def generate_temporary_qr_code_for_goods
-		render(text: Good.generate_temporary_qr_code)
+		render(text: Goods.generate_temporary_qr_code)
 	end
 	def get_qr_code_for_goods
-		params_require(:good_id)
-		render(text: Good.get_qr_code(params[:good_id]))
+		params_require(:goods_id)
+		render(text: Goods.get_qr_code(params[:goods_id]))
 	end
 	def make_session_expired
 		session[:expiry_time] = $session_expiry_time.ago.to_s
@@ -38,6 +38,18 @@ class DebugController < ApplicationController
 	end
 	def view_session
 		render(text: session.to_hash)
+	end
+	def test
+		params_require(:type)
+		type = params[:type]
+		if id = params[:id]
+			model = Object.const_get(type).find(id)
+		else
+			model = Object.const_get(type).all
+			model = model[rand(model.size)]
+		end
+		p model.as_json
+		render(json: model)
 	end
 	private
 	def only_available_at_development

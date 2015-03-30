@@ -2,7 +2,7 @@ class JsonResponseApplicationController < ApplicationController
 	attr_accessor(:json_response)
 	rescue_from(Exception) do |exception|
 		raise if @_request.get?
-		json_response_error('unknown', exception: exception.class.to_s, message: exception.message)
+		json_response_error('unknown', exception: exception.class.name, message: exception.message)
 	end
 	rescue_from(Error) { |x| json_response_error(x.message, x.detail) }
 	rescue_from(ActionView::MissingTemplate) do

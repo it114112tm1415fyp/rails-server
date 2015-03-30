@@ -1,6 +1,11 @@
 class OrderState < ActiveRecord::Base
 	self.table_name = 'order_status'
 	has_many(:orders)
+	# @param [Hash] options
+	# @return [String]
+	def as_json(options={})
+		name
+	end
 
 	class << self
 		# @return [self]

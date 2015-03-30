@@ -1,11 +1,15 @@
 class Staff < RegisteredUser
 	belongs_to(:workplace, polymorphic: true)
 	has_many(:check_logs)
-	has_many(:conveyor_control_logs)
 	has_many(:goods)
 	has_many(:inspect_task_plans)
 	has_many(:orders)
 	validates_presence_of(:workplace)
+	# @param [Hash] options
+	# @return [Hash]
+	def as_json(options={})
+		super(Options.new(options, {include: :workplace}))
+	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
 		check_logs.size == 0 && orders.size == 0
@@ -40,7 +44,7 @@ class Staff < RegisteredUser
 			staff = find_by_username(username)
 			error('Username not exist') unless staff
 			transform = /\A~!@\$&\*\((.+?)\)\.md5\.md5\z/
-			password = Digest::MD5.hexdigest(Digest::MD5.hexdigest(p $1)) if Rails.env.development? && transform.match(password)
+			password = Digest::MD5.hexdigest(Digest::MD5.hexdigest($1)) if Rails.env.development? && transform.match(password)
 			staff.check_password(password)
 			error('Account frozen') unless staff.enable
 			staff

@@ -6,6 +6,11 @@ class TransferTask < ActiveRecord::Base
 	scope(:today, Proc.new { where(datetime: Date.today.beginning_of_day..Date.today.end_of_day) })
 	validate(:from_and_to_are_not_equal)
 	validates_numericality_of(:number, greater_than: 0)
+	# @param [Hash] options
+	# @return [Hash]
+	def as_json(options={})
+		super(Options.new(options, {except: [:staff_id, :car_id, :from_id, :from_type, :to_id, :to_type], include: [:staff, :car, :from, :to]}))
+	end
 	# @param [Staff] staff
 	# @return [String]
 	def action_name(staff)

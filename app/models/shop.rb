@@ -8,6 +8,11 @@ class Shop < ActiveRecord::Base
 	has_many(:transfer_out_tasks, as: :from, class: TransferTask)
 	has_many(:transfer_in_tasks, as: :to, class: TransferTask)
 	scope(:enabled, Proc.new { where(enable: true) })
+	# @param [Hash] options
+	# @return [Hash]
+	def as_json(options={})
+		super(Options.new(options, {except: [:region_id, :enable], include: :region}))
+	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
 		(check_logs + goods + in_orders + out_orders + staffs).size == 0

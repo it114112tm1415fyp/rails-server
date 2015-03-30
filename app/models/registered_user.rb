@@ -8,6 +8,11 @@ class RegisteredUser < ActiveRecord::Base
 	validates_format_of(:phone, with: /\+852-\d{8}|\+(?!852-)\d{2,4}-\d{,11}/)
 	validates_length_of(:username, minimum: 5)
 	validates_length_of(:specify_addresses, maximum: 6)
+	# @param [Hash] options
+	# @return [Hash]
+	def as_json(options={})
+		super(Options.new(options, {except: [:password, :enable, :workplace_id, :workplace_type], include: :specify_addresses, methods: :type}))
+	end
 	# @return [FalseClass]
 	def can_destroy
 		false
@@ -69,11 +74,11 @@ class RegisteredUser < ActiveRecord::Base
 	end
 	# @return [Hash]
 	def get_receive_orders
-		receive_orders.collect { |x| {id: x.id, sender: {id: x.sender.id, name: x.sender.name}, receiver: {id: x.receiver.id, name: x.receiver.name}, departure: {type: x.departure.class.to_s, id: x.departure.id, short_name: x.departure.short_name, long_name: x.departure.long_name, region: {id: x.departure.region.id, name: x.departure.region.name}}, destination: {type: x.destination.class.to_s, id: x.destination.id, short_name: x.destination.short_name, long_name: x.destination.long_name, region: {id: x.destination.region.id, name: x.destination.region.name}}, goods_number: x.goods_number, goods: x.goods.collect(&:string_id), state: x.order_state.name, update_time: x.updated_at, order_time: x.created_at} }
+		receive_orders.collect { |x| {id: x.id, sender: {id: x.sender.id, name: x.sender.name}, receiver: {id: x.receiver.id, name: x.receiver.name}, departure: {type: x.departure_type, id: x.departure.id, short_name: x.departure.short_name, long_name: x.departure.long_name, region: {id: x.departure.region.id, name: x.departure.region.name}}, destination: {type: x.destination_type, id: x.destination.id, short_name: x.destination.short_name, long_name: x.destination.long_name, region: {id: x.destination.region.id, name: x.destination.region.name}}, goods_number: x.goods_number, goods: x.goods.collect(&:string_id), state: x.order_state.name, update_time: x.updated_at, order_time: x.created_at} }
 	end
 	# @return [Hash]
 	def get_send_orders
-		send_orders.collect { |x| {id: x.id, sender: {id: x.sender.id, name: x.sender.name}, receiver: {id: x.receiver.id, name: x.receiver.name}, departure: {type: x.departure.class.to_s, id: x.departure.id, short_name: x.departure.short_name, long_name: x.departure.long_name, region: {id: x.departure.region.id, name: x.departure.region.name}}, destination: {type: x.destination.class.to_s, id: x.destination.id, short_name: x.destination.short_name, long_name: x.destination.long_name, region: {id: x.destination.region.id, name: x.destination.region.name}}, goods_number: x.goods_number, goods: x.goods.collect(&:string_id), state: x.order_state.name, update_time: x.updated_at, order_time: x.created_at} }
+		send_orders.collect { |x| {id: x.id, sender: {id: x.sender.id, name: x.sender.name}, receiver: {id: x.receiver.id, name: x.receiver.name}, departure: {type: x.departure_type, id: x.departure.id, short_name: x.departure.short_name, long_name: x.departure.long_name, region: {id: x.departure.region.id, name: x.departure.region.name}}, destination: {type: x.destination_type, id: x.destination.id, short_name: x.destination.short_name, long_name: x.destination.long_name, region: {id: x.destination.region.id, name: x.destination.region.name}}, goods_number: x.goods_number, goods: x.goods.collect(&:string_id), state: x.order_state.name, update_time: x.updated_at, order_time: x.created_at} }
 	end
 
 	class << self

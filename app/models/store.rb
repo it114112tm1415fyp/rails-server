@@ -10,6 +10,11 @@ class Store < ActiveRecord::Base
 	has_many(:visit_task_plans)
 	scope(:enabled, Proc.new { where(enable: true) })
 	validates_numericality_of(:shelf_number, greater_than: 0)
+	# @param [Hash] options
+	# @return [Hash]
+	def as_json(options={})
+		super(Options.new(options, {except: :enable}))
+	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
 		(check_logs + conveyors + goods + staffs).size == 0

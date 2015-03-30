@@ -11,7 +11,7 @@ class Create < ActiveRecord::Migration
 		end
 		create_table(:check_logs, id: false, bulk: true) do |x|
 			x.column(:time, :timestamp, null: false)
-			x.references(:good, null: false)
+			x.references(:goods, null: false)
 			x.references(:location, polymorphic: true, null: false)
 			x.references(:check_action, null: false)
 			x.references(:staff, null: false)
@@ -44,6 +44,25 @@ class Create < ActiveRecord::Migration
 			x.timestamps(null: false)
 			x.index(:string_id, unique: true)
 			x.index(:rfid_tag, unique: true)
+		end
+		create_table(:inspect_task_goods, bulk: true) do |x|
+			x.references(:inspect_task, null: false)
+			x.references(:goods, null: false)
+			x.column(:complete, :boolean, null: false, default: false)
+			x.timestamps(null: false)
+		end
+		create_table(:inspect_task_plans, bulk: true) do |x|
+			x.column(:day, :integer, null: false)
+			x.column(:time, :time, null: false)
+			x.references(:staff, null: false)
+			x.references(:store, null: false)
+		end
+		create_table(:inspect_tasks, bulk: true) do |x|
+			x.column(:datetime, :datetime, null: false)
+			x.references(:staff, null: false)
+			x.references(:store, null: false)
+			x.column(:generated, :boolean, null: false, default: false)
+			x.column(:complete, :boolean, null: false, default: false)
 		end
 		create_table(:metal_gateways, bulk: true) do |x|
 			x.column(:name, :string, limit: 40, null: false)
@@ -113,25 +132,6 @@ class Create < ActiveRecord::Migration
 			x.column(:enable, :boolean, null: false, default: true)
 			x.index(:address, unique: true)
 		end
-		create_table(:inspect_task_plans, bulk: true) do |x|
-			x.column(:day, :integer, null: false)
-			x.column(:time, :time, null: false)
-			x.references(:staff, null: false)
-			x.references(:store, null: false)
-		end
-		create_table(:inspect_tasks, bulk: true) do |x|
-			x.column(:datetime, :datetime, null: false)
-			x.references(:staff, null: false)
-			x.references(:store, null: false)
-			x.column(:generated, :boolean, null: false, default: false)
-			x.column(:complete, :boolean, null: false, default: false)
-		end
-		create_table(:inspect_task_goods, bulk: true) do |x|
-			x.references(:inspect_task, null: false)
-			x.references(:good, null: false)
-			x.column(:complete, :boolean, null: false, default: false)
-			x.timestamps(null: false)
-		end
 		create_table(:transfer_task_plans, bulk: true) do |x|
 			x.column(:day, :integer, null: false)
 			x.column(:time, :time, null: false)
@@ -164,16 +164,37 @@ class Create < ActiveRecord::Migration
 			x.column(:send_receive_number, :integer, null: false)
 			x.column(:send_number, :integer, null: false)
 		end
-		execute('ALTER TABLE `specify_address_user_ships` ADD PRIMARY KEY (`specify_address_id`,`user_id`);')
+		execute('ALTER TABLE `specify_address_user_ships` ADD PRIMARY KEY (`specify_address_id`,`user_id`, `user_type`);')
 		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`check_action_id`)    REFERENCES `check_actions`     (`id`);')
-		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`good_id`)            REFERENCES `goods`             (`id`) ON DELETE CASCADE;')
+		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`goods_id`)           REFERENCES `goods`             (`id`) ON DELETE CASCADE;')
 		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
 		execute('ALTER TABLE `conveyors`                  ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
 		execute('ALTER TABLE `free_times`                 ADD FOREIGN KEY (`order_id`)           REFERENCES `orders`            (`id`);')
+		execute('ALTER TABLE `goods`                      ADD FOREIGN KEY (`last_action_id`)     REFERENCES `check_actions`     (`id`);')
 		execute('ALTER TABLE `goods`                      ADD FOREIGN KEY (`order_id`)           REFERENCES `orders`            (`id`);')
+		execute('ALTER TABLE `goods`                      ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
+		execute('ALTER TABLE `inspect_task_goods`         ADD FOREIGN KEY (`goods_id`)           REFERENCES `goods`             (`id`);')
+		execute('ALTER TABLE `inspect_task_goods`         ADD FOREIGN KEY (`inspect_task_id`)    REFERENCES `inspect_tasks`     (`id`);')
+		execute('ALTER TABLE `inspect_task_plans`         ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
+		execute('ALTER TABLE `inspect_task_plans`         ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
+		execute('ALTER TABLE `inspect_tasks`              ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
+		execute('ALTER TABLE `inspect_tasks`              ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
+		execute('ALTER TABLE `metal_gateways`             ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
+		execute('ALTER TABLE `orders`                     ADD FOREIGN KEY (`order_state_id`)     REFERENCES `order_status`      (`id`);')
 		execute('ALTER TABLE `orders`                     ADD FOREIGN KEY (`sender_id`)          REFERENCES `registered_users`  (`id`);')
 		execute('ALTER TABLE `orders`                     ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
+		execute('ALTER TABLE `regions`                    ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
+		execute('ALTER TABLE `shops`                      ADD FOREIGN KEY (`region_id`)          REFERENCES `regions`           (`id`);')
+		execute('ALTER TABLE `specify_addresses`          ADD FOREIGN KEY (`region_id`)          REFERENCES `regions`           (`id`);')
 		execute('ALTER TABLE `specify_address_user_ships` ADD FOREIGN KEY (`specify_address_id`) REFERENCES `specify_addresses` (`id`);')
+		execute('ALTER TABLE `transfer_task_plans`        ADD FOREIGN KEY (`car_id`)             REFERENCES `cars`              (`id`);')
+		execute('ALTER TABLE `transfer_tasks`             ADD FOREIGN KEY (`car_id`)             REFERENCES `cars`              (`id`);')
+		execute('ALTER TABLE `transfer_tasks`             ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
+		execute('ALTER TABLE `visit_task_plans`           ADD FOREIGN KEY (`car_id`)             REFERENCES `cars`              (`id`);')
+		execute('ALTER TABLE `visit_task_plans`           ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
+		execute('ALTER TABLE `visit_tasks`                ADD FOREIGN KEY (`car_id`)             REFERENCES `cars`              (`id`);')
+		execute('ALTER TABLE `visit_tasks`                ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
+		execute('ALTER TABLE `visit_tasks`                ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
 	end
 	def down
 		execute('SET FOREIGN_KEY_CHECKS = 0;')
