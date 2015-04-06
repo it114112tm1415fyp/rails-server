@@ -259,11 +259,3 @@ CheckLog.create!(time: Time.now + 7, goods: goods6, location: car5, check_action
 CheckLog.create!(time: Time.now + 8, goods: goods6, location: car5, check_action: check_action_unload, staff: staff5)
 CheckLog.create!(time: Time.now + 9, goods: goods6, location: shop8, check_action: check_action_warehouse, staff: staff16)
 CheckLog.create!(time: Time.now + 10, goods: goods6, location: shop8, check_action: check_action_issue, staff: staff16)
-
-p a = Time.now
-p a.class.name
-ttt = TimeTestTest.create!(dt: a, t: a)
-p ttt.dt
-p ttt.dt.class.name
-p ttt.t
-p ttt.t.class.name
