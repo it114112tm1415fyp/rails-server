@@ -61,7 +61,8 @@ class DebugController < ApplicationController
 		render(text: value)
 	end
 	def test
-		p $a.server.instance_variable_get(:@server).status
+		p Rails.logger
+		puts "\e[33m\e[45m6y\e[0m"
 		render(nothing: true)
 	end
 	private

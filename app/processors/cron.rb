@@ -1,6 +1,6 @@
 class Cron
 	ATTRIBUTE = [:time, :repeat, :tag]
-	PRINT_SIZE = {time: 5, repeat: 5}
+	PRINT_SIZE = { time: 5, repeat: 5 }
 	@tasks ||= []
 	attr_accessor(*ATTRIBUTE)
 	# @param [Symbol] tag
@@ -9,46 +9,65 @@ class Cron
 	# @param [Array] parameters
 	# @param [Proc] block
 	def initialize(tag, time, repeat, *parameters, &block)
+		raise(ArgumentError, 'tried to create Cron object without a block') unless block
 		@tag = tag
 		@time = time
 		@repeat = repeat
 		@parameters = parameters
 		@action = block
 	end
+	# @param [CronTime] other
+	def time=(other)
+		@time = other
+		run if @time == CronTime.now
+	end
 	# @return [Meaningless]
 	def run
-		Rails.logger.debug { "Cron run #{@tag} at #{@time.to_s}".green.on_light_black }
+		Rails.logger.debug { "Cron run #{@tag} at #{@time.to_s}".fc_n_green }
+		Cron.tasks.delete(self) unless @repeat
 		begin
 			@action.call(*@parameters, time)
 		rescue
-			Rails.logger.error { "Cron error: #{$!.message}".light_red }
+			Rails.logger.error { "Cron error: #{$!.message}".fc_b_red }
+			puts $!.backtrace.collect(&:fc_n_red)
 		end
-		destroy unless @repeat
 	end
-	# @param [FalseClass, TrueClass] show_tasks
 	# @return [Meaningless]
-	def destroy(show_tasks=true)
-		Cron.tasks.delete(self)
-		Rails.logger.info { 'Cron delete task:'.green.on_light_black }
+	def destroy
+		Rails.logger.info { 'Cron delete task:'.fc_n_green }
 		print
-		Cron.show_tasks if show_tasks
+		Cron.tasks.delete(self)
+		Cron.show_tasks(true)
 	end
 	# @return [Meaningless]
 	def print
-		Rails.logger.info { "  #{ATTRIBUTE.collect { |x| "#{x.to_s} : ".green + ("%-#{PRINT_SIZE[x]}s" % "#{send(x)}").light_green }.join(' ')}".on_light_black }
+		Rails.logger.info { "  #{ATTRIBUTE.collect { |x| "#{x.to_s} : ".fc_n_green + ("%-#{PRINT_SIZE[x]}s" % "#{send(x)}").fc_b_green }.join(' ')}" }
 	end
-
 	class << self
 		attr_reader(:tasks)
 		# @return [Meaningless]
 		def start
 			@thread ||= Thread.new do
 				loop do
-					do_task_at(CronTime.now)
+					do_task(CronTime.now)
 					now = Time.now
 					sleep(now.at_end_of_minute - now + 0.000001)
 				end
 			end
+			@thread.abort_on_exception = true
+		end
+		# @param [Array<self>] tasks
+		def add_tasks(*tasks)
+			show_tasks(false)
+			if tasks.empty?
+				Rails.logger.info { 'Cron no task added : '.fc_n_green }
+			else
+				Rails.logger.info { 'Cron add tasks:'.fc_n_green }
+				tasks.each(&:print)
+				@tasks += tasks
+			end
+			Rails.logger.info { '' }
+			tasks.each { |x| x.run if x.time == CronTime.now && @thread }
 		end
 		# @param [Symbol] tag
 		# @param [CronTime] time
@@ -79,19 +98,28 @@ class Cron
 		# @param [Proc] block
 		# @return [Meaningless]
 		def delete(condition={}, &block)
-			find(condition, &block).each { |x| x.destroy(false) }
-			show_tasks
-		end
-		# @return [Meaningless]
-		def show_tasks
-			if @tasks.empty?
-				Rails.logger.info { 'Cron no task'.green.on_light_black }
+			tasks = find(condition, &block)
+			if tasks.empty?
+				Rails.logger.info { 'Cron no task deleted : '.fc_n_green }
 			else
-				Rails.logger.info { 'Cron tasks:'.green.on_light_black }
+				Rails.logger.info { 'Cron delete tasks:'.fc_n_green }
+				tasks.each(&:print)
+				@tasks -= tasks
+			end
+			show_tasks(true)
+		end
+		# @param [FalseClass, TrueClass] new_line
+		# @return [Meaningless]
+		def show_tasks(new_line)
+			if @tasks.empty?
+				Rails.logger.info { 'Cron no task'.fc_n_green }
+			else
+				Rails.logger.info { 'Cron tasks:'.fc_n_green }
 				@tasks.each do |x1|
 					x1.print
 				end
 			end
+			Rails.logger.info { '' } if new_line
 		end
 		private
 		# @param [Symbol] tag
@@ -101,16 +129,12 @@ class Cron
 		# @param [Proc] block
 		# @return [Meaningless]
 		def add_task(tag, time, repeat, *parameters, &block)
-			task = new(tag, time, repeat, *parameters, &block)
-			@tasks << task
-			Rails.logger.info { 'Cron add task:'.green.on_light_black }
-			task.print
-			show_tasks
+			add_tasks(new(tag, time, repeat, *parameters, &block))
 		end
 		# @param [CronTime] time
 		# @return [Meaningless]
-		def do_task_at(time)
-			Rails.logger.debug { "Cron do task at #{time.to_s}".green.on_light_black }
+		def do_task(time)
+			Rails.logger.debug { "Cron do task at #{time.to_s}".fc_n_green }
 			find(time: time).each(&:run)
 		end
 	end

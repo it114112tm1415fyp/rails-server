@@ -8,7 +8,7 @@ class InspectTask < ActiveRecord::Base
 	# @param [NilClass, Staff] staff
 	# @return [Hash]
 	def as_json(options={}, staff=nil)
-		super(Option.new(options, {except: [:staff_id, :store_id], include: [:staff, :store, :inspect_task_goods], method: [{action_name: {parameter: [staff]}}, :type]}))
+		super(Option.new(options, { except: [:staff_id, :store_id], include: [:staff, :store, :inspect_task_goods], method: [{ action_name: { parameter: [staff] } }, :type] }))
 	end
 	# @param [Staff] staff
 	# @return [NilClass, String]
@@ -33,7 +33,6 @@ class InspectTask < ActiveRecord::Base
 			end
 		end
 	end
-
 	class << self
 		# @return [Meaningless]
 		def prepare
@@ -74,13 +73,14 @@ class InspectTask < ActiveRecord::Base
 				day = today.cwday % 7
 				today = { year: today.year, month: today.month, day: today.day }
 				InspectTaskPlan.day(day).each do |x1|
-					# @type [Time]
-					a = x1.time.getlocal
-					inspect_task = create!(datetime: x1.time.change(today), staff_id: x1.staff_id, store_id: x1.store_id)
-					Cron.add_delayed_task(:inspect_task_generate_goods_list, x1.time.to_ct, inspect_task) do |x2|
-						x2.generated = true
-						x2.save!
-						Goods.find_by_location(x2.store).each { |x3| InspectTaskGood.create!(inspect_task: x2, goods: x3) }
+					datetime = x1.time.change(today)
+					inspect_task = create!(datetime: datetime, staff_id: x1.staff_id, store_id: x1.store_id)
+					if datetime.future?
+						Cron.add_delayed_task(:inspect_task_generate_goods_list, x1.time.to_ct, inspect_task) do |x2|
+							x2.generated = true
+							x2.save!
+							Goods.find_by_location(x2.store).each { |x3| InspectTaskGood.create!(inspect_task: x2, goods: x3) }
+						end
 					end
 				end
 			end

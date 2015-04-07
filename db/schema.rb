@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150404035607) do
+ActiveRecord::Schema.define(version: 1) do
 
   create_table "cars", force: :cascade do |t|
     t.string  "vehicle_registration_mark", limit: 8,                null: false
@@ -212,11 +212,6 @@ ActiveRecord::Schema.define(version: 20150404035607) do
   end
 
   add_index "stores", ["address"], name: "index_stores_on_address", unique: true, using: :btree
-
-  create_table "time_test_tests", force: :cascade do |t|
-    t.datetime "dt"
-    t.time     "t"
-  end
 
   create_table "transfer_task_plans", force: :cascade do |t|
     t.integer "day",       limit: 4,   null: false
