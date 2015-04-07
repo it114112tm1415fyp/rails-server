@@ -3,14 +3,10 @@ class LocationController < MobileApplicationController
 	include(StaffMobileApplicationModule)
 	before_action(:check_customer_login)
 	def get_list
-		store = Store.get_list
-		shop = Shop.get_list
-		car = Car.get_list
-		json_response_success({cars: car, shops: shop, stores: store})
+		response_success({cars: Car.all, shops: Shop.all, stores: Store.all})
 	end
 	def get_specify_address_id
 		params_require(:address, :region_id)
-		address = SpecifyAddress.find_or_create_by!(address: params[:address], region_id: params[:region_id])
-		json_response_success({id: address.id})
+		response_success({id: SpecifyAddress.find_or_create_by!(address: params[:address], region_id: params[:region_id]).id})
 	end
 end

@@ -5,7 +5,7 @@ class Region < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Options.new(options, {only: [:id, :name]}))
+		super(Option.new(options, {only: [:id, :name]}))
 	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
@@ -13,10 +13,6 @@ class Region < ActiveRecord::Base
 	end
 
 	class << self
-		# @return [Array<Hash>]
-		def get_list
-			all.collect { |x| {id: x.id, name: x.name} }
-		end
 		# @return [Hash]
 		def get_map
 			map = {}

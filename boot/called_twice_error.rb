@@ -1,0 +1,2 @@
+class CalledTwiceError < Exception
+end

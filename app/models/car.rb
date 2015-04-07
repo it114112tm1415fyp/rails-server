@@ -1,6 +1,6 @@
 class Car < ActiveRecord::Base
 	has_many(:check_logs, as: :location)
-	has_many(:goods, as: :location)
+	has_many(:goods, as: :location, class: Goods)
 	has_many(:staffs, as: :workplace)
 	has_many(:transfer_task_plans)
 	has_many(:visit_task_plans)
@@ -8,7 +8,7 @@ class Car < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Options.new(options, {only: :id, methods: [:type, :short_name, :long_name]}))
+		super(Option.new(options, {only: :id, method: [:type, :short_name, :long_name]}))
 	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
@@ -24,10 +24,7 @@ class Car < ActiveRecord::Base
 	end
 
 	class << self
-		# @return [Array<Hash>]
-		def get_list
-			enabled.collect { |x| {id: x.id, vehicle_registration_mark: x.vehicle_registration_mark} }
-		end
+		# @return [Hash]
 		def get_map
 			map = {}
 			enabled.each do |x|

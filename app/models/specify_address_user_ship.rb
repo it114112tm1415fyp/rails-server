@@ -4,6 +4,6 @@ class SpecifyAddressUserShip < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Options.new(options, {only: [], include: [:specify_address, :user]}))
+		super(Option.new(options, {only: [], include: [:specify_address, :user]}))
 	end
 end

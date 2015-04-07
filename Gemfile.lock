@@ -45,6 +45,7 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.8.0)
+    colorize (0.7.5)
     erubis (2.7.0)
     execjs (2.2.1)
     globalid (0.3.0)
@@ -136,6 +137,7 @@ PLATFORMS
 
 DEPENDENCIES
   coffee-rails (~> 4.0.0)
+  colorize
   jbuilder (~> 2.0)
   jquery-rails
   mysql2

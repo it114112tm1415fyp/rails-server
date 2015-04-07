@@ -1,7 +1,7 @@
 class Store < ActiveRecord::Base
 	has_many(:check_logs, as: :location)
 	has_many(:conveyors)
-	has_many(:goods, as: :location)
+	has_many(:goods, as: :location, class: Goods)
 	has_many(:inspect_task_plans)
 	has_many(:regions)
 	has_many(:staffs, as: :workplace)
@@ -13,7 +13,7 @@ class Store < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Options.new(options, {except: :enable}))
+		super(Option.new(options, {only: [:id, :shelf_number], method: [:type, :short_name, :long_name]}))
 	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
@@ -29,10 +29,6 @@ class Store < ActiveRecord::Base
 	end
 
 	class << self
-		# @return [Array<Hash>]
-		def get_list
-			enabled.collect { |x| {id: x.id, name: x.name, address: x.address, shelf_number: x.shelf_number} }
-		end
 		# @return [Hash]
 		def get_map
 			map = {}

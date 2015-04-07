@@ -11,7 +11,7 @@ class RegisteredUser < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Options.new(options, {except: [:password, :enable, :workplace_id, :workplace_type], include: :specify_addresses, methods: :type}))
+		super(Option.new(options, {except: [:password, :enable, :workplace_id, :workplace_type], include: :specify_addresses, method: :type}))
 	end
 	# @return [FalseClass]
 	def can_destroy
@@ -26,6 +26,7 @@ class RegisteredUser < ActiveRecord::Base
 		self
 	end
 	# @param [String] password
+	# @return [self]
 	def check_password(password)
 		error('Wrong password') unless self.password == password
 		self
@@ -72,26 +73,18 @@ class RegisteredUser < ActiveRecord::Base
 			end
 		end
 	end
-	# @return [Hash]
-	def get_receive_orders
-		receive_orders.collect { |x| {id: x.id, sender: {id: x.sender.id, name: x.sender.name}, receiver: {id: x.receiver.id, name: x.receiver.name}, departure: {type: x.departure_type, id: x.departure.id, short_name: x.departure.short_name, long_name: x.departure.long_name, region: {id: x.departure.region.id, name: x.departure.region.name}}, destination: {type: x.destination_type, id: x.destination.id, short_name: x.destination.short_name, long_name: x.destination.long_name, region: {id: x.destination.region.id, name: x.destination.region.name}}, goods_number: x.goods_number, goods: x.goods.collect(&:string_id), state: x.order_state.name, update_time: x.updated_at, order_time: x.created_at} }
-	end
-	# @return [Hash]
-	def get_send_orders
-		send_orders.collect { |x| {id: x.id, sender: {id: x.sender.id, name: x.sender.name}, receiver: {id: x.receiver.id, name: x.receiver.name}, departure: {type: x.departure_type, id: x.departure.id, short_name: x.departure.short_name, long_name: x.departure.long_name, region: {id: x.departure.region.id, name: x.departure.region.name}}, destination: {type: x.destination_type, id: x.destination.id, short_name: x.destination.short_name, long_name: x.destination.long_name, region: {id: x.destination.region.id, name: x.destination.region.name}}, goods_number: x.goods_number, goods: x.goods.collect(&:string_id), state: x.order_state.name, update_time: x.updated_at, order_time: x.created_at} }
-	end
 
 	class << self
 		# @param [String] username
 		# @param [String] phone
-		# @return [Hash]
+		# @return [self]
 		def find_user_info(username, phone)
 			user = find_by_username(username)
 			error('User not found') unless user && user.phone == phone
-			{id: user.id, name: user.name, address: user.specify_addresses.collect { |x| {id: x.id, address: x.address, region: {id: x.region.id, name: x.region.name}} }}
+			user
 		end
 		# @param [String] username
-		# @param [String] phone
+		# @param [String] password
 		# @return [self]
 		def login(username, password)
 			user = find_by_username(username)

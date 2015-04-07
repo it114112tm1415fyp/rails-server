@@ -9,9 +9,10 @@ class TransferTaskPlan < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Options.new(options, {except: [:car_id, :from_id, :from_type, :to_id, :to_type], include: [:car, :from, :to]}))
+		super(Option.new(options, {except: [:car_id, :from_id, :from_type, :to_id, :to_type], include: [:type, :car, :from, :to]}))
 	end
 	private
+	# @return [Meaningless]
 	def from_and_to_are_not_equal
 		errors.add(:to, 'from and to are equal') if from == to
 	end

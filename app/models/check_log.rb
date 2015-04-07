@@ -9,6 +9,6 @@ class CheckLog < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Options.new(options, {except: [:location_id, :location_type], include: :location}))
+		super(Option.new(options, {except: [:location_id, :location_type], include: :location}))
 	end
 end

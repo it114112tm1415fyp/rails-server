@@ -4,7 +4,7 @@ class Conveyor < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Options.new(options, {only: [:id, :name], include: :store}))
+		super(Option.new(options, {only: [:id, :name], include: :store}))
 	end
 	# @param [Staff] staff
 	# @param [FalseClass, TrueClass] raise_if_error
@@ -38,13 +38,6 @@ class Conveyor < ActiveRecord::Base
 		socket.close if socket && !socket.closed?
 		raise if raise_if_error
 		error('offline')
-	end
-
-	class << self
-		# @return [Array<Hash>]
-		def get_list
-			all.collect { |x| {id: x.id, name: x.name} }
-		end
 	end
 
 end

@@ -15,12 +15,14 @@ class ConveyorControlling
 	class << self
 		# @param [Integer] conveyor_id
 		# @param [Integer] staff_id
+		# @return [Meaningless]
 		def check(conveyor_id, staff_id)
 			control = @control[conveyor_id]
 			error('need control') unless control && control.unexpired? && control.staff_id == staff_id
 		end
 		# @param [Integer] conveyor_id
 		# @param [Integer] staff_id
+		# @return [Meaningless]
 		def occupy(conveyor_id, staff_id)
 			control = @control[conveyor_id]
 			error('other user is using') if control && control.unexpired? && control.staff_id != staff_id

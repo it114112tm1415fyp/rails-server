@@ -3,6 +3,6 @@ class MetalGateway < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Options.new(options, {only: [:id, :name], include: :store}))
+		super(Option.new(options, {only: [:id, :name], include: :store}))
 	end
 end

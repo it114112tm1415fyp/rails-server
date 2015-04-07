@@ -1,6 +1,6 @@
 class CheckAction < ActiveRecord::Base
 	has_many(:check_logs)
-	has_many(:goods)
+	has_many(:goods, class: Goods)
 	# @param [Hash] options
 	# @return [String]
 	def as_json(options={})
@@ -81,6 +81,7 @@ class CheckAction < ActiveRecord::Base
 					end
 				end
 			end
+			@receive
 		end
 		# @return [self]
 		def unload

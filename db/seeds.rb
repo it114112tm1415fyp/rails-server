@@ -111,7 +111,7 @@ specify_address13 = SpecifyAddress.create!(address: 'Flat 4, 1/F, Heng Wan House
 Tin Heng Estate,
 Tin Shui Wai', region: region_new_territories)
 
-conveyor1 = Conveyor.create!(name: 'TM IVE Conveyor', store: store3, server_ip: 'it114112tm1415fyp2.redirectme.net', server_port: 8001, passive: true)
+conveyor1 = Conveyor.create!(name: 'TM IVE Conveyor', store: store3, server_ip: 'it114112tm1415fyp2.greenirectme.net', server_port: 8001, passive: true)
 conveyor2 = Conveyor.create!(name: 'Conveyor for test', store: store2, server_ip: 'localhost', server_port: 8002, passive: false)
 
 client1 = new_client('john0', [specify_address10])
@@ -140,10 +140,10 @@ staff20 = new_staff('carol', [specify_address7], store3)
 staff21 = new_staff('lisa0', [specify_address8], shop2)
 staff22 = new_staff('helen', [specify_address9], shop7)
 
-
-InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000,1,1,10), staff: staff6, store: store1)
-InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000,1,1,10), staff: staff7, store: store2)
-InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000,1,1,10), staff: staff8, store: store3)
+InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000,1,1,0), staff: staff6, store: store1)
+InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000,1,1,10), staff: staff6, store: store1)
+InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000,1,1,10), staff: staff7, store: store2)
+InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000,1,1,10), staff: staff8, store: store3)
 
 TransferTaskPlan.create!(day: 0b1111110, time: Time.new(2000,1,1,10), car: car1, from: store1, to: store2, number: 30)
 TransferTaskPlan.create!(day: 0b1111110, time: Time.new(2000,1,1,13), car: car1, from: store2, to: store3, number: 30)
@@ -259,3 +259,11 @@ CheckLog.create!(time: Time.now + 7, goods: goods6, location: car5, check_action
 CheckLog.create!(time: Time.now + 8, goods: goods6, location: car5, check_action: check_action_unload, staff: staff5)
 CheckLog.create!(time: Time.now + 9, goods: goods6, location: shop8, check_action: check_action_warehouse, staff: staff16)
 CheckLog.create!(time: Time.now + 10, goods: goods6, location: shop8, check_action: check_action_issue, staff: staff16)
+
+p a = Time.now
+p a.class.name
+ttt = TimeTestTest.create!(dt: a, t: a)
+p ttt.dt
+p ttt.dt.class.name
+p ttt.t
+p ttt.t.class.name

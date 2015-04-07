@@ -296,8 +296,8 @@ class AdminController < WebApplicationController
 	end
 	def new_inspect_task_plan
 		if params_exist(:day, :time, :staff, :store)
-			raise(ParameterError, 'time') unless params[:time].to_time
-			InspectTaskPlan.create!(day: params[:day], time: params[:time].to_time, staff_id: params[:staff], store_id: params[:store])
+			raise(ParameterError, 'time') unless time = params[:time].to_time
+			InspectTaskPlan.create!(day: params[:day], time: time, staff_id: params[:staff], store_id: params[:store])
 			redirect_to(action: :inspect_task_plans)
 		end
 	rescue Error

@@ -9,9 +9,10 @@ class VisitTaskPlan < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Options.new(options, {except: [:car_id, :store_id], include: [:car, :store]}))
+		super(Option.new(options, {except: [:car_id, :store_id], include: [:type, :car, :store]}))
 	end
 	private
+	# @return [Meaningless]
 	def send_number_is_less_than_or_equal_to_send_receive_number
 		errors.add(:send_number, 'send_number is bigger than send_receive_number') if send_number > send_receive_number
 	end

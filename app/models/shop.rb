@@ -1,7 +1,7 @@
 class Shop < ActiveRecord::Base
 	belongs_to(:region)
 	has_many(:check_logs, as: :location)
-	has_many(:goods, as: :location)
+	has_many(:goods, as: :location, class: Goods)
 	has_many(:in_orders, as: :destination, class: Order)
 	has_many(:out_orders, as: :departure, class: Order)
 	has_many(:staffs, as: :workplace)
@@ -11,7 +11,7 @@ class Shop < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Options.new(options, {except: [:region_id, :enable], include: :region}))
+		super(Option.new(options, {only: :id, include: :region, method: [:type, :short_name, :long_name]}))
 	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
@@ -27,10 +27,6 @@ class Shop < ActiveRecord::Base
 	end
 
 	class << self
-		# @return [Array<Hash>]
-		def get_list
-			enabled.collect { |x| {id: x.id, name: x.name, address: x.address} }
-		end
 		# @return [Hash]
 		def get_map
 			map = {}

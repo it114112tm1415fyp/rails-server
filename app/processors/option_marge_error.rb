@@ -1,0 +1,2 @@
+class OptionMargeError < Exception
+end

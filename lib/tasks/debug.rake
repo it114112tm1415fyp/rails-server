@@ -16,7 +16,7 @@ namespace(:debug) do
 					puts('connection closed')
 				end
 			rescue Exception
-				retry
+				retry unless $!.is_a?(Interrupt)
 			end
 		end
 		task(:passive) do
@@ -31,7 +31,7 @@ namespace(:debug) do
 					puts("send : #{status}")
 				end
 			rescue Exception
-				retry
+				retry unless $!.is_a?(Interrupt)
 			end
 		end
 	end

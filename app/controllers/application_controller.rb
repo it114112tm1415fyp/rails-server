@@ -3,6 +3,7 @@ class ApplicationController < ActionController::Base
 	after_action(:session_add_expiry_time, except: :make_session_expired)
 	private
 	# @param [Array<Symbol>] keys
+	# @return [Meaningless]
 	def params_require(*keys)
 		keys.each { |x| params.require(x) }
 	end

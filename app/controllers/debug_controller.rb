@@ -34,22 +34,35 @@ class DebugController < ApplicationController
 		render(text: InspectTask.add_debug_task(params[:staff], params[:store], params[:delay_time] || 0))
 	end
 	def view_cron_tasks
+		Cron.show_tasks
 		render(json: Cron.tasks.collect { |x| {tag: x.tag, time: x.time.to_s} })
 	end
 	def view_session
 		render(text: session.to_hash)
 	end
-	def test
-		params_require(:type)
+	def reload_extension
+		ExtensionLoader.reload
+		render(nothing: true)
+	end
+	def get_model
 		type = params[:type]
-		if id = params[:id]
-			model = Object.const_get(type).find(id)
-		else
-			model = Object.const_get(type).all
-			model = model[rand(model.size)]
-		end
+		id = params[:id]
+		model = Object.const_get(type).find(id)
 		p model.as_json
 		render(json: model)
+	end
+	def md5
+		params_require(:value, :times)
+		# @type [Integer]
+		times = params[:times].to_i
+		raise ParameterError('times') unless times.between?(0, 100)
+		value = params[:value]
+		times.times { value = Digest::MD5.hexdigest(value) }
+		render(text: value)
+	end
+	def test
+		p $a.server.instance_variable_get(:@server).status
+		render(nothing: true)
 	end
 	private
 	def only_available_at_development
