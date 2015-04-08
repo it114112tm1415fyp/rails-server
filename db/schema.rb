@@ -213,6 +213,14 @@ ActiveRecord::Schema.define(version: 1) do
 
   add_index "stores", ["address"], name: "index_stores_on_address", unique: true, using: :btree
 
+  create_table "transfer_task_goods", force: :cascade do |t|
+    t.integer  "transfer_task_id", limit: 4,                 null: false
+    t.integer  "goods_id",         limit: 4,                 null: false
+    t.boolean  "complete",         limit: 1, default: false, null: false
+    t.datetime "created_at",                                 null: false
+    t.datetime "updated_at",                                 null: false
+  end
+
   create_table "transfer_task_plans", force: :cascade do |t|
     t.integer "day",       limit: 4,   null: false
     t.time    "time",                  null: false
@@ -239,6 +247,14 @@ ActiveRecord::Schema.define(version: 1) do
 
   add_index "transfer_tasks", ["car_id"], name: "car_id", using: :btree
   add_index "transfer_tasks", ["staff_id"], name: "staff_id", using: :btree
+
+  create_table "visit_task_orders", force: :cascade do |t|
+    t.integer  "visit_task_id", limit: 4,                 null: false
+    t.integer  "order_id",      limit: 4,                 null: false
+    t.boolean  "complete",      limit: 1, default: false, null: false
+    t.datetime "created_at",                              null: false
+    t.datetime "updated_at",                              null: false
+  end
 
   create_table "visit_task_plans", force: :cascade do |t|
     t.integer "day",                 limit: 4, null: false

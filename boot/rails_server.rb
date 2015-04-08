@@ -16,6 +16,7 @@ class RailsServer
 		# @param [Proc] block
 		# @return [Meaningless]
 		def on_standby(&block)
+			return unless defined?(Rails::Server)
 			raise(CalledTwiceError) if @on_stand_by_thread
 			@on_stand_by_thread = Thread.new do
 				sleep(0.02) until standby

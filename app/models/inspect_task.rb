@@ -22,7 +22,7 @@ class InspectTask < ActiveRecord::Base
 	end
 	# @return [FalseClass, TrueClass]
 	def generate(force=false)
-		if force || !generated
+		if force || (datetime.past? && !generated)
 			if generated
 				InspectTaskGood.destroy_all(inspect_task: self)
 			end
@@ -33,6 +33,7 @@ class InspectTask < ActiveRecord::Base
 			end
 		end
 	end
+
 	class << self
 		# @return [Meaningless]
 		def prepare
@@ -55,14 +56,10 @@ class InspectTask < ActiveRecord::Base
 			end
 			inspect_task.id
 		end
-		# @param [Integer] id
-		# @return [Hash]
-		def get_details(id)
-			find(id).get_details
-		end
 		# @param [FalseClass, TrueClass] force
 		# @return [FalseClass, TrueClass]
 		def generate_today_task(force=false)
+			now = Time.now
 			need_generate = need_generate_today_task
 			if result = need_generate || force
 				unless need_generate
@@ -75,7 +72,7 @@ class InspectTask < ActiveRecord::Base
 				InspectTaskPlan.day(day).each do |x1|
 					datetime = x1.time.change(today)
 					inspect_task = create!(datetime: datetime, staff_id: x1.staff_id, store_id: x1.store_id)
-					if datetime.future?
+					if datetime >= now.at_beginning_of_minute
 						Cron.add_delayed_task(:inspect_task_generate_goods_list, x1.time.to_ct, inspect_task) do |x2|
 							x2.generated = true
 							x2.save!

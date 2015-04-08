@@ -1,4 +1,5 @@
 class JsonResponseApplicationController < ApplicationController
+	@skip_printing_response = false
 	attr_accessor(:json_response)
 	rescue_from(Exception) do |exception|
 		raise if @_request.get?
@@ -35,7 +36,14 @@ class JsonResponseApplicationController < ApplicationController
 	# @param [Hash] response
 	# @return [Meaningless]
 	def json_response(response)
-		render(json: response)
+		render(json: response) unless @skip_printing_response
 		logger.debug('Return json : ' + @_response_body[0])
 	end
+
+	class << self
+		def skip_printing_response
+			@skip_printing_response
+		end
+	end
+
 end

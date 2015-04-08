@@ -111,7 +111,7 @@ specify_address13 = SpecifyAddress.create!(address: 'Flat 4, 1/F, Heng Wan House
 Tin Heng Estate,
 Tin Shui Wai', region: region_new_territories)
 
-conveyor1 = Conveyor.create!(name: 'TM IVE Conveyor', store: store3, server_ip: 'it114112tm1415fyp2.greenirectme.net', server_port: 8001, passive: true)
+conveyor1 = Conveyor.create!(name: 'TM IVE Conveyor', store: store3, server_ip: 'it114112tm1415fyp2.redirectme.net', server_port: 8001, passive: true)
 conveyor2 = Conveyor.create!(name: 'Conveyor for test', store: store2, server_ip: 'localhost', server_port: 8002, passive: false)
 
 client1 = new_client('john0', [specify_address10])

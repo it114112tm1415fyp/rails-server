@@ -28,8 +28,9 @@ class Cron
 		begin
 			@action.call(*@parameters, time)
 		rescue
-			Rails.logger.error { "Cron error: #{$!.message}".fc_b_red }
-			puts $!.backtrace.collect(&:fc_n_red)
+			Rails.logger.error { 'Cron error occurred'.fc_n_red }
+			Rails.logger.error { "  #{$!.message}".fc_b_red }
+			Rails.logger.error { $!.backtrace.collect { |x| "    #{x}".fc_n_red} }
 		end
 	end
 	# @return [Meaningless]

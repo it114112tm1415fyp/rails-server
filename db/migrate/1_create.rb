@@ -132,6 +132,12 @@ class Create < ActiveRecord::Migration
 			x.column(:enable, :boolean, null: false, default: true)
 			x.index(:address, unique: true)
 		end
+		create_table(:transfer_task_goods, bulk: true) do |x|
+			x.references(:transfer_task, null: false)
+			x.references(:goods, null: false)
+			x.column(:complete, :boolean, null: false, default: false)
+			x.timestamps(null: false)
+		end
 		create_table(:transfer_task_plans, bulk: true) do |x|
 			x.column(:day, :integer, null: false)
 			x.column(:time, :time, null: false)
@@ -147,6 +153,12 @@ class Create < ActiveRecord::Migration
 			x.references(:from, polymorphic: true, null: false)
 			x.references(:to, polymorphic: true, null: false)
 			x.column(:number, :integer, null: false)
+		end
+		create_table(:visit_task_orders, bulk: true) do |x|
+			x.references(:visit_task, null: false)
+			x.references(:order, null: false)
+			x.column(:complete, :boolean, null: false, default: false)
+			x.timestamps(null: false)
 		end
 		create_table(:visit_task_plans, bulk: true) do |x|
 			x.column(:day, :integer, null: false)
