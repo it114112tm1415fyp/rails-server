@@ -1,6 +1,6 @@
 class Cron
 	ATTRIBUTE = [:time, :repeat, :tag]
-	PRINT_SIZE = { time: 5, repeat: 5 }
+	PRINT_SIZE = {time: 5, repeat: 5}
 	@tasks ||= []
 	attr_accessor(*ATTRIBUTE)
 	# @param [Symbol] tag

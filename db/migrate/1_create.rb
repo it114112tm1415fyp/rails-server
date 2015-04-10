@@ -10,7 +10,7 @@ class Create < ActiveRecord::Migration
 			x.index(:name, unique: true)
 		end
 		create_table(:check_logs, id: false, bulk: true) do |x|
-			x.column(:time, :timestamp, null: false)
+			x.column(:time, :datetime, null: false)
 			x.references(:goods, null: false)
 			x.references(:location, polymorphic: true, null: false)
 			x.references(:check_action, null: false)
@@ -26,8 +26,9 @@ class Create < ActiveRecord::Migration
 		end
 		create_table(:free_times, bulk: true) do |x|
 			x.references(:order, null: false)
+			x.references(:receive_time_segment, null: false)
 			x.column(:date, :date, null: false)
-			x.column(:free, :integer, null: false)
+			x.column(:free, :boolean, null: false)
 		end
 		create_table(:goods, bulk: true) do |x|
 			x.references(:order, null: false)
@@ -80,6 +81,7 @@ class Create < ActiveRecord::Migration
 			x.column(:goods_number, :integer, null: false)
 			x.references(:staff)
 			x.references(:order_state, null: false)
+			x.column(:receive_time_version, :datetime, null: false)
 			x.timestamps(null: false)
 		end
 		create_table(:order_status, bulk: true) do |x|
@@ -90,6 +92,12 @@ class Create < ActiveRecord::Migration
 			x.column(:name, :string, limit: 40, null: false)
 			x.column(:email, :string, null: false)
 			x.column(:phone, :string, limit: 17, null: false)
+		end
+		create_table(:receive_time_segments, bulk: true) do |x|
+			x.column(:start_time, :time, null: false)
+			x.column(:end_time, :time, null: false)
+			x.column(:enable, :boolean, null: false, default: true)
+			x.index([:start_time, :end_time], unique: true)
 		end
 		create_table(:registered_users, bulk: true) do |x|
 			x.column(:username, :string, limit: 20, null: false)
@@ -154,6 +162,10 @@ class Create < ActiveRecord::Migration
 			x.references(:to, polymorphic: true, null: false)
 			x.column(:number, :integer, null: false)
 		end
+		create_table(:scheme_versions) do |x|
+			x.column(:scheme_name, :string, null: false)
+			x.column(:scheme_update_time, :datetime, null: false)
+		end
 		create_table(:visit_task_orders, bulk: true) do |x|
 			x.references(:visit_task, null: false)
 			x.references(:order, null: false)
@@ -177,36 +189,41 @@ class Create < ActiveRecord::Migration
 			x.column(:send_number, :integer, null: false)
 		end
 		execute('ALTER TABLE `specify_address_user_ships` ADD PRIMARY KEY (`specify_address_id`,`user_id`, `user_type`);')
-		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`check_action_id`)    REFERENCES `check_actions`     (`id`);')
-		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`goods_id`)           REFERENCES `goods`             (`id`) ON DELETE CASCADE;')
-		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
-		execute('ALTER TABLE `conveyors`                  ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
-		execute('ALTER TABLE `free_times`                 ADD FOREIGN KEY (`order_id`)           REFERENCES `orders`            (`id`);')
-		execute('ALTER TABLE `goods`                      ADD FOREIGN KEY (`last_action_id`)     REFERENCES `check_actions`     (`id`);')
-		execute('ALTER TABLE `goods`                      ADD FOREIGN KEY (`order_id`)           REFERENCES `orders`            (`id`);')
-		execute('ALTER TABLE `goods`                      ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
-		execute('ALTER TABLE `inspect_task_goods`         ADD FOREIGN KEY (`goods_id`)           REFERENCES `goods`             (`id`);')
-		execute('ALTER TABLE `inspect_task_goods`         ADD FOREIGN KEY (`inspect_task_id`)    REFERENCES `inspect_tasks`     (`id`);')
-		execute('ALTER TABLE `inspect_task_plans`         ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
-		execute('ALTER TABLE `inspect_task_plans`         ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
-		execute('ALTER TABLE `inspect_tasks`              ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
-		execute('ALTER TABLE `inspect_tasks`              ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
-		execute('ALTER TABLE `metal_gateways`             ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
-		execute('ALTER TABLE `orders`                     ADD FOREIGN KEY (`order_state_id`)     REFERENCES `order_status`      (`id`);')
-		execute('ALTER TABLE `orders`                     ADD FOREIGN KEY (`sender_id`)          REFERENCES `registered_users`  (`id`);')
-		execute('ALTER TABLE `orders`                     ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
-		execute('ALTER TABLE `regions`                    ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
-		execute('ALTER TABLE `shops`                      ADD FOREIGN KEY (`region_id`)          REFERENCES `regions`           (`id`);')
-		execute('ALTER TABLE `specify_addresses`          ADD FOREIGN KEY (`region_id`)          REFERENCES `regions`           (`id`);')
-		execute('ALTER TABLE `specify_address_user_ships` ADD FOREIGN KEY (`specify_address_id`) REFERENCES `specify_addresses` (`id`);')
-		execute('ALTER TABLE `transfer_task_plans`        ADD FOREIGN KEY (`car_id`)             REFERENCES `cars`              (`id`);')
-		execute('ALTER TABLE `transfer_tasks`             ADD FOREIGN KEY (`car_id`)             REFERENCES `cars`              (`id`);')
-		execute('ALTER TABLE `transfer_tasks`             ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
-		execute('ALTER TABLE `visit_task_plans`           ADD FOREIGN KEY (`car_id`)             REFERENCES `cars`              (`id`);')
-		execute('ALTER TABLE `visit_task_plans`           ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
-		execute('ALTER TABLE `visit_tasks`                ADD FOREIGN KEY (`car_id`)             REFERENCES `cars`              (`id`);')
-		execute('ALTER TABLE `visit_tasks`                ADD FOREIGN KEY (`staff_id`)           REFERENCES `registered_users`  (`id`);')
-		execute('ALTER TABLE `visit_tasks`                ADD FOREIGN KEY (`store_id`)           REFERENCES `stores`            (`id`);')
+		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`check_action_id`)         REFERENCES `check_actions`         (`id`);')
+		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`goods_id`)                REFERENCES `goods`                 (`id`) ON DELETE CASCADE;')
+		execute('ALTER TABLE `check_logs`                 ADD FOREIGN KEY (`staff_id`)                REFERENCES `registered_users`      (`id`);')
+		execute('ALTER TABLE `conveyors`                  ADD FOREIGN KEY (`store_id`)                REFERENCES `stores`                (`id`);')
+		execute('ALTER TABLE `free_times`                 ADD FOREIGN KEY (`order_id`)                REFERENCES `orders`                (`id`);')
+		execute('ALTER TABLE `free_times`                 ADD FOREIGN KEY (`receive_time_segment_id`) REFERENCES `receive_time_segments` (`id`);')
+		execute('ALTER TABLE `goods`                      ADD FOREIGN KEY (`last_action_id`)          REFERENCES `check_actions`         (`id`);')
+		execute('ALTER TABLE `goods`                      ADD FOREIGN KEY (`order_id`)                REFERENCES `orders`                (`id`);')
+		execute('ALTER TABLE `goods`                      ADD FOREIGN KEY (`staff_id`)                REFERENCES `registered_users`      (`id`);')
+		execute('ALTER TABLE `inspect_task_goods`         ADD FOREIGN KEY (`goods_id`)                REFERENCES `goods`                 (`id`);')
+		execute('ALTER TABLE `inspect_task_goods`         ADD FOREIGN KEY (`inspect_task_id`)         REFERENCES `inspect_tasks`         (`id`);')
+		execute('ALTER TABLE `inspect_task_plans`         ADD FOREIGN KEY (`staff_id`)                REFERENCES `registered_users`      (`id`);')
+		execute('ALTER TABLE `inspect_task_plans`         ADD FOREIGN KEY (`store_id`)                REFERENCES `stores`                (`id`);')
+		execute('ALTER TABLE `inspect_tasks`              ADD FOREIGN KEY (`staff_id`)                REFERENCES `registered_users`      (`id`);')
+		execute('ALTER TABLE `inspect_tasks`              ADD FOREIGN KEY (`store_id`)                REFERENCES `stores`                (`id`);')
+		execute('ALTER TABLE `metal_gateways`             ADD FOREIGN KEY (`store_id`)                REFERENCES `stores`                (`id`);')
+		execute('ALTER TABLE `orders`                     ADD FOREIGN KEY (`order_state_id`)          REFERENCES `order_status`          (`id`);')
+		execute('ALTER TABLE `orders`                     ADD FOREIGN KEY (`sender_id`)               REFERENCES `registered_users`      (`id`);')
+		execute('ALTER TABLE `orders`                     ADD FOREIGN KEY (`staff_id`)                REFERENCES `registered_users`      (`id`);')
+		execute('ALTER TABLE `regions`                    ADD FOREIGN KEY (`store_id`)                REFERENCES `stores`                (`id`);')
+		execute('ALTER TABLE `shops`                      ADD FOREIGN KEY (`region_id`)               REFERENCES `regions`               (`id`);')
+		execute('ALTER TABLE `specify_addresses`          ADD FOREIGN KEY (`region_id`)               REFERENCES `regions`               (`id`);')
+		execute('ALTER TABLE `specify_address_user_ships` ADD FOREIGN KEY (`specify_address_id`)      REFERENCES `specify_addresses`     (`id`);')
+		execute('ALTER TABLE `transfer_task_goods`        ADD FOREIGN KEY (`goods_id`)                REFERENCES `goods`                 (`id`);')
+		execute('ALTER TABLE `transfer_task_goods`        ADD FOREIGN KEY (`transfer_task_id`)        REFERENCES `transfer_tasks`        (`id`);')
+		execute('ALTER TABLE `transfer_task_plans`        ADD FOREIGN KEY (`car_id`)                  REFERENCES `cars`                  (`id`);')
+		execute('ALTER TABLE `transfer_tasks`             ADD FOREIGN KEY (`car_id`)                  REFERENCES `cars`                  (`id`);')
+		execute('ALTER TABLE `transfer_tasks`             ADD FOREIGN KEY (`staff_id`)                REFERENCES `registered_users`      (`id`);')
+		execute('ALTER TABLE `visit_task_orders`          ADD FOREIGN KEY (`order_id`)                REFERENCES `orders`                (`id`);')
+		execute('ALTER TABLE `visit_task_orders`          ADD FOREIGN KEY (`visit_task_id`)           REFERENCES `visit_tasks`           (`id`);')
+		execute('ALTER TABLE `visit_task_plans`           ADD FOREIGN KEY (`car_id`)                  REFERENCES `cars`                  (`id`);')
+		execute('ALTER TABLE `visit_task_plans`           ADD FOREIGN KEY (`store_id`)                REFERENCES `stores`                (`id`);')
+		execute('ALTER TABLE `visit_tasks`                ADD FOREIGN KEY (`car_id`)                  REFERENCES `cars`                  (`id`);')
+		execute('ALTER TABLE `visit_tasks`                ADD FOREIGN KEY (`staff_id`)                REFERENCES `registered_users`      (`id`);')
+		execute('ALTER TABLE `visit_tasks`                ADD FOREIGN KEY (`store_id`)                REFERENCES `stores`                (`id`);')
 	end
 	def down
 		execute('SET FOREIGN_KEY_CHECKS = 0;')

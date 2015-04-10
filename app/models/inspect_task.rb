@@ -8,7 +8,7 @@ class InspectTask < ActiveRecord::Base
 	# @param [NilClass, Staff] staff
 	# @return [Hash]
 	def as_json(options={}, staff=nil)
-		super(Option.new(options, { except: [:staff_id, :store_id], include: [:staff, :store, :inspect_task_goods], method: [{ action_name: { parameter: [staff] } }, :type] }))
+		super(Option.new(options, {except: [:staff_id, :store_id], include: [:staff, :store, :inspect_task_goods], method: [{action_name: {parameter: [staff]}}, :type]}))
 	end
 	# @param [Staff] staff
 	# @return [NilClass, String]
@@ -68,7 +68,7 @@ class InspectTask < ActiveRecord::Base
 				end
 				today = Date.today
 				day = today.cwday % 7
-				today = { year: today.year, month: today.month, day: today.day }
+				today = {year: today.year, month: today.month, day: today.day}
 				InspectTaskPlan.day(day).each do |x1|
 					datetime = x1.time.change(today)
 					inspect_task = create!(datetime: datetime, staff_id: x1.staff_id, store_id: x1.store_id)
@@ -89,7 +89,7 @@ class InspectTask < ActiveRecord::Base
 		end
 		# @return [FalseClass, TrueClass]
 		def need_generate_today_task
-			!today.any?
+			today.empty?
 		end
 	end
 

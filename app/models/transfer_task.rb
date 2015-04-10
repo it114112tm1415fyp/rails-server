@@ -44,7 +44,7 @@ class TransferTask < ActiveRecord::Base
 				clear_today_task unless need_generate
 				today = Date.today
 				day = today.cwday % 7
-				today = { year: today.year, month: today.month, day: today.day }
+				today = {year: today.year, month: today.month, day: today.day}
 				TransferTaskPlan.day(day).each do |x1|
 					staffs = x1.car.staffs + x1.from.staffs + x1.to.staffs
 					staffs.each do |x2|

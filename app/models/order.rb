@@ -1,4 +1,5 @@
 class Order < ActiveRecord::Base
+	FREE_TIME_DAYS = 7
 	belongs_to(:departure, polymorphic: true)
 	belongs_to(:destination, polymorphic: true)
 	belongs_to(:order_state)
@@ -11,11 +12,24 @@ class Order < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {only: [:id, :goods_number, :created_at, :updated_at], include: [:sender, :receiver, :departure, :destination, :staff, :order_state], method: :goods_ids}))
+		super(Option.new(options, {only: [:id, :goods_number, :created_at, :updated_at], include: [:sender, :receiver, :departure, :destination, :staff, :order_state, {goods: {collect: :string_id, marge_type: :replace}}], rename: {goods: :goods_ids}}))
 	end
 	# @return [FalseClass, TrueClass]
 	def can_edit
 		[OrderState.confirmed, OrderState.submitted].include?(order_state)
+	end
+	# @param [Array<FalseClass, TrueClass>] free
+	# @return [Meaningless]
+	def change_time(free)
+		raise(ArgumentError) unless free.size == ReceiveTimeSegment.enabled.size * FREE_TIME_DAYS
+		today = Date.today
+		meaningful_free_times.destroy_all
+		receive_time_segments = ReceiveTimeSegment.enabled
+		segments_size = receive_time_segments.size
+		FREE_TIME_DAYS.times do |x1|
+			date = today + x1.days
+			receive_time_segments.each_with_index { |x2, x3| FreeTime.create!(order: self, receive_time_segment: x2, date: date, free: free[x1 * segments_size + x3]) }
+		end
 	end
 	# @param [Staff] staff
 	# @return [Meaningless]
@@ -45,39 +59,44 @@ class Order < ActiveRecord::Base
 	# @param [String] departure_type
 	# @param [Integer] destination_id
 	# @param [String] destination_type
+	# @param [Array<FalseClass, TrueClass>] time
 	# @param [Staff] staff
 	# @return [Meaningless]
-	def edit(receiver, goods_number, departure_id, departure_type, destination_id, destination_type, staff)
+	def edit(receiver, goods_number, departure_id, departure_type, destination_id, destination_type, time, staff)
 		raise(ParameterError, 'departure_type') if departure_type && ![Shop.to_s, SpecifyAddress.to_s].include?(departure_type)
 		raise(ParameterError, 'destination_type') if departure_type && ![Shop.to_s, SpecifyAddress.to_s].include?(departure_type)
 		raise(ParameterError, 'receiver') if receiver && !receiver.is_a?(Hash)
-		if receiver
-			if receiver.has_key?(:id)
-				self.receiver = RegisteredUser.find(receiver[:id])
-			else
-				self.receiver = PublicReceiver.find_or_create_by!(name: receiver[:name], email: receiver[:email], phone: receiver[:phone])
-			end
-		end
-		self.goods_number = goods_number if goods_number
-		if departure_id && departure_type
-			if self.order_state == OrderState.submitted || staff
-				self.departure = Object.const_get(departure_type).find(departure_id)
-				goods.each do |x|
-					x.location = departure
-					x.save!
+		transaction do
+			if receiver
+				if receiver.has_key?(:id)
+					self.receiver = RegisteredUser.find(receiver[:id])
+				else
+					self.receiver = PublicReceiver.find_or_create_by!(name: receiver[:name], email: receiver[:email], phone: receiver[:phone])
 				end
-			else
-				error('cannot edit order departure after contact, please contact staff to do this change')
 			end
+			self.goods_number = goods_number if goods_number
+			if departure_id && departure_type
+				if self.order_state == OrderState.submitted || staff
+					self.departure = Object.const_get(departure_type).find(departure_id)
+					goods.each do |x|
+						x.location = departure
+						x.save!
+					end
+				else
+					error('cannot edit order departure after contact, please contact staff to do this change')
+				end
+			end
+			self.destination = Object.const_get(destination_type).find(destination_id) if destination_id && destination_type
+			error('departure do not match sender address') if departure.is_a?(SpecifyAddress) && !sender.specify_addresses.include?(departure) && !staff
+			error('destination do not match receive address') if destination.is_a?(SpecifyAddress) && receiver.is_a?(RegisteredUser) && !receiver.specify_addresses.include?(destination)
+			save!
+			change_time(time) if time
 		end
-		self.destination = Object.const_get(destination_type).find(destination_id) if destination_id && destination_type
-		error('departure do not match sender address') if departure.is_a?(SpecifyAddress) && !sender.specify_addresses.include?(departure) && !staff
-		error('destination do not match receive address') if destination.is_a?(SpecifyAddress) && receiver.is_a?(RegisteredUser) && !receiver.specify_addresses.include?(destination)
-		save!
 	end
-	# @return [Array<String>]
-	def goods_ids
-		goods.collect(&:string_id)
+	# @return [self]
+	def meaningful_free_times
+		today = Date.today
+		FreeTime.includes(:receive_time_segment).where(order: self, date: today..today + FREE_TIME_DAYS.days).order(date: :asc).order("#{ReceiveTimeSegment.table_name}.start_time ASC")
 	end
 
 	class << self
@@ -107,7 +126,8 @@ class Order < ActiveRecord::Base
 				end
 				error('departure do not match sender address') if departure.is_a?(SpecifyAddress) && !sender.specify_addresses.include?(departure)
 				error('destination do not match receive address') if destination.is_a?(SpecifyAddress) && receiver.is_a?(RegisteredUser) && !receiver.specify_addresses.include?(destination)
-				create!(sender: sender, receiver: receiver, departure: departure, destination: destination, goods_number: goods_number, order_state: OrderState.submitted)
+				order = create!(sender: sender, receiver: receiver, departure: departure, destination: destination, goods_number: goods_number, order_state: OrderState.submitted)
+				order.change_time(time)
 			end
 		end
 	end

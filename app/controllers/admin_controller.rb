@@ -92,7 +92,7 @@ class AdminController < WebApplicationController
 		@workplace_type = params[:workplace_type] || @account.workplace_type
 		@workplace_id = params[:workplace_id] || @account.workplace_id
 		@enable ||= @account.enable
-		@addresses = params[:addresses] || @account.specify_addresses.collect { |x| { address: x.address, region: x.region.id.to_s } }
+		@addresses = params[:addresses] || @account.specify_addresses.collect { |x| {address: x.address, region: x.region.id.to_s} }
 	end
 	def delete_account
 		params_require(:account_id)

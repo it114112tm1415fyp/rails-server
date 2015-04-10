@@ -23,7 +23,7 @@ class DebugController < ApplicationController
 	end
 	def get_qr_code_for_goods
 		params_require(:goods_id)
-		render(text: Goods.get_qr_code(params[:goods_id]))
+		render(text: Goods.find_by_string_id(params[:goods_id]).qr_code)
 	end
 	def make_session_expired
 		session[:expiry_time] = $session_expiry_time.ago.to_s
@@ -61,8 +61,6 @@ class DebugController < ApplicationController
 		render(text: value)
 	end
 	def test
-		p Rails.logger
-		puts "\e[33m\e[45m6y\e[0m"
 		render(nothing: true)
 	end
 	private

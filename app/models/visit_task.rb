@@ -42,7 +42,7 @@ class VisitTask < ActiveRecord::Base
 				clear_today_task unless need_generate
 				today = Date.today
 				day = today.cwday % 7
-				today = { year: today.year, month: today.month, day: today.day }
+				today = {year: today.year, month: today.month, day: today.day}
 				VisitTaskPlan.day(day).each do |x1|
 					x1.car.staffs.each do |x2|
 						create!(datetime: x1.time.change(today), staff: x2, car_id: x1.car_id, store_id: x1.store_id, send_receive_number: x1.send_receive_number, send_number: x1.send_number)

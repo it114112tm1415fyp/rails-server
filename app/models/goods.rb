@@ -15,7 +15,7 @@ class Goods < ActiveRecord::Base
 	end
 	# @return [String]
 	def qr_code
-		'it114112tm1415fyp.goods' + ActiveSupport::JSON.encode({goods_id: id, order_id: order.id, departure: order.departure.long_name, destination: order.destination.long_name, rfid_tag: rfid_tag, weight: weight, fragile: fragile, flammable: flammable, order_time: created_at})
+		'it114112tm1415fyp.goods' + ActiveSupport::JSON.encode({goods_id: string_id, order_id: order.id, departure: order.departure.long_name, destination: order.destination.long_name, rfid_tag: rfid_tag, weight: weight, fragile: fragile, flammable: flammable, order_time: created_at})
 	end
 	private
 	# @return [FalseClass, TrueClass]

@@ -40,7 +40,9 @@ module ActiveModel::Serialization
 		result
 	end
 	private
-	# @param [Proc(String)] block
+	# @param [Hash] options
+	# @param [Proc(Symbol, Object, Hash)] block
+	# @return [Meaningless]
 	def serializable_add_methods(options={})
 		return unless method = options[:method]
 		method = Hash[Array(method).collect { |x| x.is_a?(Hash) ? x.to_a.first : [x, {}] }] unless method.is_a?(Hash)
