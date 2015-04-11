@@ -23,6 +23,7 @@ class RailsServer
 				sleep(0.2)
 				block.call
 			end
+			@on_stand_by_thread.abort_on_exception = true
 		end
 		# @return [FalseClass, TrueClass]
 		def standby
