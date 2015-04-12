@@ -9,7 +9,7 @@ class VisitTaskPlan < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {except: [:car_id, :store_id], include: [:type, :car, :store]}))
+		super(Option.new(options, except: [:car_id, :store_id], include: [:type, :car, :store]))
 	end
 	private
 	# @return [Meaningless]

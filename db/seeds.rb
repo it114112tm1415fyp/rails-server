@@ -8,10 +8,6 @@ def new_staff(name, addresses, workplace)
 	Staff.create!(username: name, password: Digest::MD5.hexdigest(Digest::MD5.hexdigest(name)), name: name, email: "#{name}@it114112tm1415fyp.com", phone: "+852-6#{'%07d' % rand(9999999)}", specify_addresses: addresses, workplace: workplace)
 end
 
-ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 10), end_time: Time.new(2000, 1, 1, 12))
-ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 14), end_time: Time.new(2000, 1, 1, 16))
-ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 16), end_time: Time.new(2000, 1, 1, 18))
-
 admin = Admin.create!(username: $admin_username, password: Digest::MD5.hexdigest(Digest::MD5.hexdigest($admin_password)), enable: false, name: 'admin', email: 'admin@admin.admin', phone: '+00-0')
 
 car1 = Car.create!(vehicle_registration_mark: 'EA5651')
@@ -144,10 +140,12 @@ staff20 = new_staff('carol', [specify_address7], store3)
 staff21 = new_staff('lisa0', [specify_address8], shop2)
 staff22 = new_staff('helen', [specify_address9], shop7)
 
-InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), staff: staff6, store: store1)
-InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), staff: staff6, store: store1)
-InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), staff: staff7, store: store2)
-InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), staff: staff8, store: store3)
+InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), store: store1)
+InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), store: store2)
+InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), store: store3)
+InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 20), store: store1)
+InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 20), store: store2)
+InspectTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 20), store: store3)
 
 TransferTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car1, from: store1, to: store2, number: 30)
 TransferTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 13), car: car1, from: store2, to: store3, number: 30)
@@ -183,6 +181,13 @@ VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 16), car: car4,
 VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car5, store: store3, send_receive_number: 2, send_number: 1)
 VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 16), car: car5, store: store3, send_receive_number: 6, send_number: 4)
 
+InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), store: store1) # debug
+InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), store: store1) # debug
+TransferTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, from: store1, to: store2, number: 30) # debug
+TransferTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, from: store2, to: store1, number: 18) # debug
+VisitTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, store: store3, send_receive_number: 3, send_number: 2) # debug
+VisitTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, store: store1, send_receive_number: 5, send_number: 3) # debug
+
 order_state_canceled = OrderState.create!(name: 'canceled')
 order_state_confirmed = OrderState.create!(name: 'confirmed')
 order_state_sending = OrderState.create!(name: 'sending')
@@ -197,24 +202,35 @@ check_action_receive = CheckAction.create!(name: 'receive')
 check_action_unload = CheckAction.create!(name: 'unload')
 check_action_warehouse = CheckAction.create!(name: 'warehouse')
 
-order1 = Order.create!(sender: staff1, sender_sign: '', receiver: staff2, goods_number: 1, departure: specify_address1, destination: specify_address2, order_state: order_state_submitted, receive_time_version: Time.now)
-order2 = Order.create!(sender: staff1, sender_sign: '', receiver: staff3, goods_number: 1, departure: shop1, destination: specify_address3, order_state: order_state_confirmed, receive_time_version: Time.now)
-order3 = Order.create!(sender: staff1, sender_sign: '', receiver: staff4, goods_number: 2, departure: specify_address3, destination: shop6, order_state: order_state_sending, receive_time_version: Time.now)
-order4 = Order.create!(sender: staff1, sender_sign: '', receiver: staff5, goods_number: 1, departure: shop2, destination: specify_address5, order_state: order_state_sent, receive_time_version: Time.now)
-order5 = Order.create!(sender: staff1, sender_sign: '', receiver: staff6, goods_number: 2, departure: specify_address5, destination: specify_address6, order_state: order_state_canceled, receive_time_version: Time.now)
-order6 = Order.create!(sender: staff1, sender_sign: '', receiver: staff7, goods_number: 1, departure: shop3, destination: shop7, order_state: order_state_submitted, receive_time_version: Time.now)
-order7 = Order.create!(sender: staff1, sender_sign: '', receiver: staff8, goods_number: 1, departure: specify_address7, destination: specify_address8, order_state: order_state_confirmed, receive_time_version: Time.now)
-order8 = Order.create!(sender: staff1, sender_sign: '', receiver: staff9, goods_number: 1, departure: shop4, destination: specify_address9, order_state: order_state_sending, receive_time_version: Time.now)
-order9 = Order.create!(sender: staff1, sender_sign: '', receiver: staff10, goods_number: 2, departure: specify_address9, destination: shop8, order_state: order_state_sent, receive_time_version: Time.now)
-order10 = Order.create!(sender: staff1, sender_sign: '', receiver: staff11, goods_number: 2, departure: shop5, destination: specify_address11, order_state: order_state_canceled, receive_time_version: Time.now)
-order11 = Order.create!(sender: staff12, sender_sign: '', receiver: staff1, goods_number: 3, departure: specify_address11, destination: specify_address12, order_state: order_state_submitted, receive_time_version: Time.now)
+task_worker_role_car_driver = TaskWorkerRole.create!(name: 'car_driver')
+task_worker_role_car_driver_load = TaskWorkerRole.create!(name: 'car_driver(load)')
+task_worker_role_car_driver_unload = TaskWorkerRole.create!(name: 'car_driver(unload)')
+task_worker_role_store_keeper = TaskWorkerRole.create!(name: 'store_keeper')
+task_worker_role_departure_store_keeper = TaskWorkerRole.create!(name: 'departure_store_keeper')
+task_worker_role_destination_store_keeper = TaskWorkerRole.create!(name: 'destination_store_keeper')
 
-goods1 = Goods.create!(order: order3, string_id: '33pc1z', location: store1, shelf_id: 1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 1D70 0E00 005E', weight: 1.2, fragile: false, flammable: true, goods_photo: @goods_photo)
-goods2 = Goods.create!(order: order3, string_id: 'ejqd5e', location: store1, shelf_id: 1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 516F 0E00 0065', weight: 0.9, fragile: true, flammable: false, goods_photo: @goods_photo)
-goods3 = Goods.create!(order: order8, string_id: 'h0bw54', location: shop4, staff: staff12, last_action: check_action_receive, rfid_tag: 'AD83 1100 45CC E57C 1600 0099', weight: 1.5, fragile: false, flammable: false, goods_photo: @goods_photo)
-goods4 = Goods.create!(order: order4, string_id: '28hd3l', location: specify_address5, staff: staff1, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0001', weight: 2.1, fragile: false, flammable: false, goods_photo: @goods_photo)
-goods5 = Goods.create!(order: order9, string_id: '5hs6rw', location: shop8, staff: staff16, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0002', weight: 3.1, fragile: true, flammable: false, goods_photo: @goods_photo)
-goods6 = Goods.create!(order: order9, string_id: '8gek4f', location: shop8, staff: staff16, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0003', weight: 2.7, fragile: false, flammable: false, goods_photo: @goods_photo)
+receive_time_segment1 = ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 10), end_time: Time.new(2000, 1, 1, 12))
+receive_time_segment2 = ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 14), end_time: Time.new(2000, 1, 1, 16))
+receive_time_segment3 = ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 16), end_time: Time.new(2000, 1, 1, 18))
+
+order1 = Order.create!(sender: staff1, sender_sign: '', receiver: staff2, goods_number: 1, departure: specify_address1, destination: specify_address2, order_state: order_state_submitted)
+order2 = Order.create!(sender: staff1, sender_sign: '', receiver: staff3, goods_number: 1, departure: shop1, destination: specify_address3, order_state: order_state_confirmed)
+order3 = Order.create!(sender: staff1, sender_sign: '', receiver: staff4, goods_number: 2, departure: specify_address3, destination: shop6, order_state: order_state_sending)
+order4 = Order.create!(sender: staff1, sender_sign: '', receiver: staff5, goods_number: 1, departure: shop2, destination: specify_address5, order_state: order_state_sent)
+order5 = Order.create!(sender: staff1, sender_sign: '', receiver: staff6, goods_number: 2, departure: specify_address5, destination: specify_address6, order_state: order_state_canceled)
+order6 = Order.create!(sender: staff1, sender_sign: '', receiver: staff7, goods_number: 1, departure: shop3, destination: shop7, order_state: order_state_submitted)
+order7 = Order.create!(sender: staff1, sender_sign: '', receiver: staff8, goods_number: 1, departure: specify_address7, destination: specify_address8, order_state: order_state_confirmed)
+order8 = Order.create!(sender: staff1, sender_sign: '', receiver: staff9, goods_number: 1, departure: shop4, destination: specify_address9, order_state: order_state_sending)
+order9 = Order.create!(sender: staff1, sender_sign: '', receiver: staff10, goods_number: 2, departure: specify_address9, destination: shop8, order_state: order_state_sent)
+order10 = Order.create!(sender: staff1, sender_sign: '', receiver: staff11, goods_number: 2, departure: shop5, destination: specify_address11, order_state: order_state_canceled)
+order11 = Order.create!(sender: staff12, sender_sign: '', receiver: staff1, goods_number: 3, departure: specify_address11, destination: specify_address12, order_state: order_state_submitted)
+
+goods1 = Goods.create!(order: order3, string_id: '33pc1z', location: store1, next_stop: store3, shelf_id: 1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 1D70 0E00 005E', weight: 1.2, fragile: false, flammable: true, goods_photo: @goods_photo)
+goods2 = Goods.create!(order: order3, string_id: 'ejqd5e', location: store1, next_stop: store3, shelf_id: 1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 516F 0E00 0065', weight: 0.9, fragile: true, flammable: false, goods_photo: @goods_photo)
+goods3 = Goods.create!(order: order8, string_id: 'h0bw54', location: shop4, next_stop: store2, staff: staff12, last_action: check_action_receive, rfid_tag: 'AD83 1100 45CC E57C 1600 0099', weight: 1.5, fragile: false, flammable: false, goods_photo: @goods_photo)
+goods4 = Goods.create!(order: order4, string_id: '28hd3l', location: specify_address5, next_stop: specify_address5, staff: staff1, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0001', weight: 2.1, fragile: false, flammable: false, goods_photo: @goods_photo)
+goods5 = Goods.create!(order: order9, string_id: '5hs6rw', location: shop8, next_stop: shop8, staff: staff16, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0002', weight: 3.1, fragile: true, flammable: false, goods_photo: @goods_photo)
+goods6 = Goods.create!(order: order9, string_id: '8gek4f', location: shop8, next_stop: shop8, staff: staff16, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0003', weight: 2.7, fragile: false, flammable: false, goods_photo: @goods_photo)
 
 CheckLog.create!(time: Time.now + 1, goods: goods1, location: specify_address3, check_action: check_action_receive, staff: staff3)
 CheckLog.create!(time: Time.now + 2, goods: goods1, location: car3, check_action: check_action_load, staff: staff3)

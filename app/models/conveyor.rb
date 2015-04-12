@@ -4,7 +4,7 @@ class Conveyor < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {only: [:id, :name], include: :store}))
+		super(Option.new(options, only: [:id, :name], include: :store))
 	end
 	# @param [Staff] staff
 	# @param [FalseClass, TrueClass] raise_if_error

@@ -7,6 +7,6 @@ class PublicReceiver < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {include: :specify_addresses, method: :type}))
+		super(Option.new(options, include: :specify_addresses, method: :type))
 	end
 end

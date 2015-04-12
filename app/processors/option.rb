@@ -1,4 +1,5 @@
 class Option < Hash
+	OPTION_KET = [:only, :except, :include, :method, :collect, :parameter]
 	# @param [Hash] options
 	# @param [Hash] default
 	# @param [FalseClass, Hash, TrueClass] recursive
@@ -32,14 +33,25 @@ class Option < Hash
 			else
 				raise(ArgumentError, 'marge_type')
 		end
-		raise(OptionMargeError) if has_key?(:only) && has_key?(:except)
+		raise(OptionMargeError, self.to_s) if has_key?(:only) && has_key?(:except)
 		case recursive
 			when FalseClass, Hash
 				self[:recursive] = recursive
 			when TrueClass
-				self[:recursive] = options.is_a?(Option) ? options[:recursive] : options if recursive.is_a?(TrueClass)
+				if options.is_a?(Option)
+					self[:recursive] = options[:recursive]
+				else
+					self[:recursive] = options.dup
+					OPTION_KET.each { |x| self[:recursive].delete(x) }
+				end
 			else
 				raise(ArgumentError, 'recursive')
 		end
+	end
+
+	def normalize_recursive_options(options)
+		return options[:recursive] if options.is_a?(Option)
+		options = options.dup
+		options.dele
 	end
 end

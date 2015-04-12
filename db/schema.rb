@@ -64,6 +64,8 @@ ActiveRecord::Schema.define(version: 1) do
     t.integer  "order_id",       limit: 4,     null: false
     t.integer  "location_id",    limit: 4,     null: false
     t.string   "location_type",  limit: 255,   null: false
+    t.integer  "next_stop_id",   limit: 4,     null: false
+    t.string   "next_stop_type", limit: 255,   null: false
     t.integer  "shelf_id",       limit: 4
     t.integer  "staff_id",       limit: 4,     null: false
     t.integer  "last_action_id", limit: 4,     null: false
@@ -86,7 +88,7 @@ ActiveRecord::Schema.define(version: 1) do
   create_table "inspect_task_goods", force: :cascade do |t|
     t.integer  "inspect_task_id", limit: 4,                 null: false
     t.integer  "goods_id",        limit: 4,                 null: false
-    t.boolean  "complete",        limit: 1, default: false, null: false
+    t.boolean  "completed",       limit: 1, default: false, null: false
     t.datetime "created_at",                                null: false
     t.datetime "updated_at",                                null: false
   end
@@ -97,22 +99,18 @@ ActiveRecord::Schema.define(version: 1) do
   create_table "inspect_task_plans", force: :cascade do |t|
     t.integer "day",      limit: 4, null: false
     t.time    "time",               null: false
-    t.integer "staff_id", limit: 4, null: false
     t.integer "store_id", limit: 4, null: false
   end
 
-  add_index "inspect_task_plans", ["staff_id"], name: "staff_id", using: :btree
   add_index "inspect_task_plans", ["store_id"], name: "store_id", using: :btree
 
   create_table "inspect_tasks", force: :cascade do |t|
     t.datetime "datetime",                            null: false
-    t.integer  "staff_id",  limit: 4,                 null: false
     t.integer  "store_id",  limit: 4,                 null: false
     t.boolean  "generated", limit: 1, default: false, null: false
-    t.boolean  "complete",  limit: 1, default: false, null: false
+    t.boolean  "completed", limit: 1, default: false, null: false
   end
 
-  add_index "inspect_tasks", ["staff_id"], name: "staff_id", using: :btree
   add_index "inspect_tasks", ["store_id"], name: "store_id", using: :btree
 
   create_table "metal_gateways", force: :cascade do |t|
@@ -229,10 +227,26 @@ ActiveRecord::Schema.define(version: 1) do
 
   add_index "stores", ["address"], name: "index_stores_on_address", unique: true, using: :btree
 
+  create_table "task_worker_roles", force: :cascade do |t|
+    t.string "name", limit: 40, null: false
+  end
+
+  add_index "task_worker_roles", ["name"], name: "index_task_worker_roles_on_name", unique: true, using: :btree
+
+  create_table "task_workers", force: :cascade do |t|
+    t.integer "staff_id",            limit: 4,   null: false
+    t.integer "task_id",             limit: 4,   null: false
+    t.string  "task_type",           limit: 255, null: false
+    t.integer "task_worker_role_id", limit: 4,   null: false
+  end
+
+  add_index "task_workers", ["staff_id"], name: "staff_id", using: :btree
+  add_index "task_workers", ["task_worker_role_id"], name: "task_worker_role_id", using: :btree
+
   create_table "transfer_task_goods", force: :cascade do |t|
     t.integer  "transfer_task_id", limit: 4,                 null: false
     t.integer  "goods_id",         limit: 4,                 null: false
-    t.boolean  "complete",         limit: 1, default: false, null: false
+    t.boolean  "completed",        limit: 1, default: false, null: false
     t.datetime "created_at",                                 null: false
     t.datetime "updated_at",                                 null: false
   end
@@ -254,23 +268,23 @@ ActiveRecord::Schema.define(version: 1) do
   add_index "transfer_task_plans", ["car_id"], name: "car_id", using: :btree
 
   create_table "transfer_tasks", force: :cascade do |t|
-    t.datetime "datetime",              null: false
-    t.integer  "staff_id",  limit: 4,   null: false
-    t.integer  "car_id",    limit: 4,   null: false
-    t.integer  "from_id",   limit: 4,   null: false
-    t.string   "from_type", limit: 255, null: false
-    t.integer  "to_id",     limit: 4,   null: false
-    t.string   "to_type",   limit: 255, null: false
-    t.integer  "number",    limit: 4,   null: false
+    t.datetime "datetime",                              null: false
+    t.integer  "car_id",    limit: 4,                   null: false
+    t.integer  "from_id",   limit: 4,                   null: false
+    t.string   "from_type", limit: 255,                 null: false
+    t.integer  "to_id",     limit: 4,                   null: false
+    t.string   "to_type",   limit: 255,                 null: false
+    t.integer  "number",    limit: 4,                   null: false
+    t.boolean  "generated", limit: 1,   default: false, null: false
+    t.boolean  "completed", limit: 1,   default: false, null: false
   end
 
   add_index "transfer_tasks", ["car_id"], name: "car_id", using: :btree
-  add_index "transfer_tasks", ["staff_id"], name: "staff_id", using: :btree
 
   create_table "visit_task_orders", force: :cascade do |t|
     t.integer  "visit_task_id", limit: 4,                 null: false
     t.integer  "order_id",      limit: 4,                 null: false
-    t.boolean  "complete",      limit: 1, default: false, null: false
+    t.boolean  "completed",     limit: 1, default: false, null: false
     t.datetime "created_at",                              null: false
     t.datetime "updated_at",                              null: false
   end
@@ -291,16 +305,16 @@ ActiveRecord::Schema.define(version: 1) do
   add_index "visit_task_plans", ["store_id"], name: "store_id", using: :btree
 
   create_table "visit_tasks", force: :cascade do |t|
-    t.datetime "datetime",                      null: false
-    t.integer  "staff_id",            limit: 4, null: false
-    t.integer  "car_id",              limit: 4, null: false
-    t.integer  "store_id",            limit: 4, null: false
-    t.integer  "send_receive_number", limit: 4, null: false
-    t.integer  "send_number",         limit: 4, null: false
+    t.datetime "datetime",                                      null: false
+    t.integer  "car_id",              limit: 4,                 null: false
+    t.integer  "store_id",            limit: 4,                 null: false
+    t.integer  "send_receive_number", limit: 4,                 null: false
+    t.integer  "send_number",         limit: 4,                 null: false
+    t.boolean  "generated",           limit: 1, default: false, null: false
+    t.boolean  "completed",           limit: 1, default: false, null: false
   end
 
   add_index "visit_tasks", ["car_id"], name: "car_id", using: :btree
-  add_index "visit_tasks", ["staff_id"], name: "staff_id", using: :btree
   add_index "visit_tasks", ["store_id"], name: "store_id", using: :btree
 
   add_foreign_key "check_logs", "check_actions", name: "check_logs_ibfk_1"
@@ -312,12 +326,10 @@ ActiveRecord::Schema.define(version: 1) do
   add_foreign_key "goods", "check_actions", column: "last_action_id", name: "goods_ibfk_1"
   add_foreign_key "goods", "orders", name: "goods_ibfk_2"
   add_foreign_key "goods", "registered_users", column: "staff_id", name: "goods_ibfk_3"
-  add_foreign_key "inspect_task_goods", "goods", column: "goods_id", name: "inspect_task_goods_ibfk_1"
-  add_foreign_key "inspect_task_goods", "inspect_tasks", name: "inspect_task_goods_ibfk_2"
-  add_foreign_key "inspect_task_plans", "registered_users", column: "staff_id", name: "inspect_task_plans_ibfk_1"
-  add_foreign_key "inspect_task_plans", "stores", name: "inspect_task_plans_ibfk_2"
-  add_foreign_key "inspect_tasks", "registered_users", column: "staff_id", name: "inspect_tasks_ibfk_1"
-  add_foreign_key "inspect_tasks", "stores", name: "inspect_tasks_ibfk_2"
+  add_foreign_key "inspect_task_goods", "goods", column: "goods_id", name: "inspect_task_goods_ibfk_1", on_delete: :cascade
+  add_foreign_key "inspect_task_goods", "inspect_tasks", name: "inspect_task_goods_ibfk_2", on_delete: :cascade
+  add_foreign_key "inspect_task_plans", "stores", name: "inspect_task_plans_ibfk_1"
+  add_foreign_key "inspect_tasks", "stores", name: "inspect_tasks_ibfk_1"
   add_foreign_key "metal_gateways", "stores", name: "metal_gateways_ibfk_1"
   add_foreign_key "orders", "order_status", column: "order_state_id", name: "orders_ibfk_1"
   add_foreign_key "orders", "registered_users", column: "sender_id", name: "orders_ibfk_2"
@@ -326,16 +338,16 @@ ActiveRecord::Schema.define(version: 1) do
   add_foreign_key "shops", "regions", name: "shops_ibfk_1"
   add_foreign_key "specify_address_user_ships", "specify_addresses", name: "specify_address_user_ships_ibfk_1"
   add_foreign_key "specify_addresses", "regions", name: "specify_addresses_ibfk_1"
-  add_foreign_key "transfer_task_goods", "goods", column: "goods_id", name: "transfer_task_goods_ibfk_1"
-  add_foreign_key "transfer_task_goods", "transfer_tasks", name: "transfer_task_goods_ibfk_2"
+  add_foreign_key "task_workers", "registered_users", column: "staff_id", name: "task_workers_ibfk_1"
+  add_foreign_key "task_workers", "task_worker_roles", name: "task_workers_ibfk_2"
+  add_foreign_key "transfer_task_goods", "goods", column: "goods_id", name: "transfer_task_goods_ibfk_1", on_delete: :cascade
+  add_foreign_key "transfer_task_goods", "transfer_tasks", name: "transfer_task_goods_ibfk_2", on_delete: :cascade
   add_foreign_key "transfer_task_plans", "cars", name: "transfer_task_plans_ibfk_1"
   add_foreign_key "transfer_tasks", "cars", name: "transfer_tasks_ibfk_1"
-  add_foreign_key "transfer_tasks", "registered_users", column: "staff_id", name: "transfer_tasks_ibfk_2"
   add_foreign_key "visit_task_orders", "orders", name: "visit_task_orders_ibfk_1"
-  add_foreign_key "visit_task_orders", "visit_tasks", name: "visit_task_orders_ibfk_2"
+  add_foreign_key "visit_task_orders", "visit_tasks", name: "visit_task_orders_ibfk_2", on_delete: :cascade
   add_foreign_key "visit_task_plans", "cars", name: "visit_task_plans_ibfk_1"
   add_foreign_key "visit_task_plans", "stores", name: "visit_task_plans_ibfk_2"
   add_foreign_key "visit_tasks", "cars", name: "visit_tasks_ibfk_1"
-  add_foreign_key "visit_tasks", "registered_users", column: "staff_id", name: "visit_tasks_ibfk_2"
-  add_foreign_key "visit_tasks", "stores", name: "visit_tasks_ibfk_3"
+  add_foreign_key "visit_tasks", "stores", name: "visit_tasks_ibfk_2"
 end

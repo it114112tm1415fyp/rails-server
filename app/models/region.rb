@@ -2,10 +2,11 @@ class Region < ActiveRecord::Base
 	has_many(:shops)
 	has_many(:specify_addresses)
 	belongs_to(:store)
+	after_save { Goods.non_sent.each(&:update_next_stop) }
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {only: [:id, :name]}))
+		super(Option.new(options, only: [:id, :name]))
 	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy

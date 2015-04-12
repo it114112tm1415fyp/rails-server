@@ -6,6 +6,6 @@ class InspectTaskPlan < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {except: [:staff_id, :store_id], include: [:type, :staff, :store]}))
+		super(Option.new(options, except: [:staff_id, :store_id], include: [:type, :staff, :store]))
 	end
 end

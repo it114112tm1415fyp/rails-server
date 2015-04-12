@@ -1,30 +1,30 @@
-class TransferTask < ActiveRecord::Base
-	belongs_to(:staff)
+class TransferTask < Task
+	CRON_TASK_CONTENT = ->(x1) do
+		x1.goods.each { |x2| TASK_OBJECT_CLASS.create!(transfer_task: x1, goods: x2) }
+		x1.generated = true
+		x1.save!
+	end
+	CRON_TASK_TAG = :transfer_task_generate_goods_list
+	TASK_OBJECT_CLASS = GoodsTransferTaskShip
+	TASK_OBJECT_TYPE = :goods
+	TASK_PLAN_CLASS = TransferTaskPlan
+	TASK_PLAN_INCLUDES = {car: :staffs}
 	belongs_to(:car)
 	belongs_to(:from, polymorphic: true)
 	belongs_to(:to, polymorphic: true)
-	scope(:today, Proc.new { where(datetime: Date.today.beginning_of_day..Date.today.end_of_day) })
+	has_many(:goods_transfer_task_ships, dependent: :destroy)
+	has_many(:goods, class: Goods, through: :goods_transfer_task_ships)
 	validate(:from_and_to_are_not_equal)
 	validates_numericality_of(:number, greater_than: 0)
 	# @param [Hash] options
 	# @param [NilClass, Staff] staff
 	# @return [Hash]
 	def as_json(options={}, staff=nil)
-		super(Option.new(options, {except: [:staff_id, :car_id, :from_id, :from_type, :to_id, :to_type], include: [:staff, :car, :from, :to], method: [:type, {action_name: {parameter: [staff]}}]}))
+		super(Option.new(options, except: [:car_id, :from_id, :from_type, :to_id, :to_type], include: [:staffs, :car, :from, :to], method: :type))
 	end
-	# @param [Staff] staff
-	# @return [NilClass, String]
-	def action_name(staff)
-		case staff.workplace
-			when car
-				'load'
-			when from
-				'leave'
-			when to
-				'warehouse'
-			else
-				nil
-		end
+	# @return [ActiveRecord::Relation]
+	def goods
+		Goods.where(location: from, next_stop: to).limit(number)
 	end
 	private
 	# @return [Meaningless]
@@ -33,34 +33,27 @@ class TransferTask < ActiveRecord::Base
 	end
 
 	class << self
-		# @return [Meaningless]
-		def prepare
+		# @param [Integer] car_id
+		# @param [Integer] from_location_id
+		# @param [Integer] to_location_id
+		# @param [Integer] number
+		# @param [Integer, NilClass] delay_time
+		# @return [self]
+		def add_debug_task(car_id, from_location_id, to_location_id, number, delay_time)
+			delay_time ||= 1
+			car = Car.find(car_id)
+			task_time = Time.now.at_beginning_of_minute + delay_time.minutes
+			transfer_task = create!(datetime: task_time, staff: car.staffs.first, car_id: car_id, from_id: from_location_id, to_id: to_location_id, number: number)
+			Cron.add_delayed_task(CRON_TASK_TAG, task_time.to_ct, transfer_task, &CRON_TASK_CONTENT)
+			transfer_task
 		end
-		# @param [FalseClass, TrueClass] force
-		# @return [FalseClass, TrueClass]
-		def generate_today_task(force=false)
-			need_generate = need_generate_today_task
-			if result = need_generate || force
-				clear_today_task unless need_generate
-				today = Date.today
-				day = today.cwday % 7
-				today = {year: today.year, month: today.month, day: today.day}
-				TransferTaskPlan.day(day).each do |x1|
-					staffs = x1.car.staffs + x1.from.staffs + x1.to.staffs
-					staffs.each do |x2|
-						create!(datetime: x1.time.change(today), staff: x2, car_id: x1.car_id, from_type: x1.from_type, from_id: x1.from_id, to_type: x1.to_type, to_id: x1.to_id, number: x1.number)
-					end
-				end
-			end
-			result
-		end
-		# @return [Meaningless]
-		def clear_today_task
-			today.destroy_all
-		end
-		# @return [Meaningless]
-		def need_generate_today_task
-			!today.any?
+		# @param [TransferTaskPlan] plan
+		# @param [Hash] task_attributes
+		def generate_task_add_attributes(plan, task_attributes)
+			task_attributes[:task_workers] = plan.car.staffs.collect { |x| TaskWorker.new(staff: x, task_worker_role: TaskWorkerRole.car_driver_load) }
+			task_attributes[:task_workers] += plan.car.staffs.collect { |x| TaskWorker.new(staff: x, task_worker_role: TaskWorkerRole.car_driver_unload) }
+			task_attributes[:task_workers] += plan.from.staffs.collect { |x| TaskWorker.new(staff: x, task_worker_role:  TaskWorkerRole.departure_store_keeper) }
+			task_attributes[:task_workers] += plan.to.staffs.collect { |x| TaskWorker.new(staff: x, task_worker_role: TaskWorkerRole.destination_store_keeper) }
 		end
 	end
 

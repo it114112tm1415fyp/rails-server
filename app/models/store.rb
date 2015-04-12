@@ -2,6 +2,7 @@ class Store < ActiveRecord::Base
 	has_many(:check_logs, as: :location)
 	has_many(:conveyors)
 	has_many(:goods, as: :location, class: Goods)
+	has_many(:coming_goods, as: :next_stop, class: Goods)
 	has_many(:inspect_task_plans)
 	has_many(:regions)
 	has_many(:staffs, as: :workplace)
@@ -13,7 +14,7 @@ class Store < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {only: [:id, :shelf_number], method: [:type, :short_name, :long_name]}))
+		super(Option.new(options, only: [:id, :shelf_number], method: [:type, :short_name, :long_name]))
 	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy

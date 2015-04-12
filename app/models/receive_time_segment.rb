@@ -4,6 +4,6 @@ class ReceiveTimeSegment < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {except: [:id, :enable]}))
+		super(Option.new(options, except: [:id, :enable]))
 	end
 end

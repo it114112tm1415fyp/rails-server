@@ -1,14 +1,14 @@
 class Staff < RegisteredUser
 	belongs_to(:workplace, polymorphic: true)
+	has_many(:task_workers, ->{ where(task_worker_role: TaskWorkerRole.store_keeper) })
 	has_many(:check_logs)
 	has_many(:goods, class: Goods)
-	has_many(:inspect_task_plans)
 	has_many(:orders)
 	validates_presence_of(:workplace)
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {include: :workplace}))
+		super(Option.new(options, include: :workplace))
 	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy

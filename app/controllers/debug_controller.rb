@@ -31,7 +31,11 @@ class DebugController < ApplicationController
 	end
 	def new_inspect_debug_task
 		params_require(:staff, :store)
-		render(text: InspectTask.add_debug_task(params[:staff], params[:store], params[:delay_time] || 0))
+		render(text: InspectTask.add_debug_task(params[:staff], params[:store], params[:delay_time]).id)
+	end
+	def new_transfer_debug_task
+		params_require(:car, :from, :to, :number)
+		render(text: TransferTask.add_debug_task(params[:car], params[:from], params[:to], params[:number], params[:delay_time]).id)
 	end
 	def view_cron_tasks
 		Cron.show_tasks(true)

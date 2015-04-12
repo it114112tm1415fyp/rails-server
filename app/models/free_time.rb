@@ -4,7 +4,7 @@ class FreeTime < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {except: [:id, :order_id, :receive_time_segment_id], include: :receive_time_segment}))
+		super(Option.new(options, except: [:id, :order_id, :receive_time_segment_id], include: :receive_time_segment))
 	end
 	# @return [Time]
 	def version

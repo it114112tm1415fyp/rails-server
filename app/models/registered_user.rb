@@ -1,7 +1,7 @@
 class RegisteredUser < ActiveRecord::Base
 	has_many(:specify_address_user_ships, as: :user)
 	has_many(:specify_addresses, through: :specify_address_user_ships)
-	has_many(:receive_orders, class: Order, as: :receiver)
+	has_many(:receive_orders, as: :receiver, class: Order)
 	has_many(:send_orders, class: Order, foreign_key: :sender_id)
 	validates_format_of(:email, with: /("[^"]+?"|[\da-z]|[\da-z](\.?[\w\$\*\+\-\/\?\^\{\|\}!#%&'=`~]+)*[\da-z])@(\[((0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5])\.){3}(0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5])\]|(([\da-z]|[\da-z][\w\-]*[\da-z])\.)+[\da-z]{2,24})/i)
 	validates_format_of(:password, with: /[\da-f]{32}/)
@@ -11,7 +11,7 @@ class RegisteredUser < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {except: [:password, :enable, :workplace_id, :workplace_type], include: :specify_addresses, method: :type}))
+		super(Option.new(options, except: [:password, :enable, :workplace_id, :workplace_type], include: :specify_addresses, method: :type))
 	end
 	# @return [FalseClass]
 	def can_destroy

@@ -4,7 +4,7 @@ class OrderState < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [String]
 	def as_json(options={})
-		super(Option.new(options, {collect: :name}))
+		super(Option.new(options, collect: :name))
 	end
 
 	class << self

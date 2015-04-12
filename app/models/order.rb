@@ -8,11 +8,14 @@ class Order < ActiveRecord::Base
 	belongs_to(:staff)
 	has_many(:free_times)
 	has_many(:goods, class: Goods)
+	scope(:sending, Proc.new { where(order_state: OrderState.sending) })
+	scope(:submitted, Proc.new { where(order_state: OrderState.submitted) })
 	validates_numericality_of(:goods_number, greater_than_or_equal_to: 1)
+	before_validation { self.receive_time_version = SchemeVersion[ReceiveTimeSegment].scheme_update_time }
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {only: [:id, :goods_number, :created_at, :updated_at], include: [:sender, :receiver, :departure, :destination, :staff, :order_state, {goods: {collect: :string_id, marge_type: :replace}}], rename: {goods: :goods_ids}}))
+		super(Option.new(options, only: [:id, :goods_number, :created_at, :updated_at], include: [:sender, :receiver, :departure, :destination, :staff, :order_state, {goods: {collect: :string_id, marge_type: :replace}}], rename: {goods: :goods_ids}))
 	end
 	# @return [FalseClass, TrueClass]
 	def can_edit
@@ -96,7 +99,7 @@ class Order < ActiveRecord::Base
 	# @return [self]
 	def meaningful_free_times
 		today = Date.today
-		FreeTime.includes(:receive_time_segment).where(order: self, date: today..today + FREE_TIME_DAYS.days).order(date: :asc).order("#{ReceiveTimeSegment.table_name}.start_time ASC")
+		FreeTime.joins(:receive_time_segment).where(order: self, date: today..today + FREE_TIME_DAYS.days).order(date: :asc, receive_time_segment: {start_time: :asc})
 	end
 
 	class << self
@@ -109,9 +112,9 @@ class Order < ActiveRecord::Base
 		# @param [String] destination_type
 		# @param [Array<FalseClass, TrueClass>] time
 		# @return [self]
-		def make(sender, receiver, goods_number, departure_id, departure_type, destination_id, destination_type, time)
-			raise(ParameterError, 'departure_type') unless [Shop.to_s, SpecifyAddress.to_s].include?(departure_type)
-			raise(ParameterError, 'destination_type') unless [Shop.to_s, SpecifyAddress.to_s].include?(destination_type)
+		def make(sender, receiver, goods_number, departure_id, departure_type, destination_id, destination_type, time=[])
+			raise(ParameterError, 'departure_type') unless [Shop.name, SpecifyAddress.name].include?(departure_type)
+			raise(ParameterError, 'destination_type') unless [Shop.name, SpecifyAddress.name].include?(destination_type)
 			raise(ParameterError, 'receiver') unless receiver.is_a?(Hash)
 			transaction do
 				departure = const_get(departure_type).find(departure_id)
@@ -120,14 +123,17 @@ class Order < ActiveRecord::Base
 					receiver = RegisteredUser.find(receiver[:id])
 				else
 					receiver = PublicReceiver.find_or_create_by!(name: receiver[:name], email: receiver[:email], phone: receiver[:phone])
-					receiver.specify_addresses << destination
-					receiver.specify_addresses.uniq!
-					receiver.save!
+					if destination.is_a?(SpecifyAddress)
+						receiver.specify_addresses << destination
+						receiver.specify_addresses.uniq!
+						receiver.save!
+					end
 				end
 				error('departure do not match sender address') if departure.is_a?(SpecifyAddress) && !sender.specify_addresses.include?(departure)
 				error('destination do not match receive address') if destination.is_a?(SpecifyAddress) && receiver.is_a?(RegisteredUser) && !receiver.specify_addresses.include?(destination)
 				order = create!(sender: sender, receiver: receiver, departure: departure, destination: destination, goods_number: goods_number, order_state: OrderState.submitted)
-				order.change_time(time)
+				order.change_time(time) if departure_type == SpecifyAddress.name
+				order
 			end
 		end
 	end

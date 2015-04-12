@@ -1,8 +1,18 @@
-class VisitTask < ActiveRecord::Base
-	belongs_to(:staff)
+class VisitTask < Task
+	CRON_TASK_CONTENT = ->(x1) do
+		x1.goods.each { |x2| TASK_OBJECT_CLASS.create!(visit_task: x1, goods: x2) }
+		x1.generated = true
+		x1.save!
+	end
+	CRON_TASK_TAG = :visit_task_generate_goods_list
+	TASK_OBJECT_CLASS = OrderVisitTaskShip
+	TASK_OBJECT_TYPE = :order
+	TASK_PLAN_CLASS = VisitTaskPlan
+	TASK_PLAN_INCLUDES = {car: :staffs}
 	belongs_to(:car)
 	belongs_to(:store)
-	scope(:today, Proc.new { where(datetime: Date.today.beginning_of_day..Date.today.end_of_day) })
+	has_many(:order_visit_task_ships, dependent: :destroy)
+	has_many(:orders, through: :order_visit_task_ships)
 	validate(:send_number_is_less_than_or_equal_to_send_receive_number)
 	validates_numericality_of(:send_number, greater_than_or_equal_to: 0)
 	validates_numericality_of(:send_receive_number, greater_than: 0)
@@ -10,19 +20,12 @@ class VisitTask < ActiveRecord::Base
 	# @param [NilClass, Staff] staff
 	# @return [Hash]
 	def as_json(options={}, staff=nil)
-		super(Option.new(options, {except: [:staff_id, :car_id, :store_id], include: [:staff, :car, :store], method: [:type, {action_name: {parameter: [staff]}}]}))
+		super(Option.new(options, except: [:car_id, :store_id], include: [:staffs, :car, :store], method: :type))
 	end
-	# @param [Staff] staff
-	# @return [NilClass, String]
-	def action_name(staff)
-		case staff.workplace
-			when car
-				'load'
-			when store
-				'leave'
-			else
-				nil
-		end
+	# @return [ActiveRecord::Relation]
+	def order
+		#Order.sending.joins([:goods, {destination: :region}]).where(store: store).limit(send_number)
+		#Order.submitted.joins(departure: :region).where(departure: {region: {store: store}})
 	end
 	private
 	# @return [Meaningless]
@@ -31,33 +34,11 @@ class VisitTask < ActiveRecord::Base
 	end
 
 	class << self
-		# @return [Meaningless]
-		def prepare
-		end
-		# @param [FalseClass, TrueClass] force
-		# @return [FalseClass, TrueClass]
-		def generate_today_task(force=false)
-			need_generate = need_generate_today_task
-			if result = need_generate || force
-				clear_today_task unless need_generate
-				today = Date.today
-				day = today.cwday % 7
-				today = {year: today.year, month: today.month, day: today.day}
-				VisitTaskPlan.day(day).each do |x1|
-					x1.car.staffs.each do |x2|
-						create!(datetime: x1.time.change(today), staff: x2, car_id: x1.car_id, store_id: x1.store_id, send_receive_number: x1.send_receive_number, send_number: x1.send_number)
-					end
-				end
-			end
-			result
-		end
-		# @return [Meaningless]
-		def clear_today_task
-			today.destroy_all
-		end
-		# @return [FalseClass, TrueClass]
-		def need_generate_today_task
-			!today.any?
+		# @param [VisitTaskPlan] plan
+		# @param [Hash] task_attributes
+		def generate_task_add_attributes(plan, task_attributes)
+			task_attributes[:task_workers] = plan.car.staffs.collect { |x| TaskWorker.new(staff: x, task_worker_role: TaskWorkerRole.car_driver) }
+			task_attributes[:task_workers] += plan.store.staffs.collect { |x| TaskWorker.new(staff: x, task_worker_role: TaskWorkerRole.store_keeper) }
 		end
 	end
 

@@ -4,28 +4,40 @@ module ActiveModel::Serialization
 	def serializable_hash(options = nil)
 		options ||= {}
 		attribute_names = attributes.keys
+		result = {}
 		if collect = options[:collect]
-			return send(*Array(collect))
-		elsif only = options[:only]
+			if collect.is_a?(Symbol)
+				result = send(collect)
+				recursive(result, {}, options[:recursive])
+			elsif collect.is_a?(Hash)
+				raise(ArgumentError, 'collect') unless collect.size == 1
+				collect_option = collect.values.first
+				result = send(collect.keys.first, *collect_option[:parameter])
+				result = recursive(result, collect_option, options[:recursive])
+			else
+				raise(TypeError, 'collect')
+			end
+			return result unless result.is_a?(Hash)
+		end
+		if only = options[:only]
 			attribute_names &= Array(only).collect(&:to_s)
 		elsif except = options[:except]
 			attribute_names -= Array(except).collect(&:to_s)
 		end
-		hash = {}
-		attribute_names.each { |x| hash[x] = read_attribute_for_serialization(x) }
+		attribute_names.each { |x| result[x] = read_attribute_for_serialization(x) }
 		handler = ->(x1, x2, x3) do
 			if x2.respond_to?(:to_ary)
-				hash[x1.to_s] = x2.to_ary.collect { |x4| recursive(x4, x3, options[:recursive]) }
+				result[x1.to_s] = x2.to_ary.collect { |x4| recursive(x4, x3, options[:recursive]) }
 			else
-				hash[x1.to_s] = recursive(x2, x3, options[:recursive])
+				result[x1.to_s] = recursive(x2, x3, options[:recursive])
 			end
 		end
 		serializable_add_methods(options, &handler)
 		serializable_add_includes(options, &handler)
 		if rename = options[:rename]
-			rename.each { |x1, x2| rename_attribute(hash, x1, x2) }
+			rename.each { |x1, x2| rename_attribute(result, x1, x2) }
 		end
-		hash
+		result
 	end
 	# @param [Hash] result
 	# @param [String, Symbol] old_name
@@ -47,8 +59,8 @@ module ActiveModel::Serialization
 		return unless method = options[:method]
 		method = Hash[Array(method).collect { |x| x.is_a?(Hash) ? x.to_a.first : [x, {}] }] unless method.is_a?(Hash)
 		method.each do |x1, x2|
-			raise(ArgumentError, x1.to_s) unless x2.is_a?(Hash)
-			raise(ArgumentError, 'parameter') unless x2[:parameter].nil? || x2[:parameter].is_a?(Array)
+			raise(TypeError, x1.to_s) unless x2.is_a?(Hash)
+			raise(TypeError, 'parameter') unless x2[:parameter].nil? || x2[:parameter].is_a?(Array)
 			if result = send(x1, *Array(x2[:parameter]))
 				yield x1, result, x2
 			end
@@ -60,7 +72,7 @@ module ActiveModel::Serialization
 	# @return [Hash, Object]
 	def recursive(value, options, recursive_options)
 		if recursive_options && value.respond_to?(:as_json)
-			value.as_json(Option.new(recursive_options, options))
+			value.as_json(Option.new(recursive_options, options, recursive_options))
 		elsif value.respond_to?(:serializable_hash)
 			value.serializable_hash(options)
 		else

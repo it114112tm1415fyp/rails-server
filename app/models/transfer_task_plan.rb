@@ -9,7 +9,7 @@ class TransferTaskPlan < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, {except: [:car_id, :from_id, :from_type, :to_id, :to_type], include: [:type, :car, :from, :to]}))
+		super(Option.new(options, except: [:car_id, :from_id, :from_type, :to_id, :to_type], include: [:type, :car, :from, :to]))
 	end
 	private
 	# @return [Meaningless]
