@@ -1,7 +1,6 @@
 class Car < ActiveRecord::Base
-	has_many(:check_logs, as: :location)
-	has_many(:goods, as: :location, class: Goods)
-	has_many(:coming_goods, as: :next_stop, class: Goods)
+	has_many(:goods, as: :location, class_name: Goods)
+	has_many(:coming_goods, as: :next_stop, class_name: Goods)
 	has_many(:staffs, as: :workplace)
 	has_many(:transfer_task_plans)
 	has_many(:visit_task_plans)
@@ -13,7 +12,7 @@ class Car < ActiveRecord::Base
 	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
-		(check_logs + goods + staffs).size == 0
+		(goods + staffs).size == 0
 	end
 	# @return [String]
 	def short_name

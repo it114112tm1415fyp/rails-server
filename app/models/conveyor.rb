@@ -18,7 +18,7 @@ class Conveyor < ActiveRecord::Base
 	# @return [Hash]
 	def send_message(message, raise_if_error)
 		if passive
-			socket = $conveyor_server[id]
+			socket = ConveyorConnector.conveyor_server[id]
 			raise unless socket
 		else
 			socket = TCPSocket.new(server_ip, server_port)
@@ -28,13 +28,13 @@ class Conveyor < ActiveRecord::Base
 			nil until (result = socket.gets) != "\r\n"
 			result = Timeout.timeout(2) {ActiveSupport::JSON.decode(result)}
 		rescue Timeout::Error
-			$conveyor_server[id] = socket.close
+			ConveyorConnector.conveyor_server[id] = socket.close
 			raise
 		end
 		socket.close unless passive
 		return result
 	rescue Exception
-		$conveyor_server[id] = nil if passive
+		ConveyorConnector.conveyor_server[id] = nil if passive
 		socket.close if socket && !socket.closed?
 		raise if raise_if_error
 		error('offline')

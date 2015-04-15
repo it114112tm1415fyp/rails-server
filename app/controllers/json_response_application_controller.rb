@@ -4,8 +4,11 @@ class JsonResponseApplicationController < ApplicationController
 	rescue_from(Exception) do |exception|
 		raise if @_request.get?
 		response_error('unknown', exception: exception.class.name, message: exception.message)
+		puts caller
 	end
-	rescue_from(Error) { |x| response_error(x.message, x.details) }
+	rescue_from(Error) do |x|
+		response_error(x.message, x.details)
+	end
 	rescue_from(ActionView::MissingTemplate) do
 		_process_action_callbacks.find_all { |x| x.kind == :after && x.send(:conditions_lambdas).all? { |x| x.call(self, nil) } }.each do |x|
 			case x.raw_filter
@@ -22,24 +25,26 @@ class JsonResponseApplicationController < ApplicationController
 		response_success
 	end
 	private
+	def response_simple_success(contents=nil)
+		json_response(contents.as_json.merge(success: true))
+	end
 	# @param [ActiveRecord::Base, Hash] contents
 	# @return [Meaningless]
 	def response_success(contents=nil)
-		json_response({success: true, content: contents})
+		json_response({ success: true, content: contents })
 	end
 	# @param [Exception] error
 	# @param [Hash] contents
 	# @return [Meaningless]
 	def response_error(error, contents={})
-		json_response(contents.update({success: false, error: error}))
+		json_response(contents.update({ success: false, error: error }))
 	end
 	# @param [Hash] response
 	# @return [Meaningless]
 	def json_response(response)
 		render(json: response) unless @skip_printing_response
-		logger.debug('Return json : ' + @_response_body[0])
+		logger.debug { 'Return json : ' + @_response_body[0] }
 	end
-
 	class << self
 		def skip_printing_response
 			@skip_printing_response

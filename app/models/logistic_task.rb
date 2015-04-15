@@ -1,17 +1,18 @@
-class Task < ActiveRecord::Base
+class LogisticTask < ActiveRecord::Base
 	IGNORE_ATTRIBUTES = [:id, :day, :time]
+	SUBCLASS = []
 	TASK_PLAN_INCLUDES = nil
-	Task.abstract_class = true
+	LogisticTask.abstract_class = true
 	has_many(:task_workers, as: :task, dependent: :destroy)
 	has_many(:staffs, through: :task_workers)
 	after_find(:generate)
-	# @raise [NotImplementedError]
+	# @return [GoodsTaskShips]
 	def task_objects
-		send(self.class::TASK_OBJECT_TYPE)
+		send(self.class::TASK_OBJECT_TYPE.to_s + '_queue')
 	end
 	# @return [FalseClass, TrueClass]
 	def generate(force=false)
-		if force || (datetime.past? && !generated)
+		if datetime.past? && !generated || force
 			if generated
 				self.class::TASK_OBJECT_CLASS.destroy_all(self.class.name.underscore.to_sym => self)
 			end
@@ -22,6 +23,28 @@ class Task < ActiveRecord::Base
 			end
 		end
 	end
+	# @return [Integer]
+	def task_code
+		id
+	end
+	# @return [FalseClass, TrueClass]
+	def check_completed
+		return true if completed
+		if self.class::CHECK_ACTION.all? { |x| partly_completed(x) }
+			self.completed = true
+			save!
+		end
+	end
+	# @return [FalseClass, TrueClass]
+	def partly_completed(check_action)
+		goods_task_ships.all? { |x| x.has_check_log(check_action) }
+	end
+	# @param [Goods] goods
+	# @param [TaskWorker] task_worker
+	# @param [Hash] addition
+	def edit_goods(goods, task_worker, addition)
+		not_implemented
+	end
 
 	class << self
 		# @return [ActiveRecord::Relation]
@@ -30,7 +53,7 @@ class Task < ActiveRecord::Base
 		end
 		# @return [Meaningless]
 		def prepare
-			unless generate_today_task(true)
+			unless generate_today_task
 				now = Time.now
 				tasks = today.where(datetime: now..now.at_end_of_day)
 				tasks.collect! { |x| Cron.new(self::CRON_TASK_TAG, x.datetime.to_ct, false, x, &self::CRON_TASK_CONTENT) }

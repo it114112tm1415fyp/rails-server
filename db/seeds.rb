@@ -8,9 +8,19 @@ def new_staff(name, addresses, workplace)
 	Staff.create!(username: name, password: Digest::MD5.hexdigest(Digest::MD5.hexdigest(name)), name: name, email: "#{name}@it114112tm1415fyp.com", phone: "+852-6#{'%07d' % rand(9999999)}", specify_addresses: addresses, workplace: workplace)
 end
 
+def add_free_time(order)
+	today = Date.today
+	receive_time_segments = ReceiveTimeSegment.enabled
+	Order::FREE_TIME_DAYS.times do |x1|
+		date = today + x1.days
+		receive_time_segments.each { |x2| FreeTime.create!(order: order, receive_time_segment: x2, date: date, free: true) }
+	end
+end
+
 admin = Admin.create!(username: $admin_username, password: Digest::MD5.hexdigest(Digest::MD5.hexdigest($admin_password)), enable: false, name: 'admin', email: 'admin@admin.admin', phone: '+00-0')
 
 car1 = Car.create!(vehicle_registration_mark: 'EA5651')
+Car.create!(vehicle_registration_mark: 'VW3428', enable: false)
 car2 = Car.create!(vehicle_registration_mark: 'SU8463')
 car3 = Car.create!(vehicle_registration_mark: 'RC8863')
 car4 = Car.create!(vehicle_registration_mark: 'SD1114')
@@ -24,6 +34,10 @@ store2 = Store.create!(name: 'Kwun Tong Store', address: 'Flat A, 2/F,
 Kwun Tong Industrial Centre Phase 4,
 436-446 Kwun Tong Rd,
 Kwun Tong', shelf_number: 40)
+Store.create!(name: 'Old Tuen Mun Store', address: 'Flat 1, 2/F,
+Luks Industrial Bldg,
+4 Kin Fung Circuit,
+Tuen Mun', shelf_number: 12, enable: false)
 store3 = Store.create!(name: 'Tuen Mun Store', address: 'Flat 5, 3/F,
 Luks Industrial Bldg,
 4 Kin Fung Circuit,
@@ -32,8 +46,13 @@ Tuen Mun', shelf_number: 60)
 region_hong_kong = Region.create!(name: 'Hong Kong', store: store1)
 region_kowloon = Region.create!(name: 'Kowloon', store: store2)
 region_new_territories = Region.create!(name: 'New Territories', store: store3)
+Region.create!(name: 'Cheung Chau', store: store3, enable: false)
 region_others = Region.create!(name: 'Others', store: store3)
 
+Shop.create!(name: 'Fung Full Plaza Shop2', address: "Shop 13, G/F.,
+Fung Full Plaza,
+480 King's Road,
+North Point", region: region_hong_kong, enable: false)
 shop1 = Shop.create!(name: 'Fung Full Plaza Shop', address: "Shop 2, G/F.,
 Fung Full Plaza,
 480 King's Road,
@@ -172,21 +191,22 @@ TransferTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 14, 30), car
 TransferTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 15), car: car5, from: store3, to: shop9, number: 30)
 TransferTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 15, 30), car: car5, from: shop9, to: store3, number: 30)
 
-VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car3, store: store1, send_receive_number: 3, send_number: 2)
-VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 14, 30), car: car3, store: store1, send_receive_number: 5, send_number: 3)
-VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 16), car: car3, store: store1, send_receive_number: 8, send_number: 5)
-VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car4, store: store2, send_receive_number: 3, send_number: 2)
-VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 15), car: car4, store: store2, send_receive_number: 3, send_number: 2)
-VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 16), car: car4, store: store2, send_receive_number: 9, send_number: 6)
-VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car5, store: store3, send_receive_number: 2, send_number: 1)
-VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 16), car: car5, store: store3, send_receive_number: 6, send_number: 4)
+# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car3, region: region_hong_kong, send_receive_number: 3, send_number: 2)
+# VisitTaskPlan.create!(day: 0b1101110, time: Time.new(2000, 1, 1, 14, 30), car: car3, region: region_hong_kong, send_receive_number: 5, send_number: 3)
+# VisitTaskPlan.create!(day: 0b1101110, time: Time.new(2000, 1, 1, 16), car: car3, region: region_hong_kong, send_receive_number: 8, send_number: 5)
+# VisitTaskPlan.create!(day: 0b0010000, time: Time.new(2000, 1, 1, 16), car: car3, region: region_others, send_receive_number: 6, send_number: 4)
+# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car4, region: region_kowloon, send_receive_number: 3, send_number: 2)
+# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 15), car: car4, region: region_kowloon, send_receive_number: 3, send_number: 2)
+# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 16), car: car4, region: region_kowloon, send_receive_number: 9, send_number: 6)
+# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car5, region: region_new_territories, send_receive_number: 2, send_number: 1)
+# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 16), car: car5, region: region_new_territories, send_receive_number: 6, send_number: 4)
 
 InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), store: store1) # debug
 InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), store: store1) # debug
-TransferTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, from: store1, to: store2, number: 30) # debug
-TransferTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, from: store2, to: store1, number: 18) # debug
-VisitTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, store: store3, send_receive_number: 3, send_number: 2) # debug
-VisitTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, store: store1, send_receive_number: 5, send_number: 3) # debug
+TransferTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, from: store1, to: store3, number: 30) # debug
+TransferTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, from: store1, to: store3, number: 30) # debug
+VisitTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, region: region_new_territories, send_receive_number: 3, send_number: 2) # debug
+VisitTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, region: region_new_territories, send_receive_number: 3, send_number: 2) # debug
 
 order_state_canceled = OrderState.create!(name: 'canceled')
 order_state_confirmed = OrderState.create!(name: 'confirmed')
@@ -201,13 +221,6 @@ check_action_load = CheckAction.create!(name: 'load')
 check_action_receive = CheckAction.create!(name: 'receive')
 check_action_unload = CheckAction.create!(name: 'unload')
 check_action_warehouse = CheckAction.create!(name: 'warehouse')
-
-task_worker_role_car_driver = TaskWorkerRole.create!(name: 'car_driver')
-task_worker_role_car_driver_load = TaskWorkerRole.create!(name: 'car_driver(load)')
-task_worker_role_car_driver_unload = TaskWorkerRole.create!(name: 'car_driver(unload)')
-task_worker_role_store_keeper = TaskWorkerRole.create!(name: 'store_keeper')
-task_worker_role_departure_store_keeper = TaskWorkerRole.create!(name: 'departure_store_keeper')
-task_worker_role_destination_store_keeper = TaskWorkerRole.create!(name: 'destination_store_keeper')
 
 receive_time_segment1 = ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 10), end_time: Time.new(2000, 1, 1, 12))
 receive_time_segment2 = ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 14), end_time: Time.new(2000, 1, 1, 16))
@@ -225,57 +238,80 @@ order9 = Order.create!(sender: staff1, sender_sign: '', receiver: staff10, goods
 order10 = Order.create!(sender: staff1, sender_sign: '', receiver: staff11, goods_number: 2, departure: shop5, destination: specify_address11, order_state: order_state_canceled)
 order11 = Order.create!(sender: staff12, sender_sign: '', receiver: staff1, goods_number: 3, departure: specify_address11, destination: specify_address12, order_state: order_state_submitted)
 
+order_queue1 = OrderQueue.create!(order: order1, queue_times: 1, receive: true)
+order_queue2 = OrderQueue.create!(order: order6, queue_times: 1, receive: true)
+order_queue3 = OrderQueue.create!(order: order8, queue_times: 1, receive: false)
+
 goods1 = Goods.create!(order: order3, string_id: '33pc1z', location: store1, next_stop: store3, shelf_id: 1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 1D70 0E00 005E', weight: 1.2, fragile: false, flammable: true, goods_photo: @goods_photo)
 goods2 = Goods.create!(order: order3, string_id: 'ejqd5e', location: store1, next_stop: store3, shelf_id: 1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 516F 0E00 0065', weight: 0.9, fragile: true, flammable: false, goods_photo: @goods_photo)
-goods3 = Goods.create!(order: order8, string_id: 'h0bw54', location: shop4, next_stop: store2, staff: staff12, last_action: check_action_receive, rfid_tag: 'AD83 1100 45CC E57C 1600 0099', weight: 1.5, fragile: false, flammable: false, goods_photo: @goods_photo)
+goods3 = Goods.create!(order: order8, string_id: 'h0bw54', location: store3, next_stop: specify_address9, shelf_id: 3, staff: staff20, last_action: check_action_warehouse, rfid_tag: 'AD83 1100 45CC E57C 1600 0099', weight: 1.5, fragile: false, flammable: false, goods_photo: @goods_photo)
 goods4 = Goods.create!(order: order4, string_id: '28hd3l', location: specify_address5, next_stop: specify_address5, staff: staff1, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0001', weight: 2.1, fragile: false, flammable: false, goods_photo: @goods_photo)
 goods5 = Goods.create!(order: order9, string_id: '5hs6rw', location: shop8, next_stop: shop8, staff: staff16, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0002', weight: 3.1, fragile: true, flammable: false, goods_photo: @goods_photo)
 goods6 = Goods.create!(order: order9, string_id: '8gek4f', location: shop8, next_stop: shop8, staff: staff16, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0003', weight: 2.7, fragile: false, flammable: false, goods_photo: @goods_photo)
 
-CheckLog.create!(time: Time.now + 1, goods: goods1, location: specify_address3, check_action: check_action_receive, staff: staff3)
-CheckLog.create!(time: Time.now + 2, goods: goods1, location: car3, check_action: check_action_load, staff: staff3)
-CheckLog.create!(time: Time.now + 3, goods: goods1, location: car3, check_action: check_action_unload, staff: staff3)
-CheckLog.create!(time: Time.now + 4, goods: goods1, location: store1, check_action: check_action_warehouse, staff: staff6)
-CheckLog.create!(time: Time.now + 5, goods: goods1, location: store1, check_action: check_action_inspect, staff: staff6)
-CheckLog.create!(time: Time.now + 1, goods: goods2, location: specify_address3, check_action: check_action_receive, staff: staff3)
-CheckLog.create!(time: Time.now + 2, goods: goods2, location: car3, check_action: check_action_load, staff: staff3)
-CheckLog.create!(time: Time.now + 3, goods: goods2, location: car3, check_action: check_action_unload, staff: staff3)
-CheckLog.create!(time: Time.now + 4, goods: goods2, location: store1, check_action: check_action_warehouse, staff: staff6)
-CheckLog.create!(time: Time.now + 5, goods: goods2, location: store1, check_action: check_action_inspect, staff: staff6)
-CheckLog.create!(time: Time.now + 1, goods: goods3, location: shop4, check_action: check_action_receive, staff: staff12)
-CheckLog.create!(time: Time.now + 1, goods: goods4, location: shop2, check_action: check_action_receive, staff: staff10)
-CheckLog.create!(time: Time.now + 2, goods: goods4, location: shop2, check_action: check_action_leave, staff: staff10)
-CheckLog.create!(time: Time.now + 3, goods: goods4, location: car3, check_action: check_action_load, staff: staff3)
-CheckLog.create!(time: Time.now + 4, goods: goods4, location: car3, check_action: check_action_unload, staff: staff3)
-CheckLog.create!(time: Time.now + 5, goods: goods4, location: store1, check_action: check_action_warehouse, staff: staff6)
-CheckLog.create!(time: Time.now + 6, goods: goods4, location: store1, check_action: check_action_inspect, staff: staff6)
-CheckLog.create!(time: Time.now + 7, goods: goods4, location: store1, check_action: check_action_inspect, staff: staff6)
-CheckLog.create!(time: Time.now + 8, goods: goods4, location: store1, check_action: check_action_leave, staff: staff6)
-CheckLog.create!(time: Time.now + 9, goods: goods4, location: car2, check_action: check_action_load, staff: staff2)
-CheckLog.create!(time: Time.now + 10, goods: goods4, location: car2, check_action: check_action_unload, staff: staff2)
-CheckLog.create!(time: Time.now + 11, goods: goods4, location: store3, check_action: check_action_warehouse, staff: staff8)
-CheckLog.create!(time: Time.now + 12, goods: goods4, location: store3, check_action: check_action_inspect, staff: staff8)
-CheckLog.create!(time: Time.now + 13, goods: goods4, location: store3, check_action: check_action_leave, staff: staff8)
-CheckLog.create!(time: Time.now + 14, goods: goods4, location: car5, check_action: check_action_load, staff: staff5)
-CheckLog.create!(time: Time.now + 15, goods: goods4, location: car5, check_action: check_action_unload, staff: staff5)
-CheckLog.create!(time: Time.now + 16, goods: goods4, location: specify_address5, check_action: check_action_receive, staff: staff5)
-CheckLog.create!(time: Time.now + 1, goods: goods5, location: specify_address9, check_action: check_action_receive, staff: staff5)
-CheckLog.create!(time: Time.now + 2, goods: goods5, location: car5, check_action: check_action_load, staff: staff5)
-CheckLog.create!(time: Time.now + 3, goods: goods5, location: car5, check_action: check_action_unload, staff: staff5)
-CheckLog.create!(time: Time.now + 4, goods: goods5, location: store3, check_action: check_action_warehouse, staff: staff8)
-CheckLog.create!(time: Time.now + 5, goods: goods5, location: store3, check_action: check_action_inspect, staff: staff8)
-CheckLog.create!(time: Time.now + 6, goods: goods5, location: store3, check_action: check_action_leave, staff: staff8)
-CheckLog.create!(time: Time.now + 7, goods: goods5, location: car5, check_action: check_action_load, staff: staff5)
-CheckLog.create!(time: Time.now + 8, goods: goods5, location: car5, check_action: check_action_unload, staff: staff5)
-CheckLog.create!(time: Time.now + 9, goods: goods5, location: shop8, check_action: check_action_warehouse, staff: staff16)
-CheckLog.create!(time: Time.now + 10, goods: goods5, location: shop8, check_action: check_action_issue, staff: staff16)
-CheckLog.create!(time: Time.now + 1, goods: goods6, location: specify_address9, check_action: check_action_receive, staff: staff5)
-CheckLog.create!(time: Time.now + 2, goods: goods6, location: car5, check_action: check_action_load, staff: staff5)
-CheckLog.create!(time: Time.now + 3, goods: goods6, location: car5, check_action: check_action_unload, staff: staff5)
-CheckLog.create!(time: Time.now + 4, goods: goods6, location: store3, check_action: check_action_warehouse, staff: staff8)
-CheckLog.create!(time: Time.now + 5, goods: goods6, location: store3, check_action: check_action_inspect, staff: staff8)
-CheckLog.create!(time: Time.now + 6, goods: goods6, location: store3, check_action: check_action_leave, staff: staff8)
-CheckLog.create!(time: Time.now + 7, goods: goods6, location: car5, check_action: check_action_load, staff: staff5)
-CheckLog.create!(time: Time.now + 8, goods: goods6, location: car5, check_action: check_action_unload, staff: staff5)
-CheckLog.create!(time: Time.now + 9, goods: goods6, location: shop8, check_action: check_action_warehouse, staff: staff16)
-CheckLog.create!(time: Time.now + 10, goods: goods6, location: shop8, check_action: check_action_issue, staff: staff16)
+add_free_time(order1)
+add_free_time(order6)
+
+# dummy_inspect_task = InspectTask.create!(datetime: Time.new(1995, 3, 23, 23, 23, 23), store: store1)
+# dummy_goods_inspect_task_ship = GoodsInspectTaskShip.create!(goods: goods1, inspect_task: dummy_inspect_task)
+#
+# CheckLog.create!(time: Time.now + 1, task_goods: dummy_goods_inspect_task_ship, location: specify_address3, check_action: check_action_receive, staff: staff3)
+# CheckLog.create!(time: Time.now + 2, task_goods: dummy_goods_inspect_task_ship, location: car3, check_action: check_action_load, staff: staff3)
+# CheckLog.create!(time: Time.now + 3, task_goods: dummy_goods_inspect_task_ship, location: car3, check_action: check_action_unload, staff: staff3)
+# CheckLog.create!(time: Time.now + 4, task_goods: dummy_goods_inspect_task_ship, location: store1, check_action: check_action_warehouse, staff: staff6)
+# CheckLog.create!(time: Time.now + 5, task_goods: dummy_goods_inspect_task_ship, location: store1, check_action: check_action_inspect, staff: staff6)
+#
+# CheckLog.create!(time: Time.now + 1, task_goods: dummy_goods_inspect_task_ship, location: specify_address3, check_action: check_action_receive, staff: staff3)
+# CheckLog.create!(time: Time.now + 2, task_goods: dummy_goods_inspect_task_ship, location: car3, check_action: check_action_load, staff: staff3)
+# CheckLog.create!(time: Time.now + 3, task_goods: dummy_goods_inspect_task_ship, location: car3, check_action: check_action_unload, staff: staff3)
+# CheckLog.create!(time: Time.now + 4, task_goods: dummy_goods_inspect_task_ship, location: store1, check_action: check_action_warehouse, staff: staff6)
+# CheckLog.create!(time: Time.now + 5, task_goods: dummy_goods_inspect_task_ship, location: store1, check_action: check_action_inspect, staff: staff6)
+#
+# CheckLog.create!(time: Time.now + 1, task_goods: dummy_goods_inspect_task_ship, location: shop4, check_action: check_action_receive, staff: staff12)
+# CheckLog.create!(time: Time.now + 2, task_goods: dummy_goods_inspect_task_ship, location: shop4, check_action: check_action_leave, staff: staff12)
+# CheckLog.create!(time: Time.now + 3, task_goods: dummy_goods_inspect_task_ship, location: car4, check_action: check_action_load, staff: staff4)
+# CheckLog.create!(time: Time.now + 4, task_goods: dummy_goods_inspect_task_ship, location: car4, check_action: check_action_unload, staff: staff4)
+# CheckLog.create!(time: Time.now + 5, task_goods: dummy_goods_inspect_task_ship, location: store2, check_action: check_action_warehouse, staff: staff19)
+# CheckLog.create!(time: Time.now + 6, task_goods: dummy_goods_inspect_task_ship, location: store2, check_action: check_action_leave, staff: staff19)
+# CheckLog.create!(time: Time.now + 7, task_goods: dummy_goods_inspect_task_ship, location: car1, check_action: check_action_load, staff: staff1)
+# CheckLog.create!(time: Time.now + 7, task_goods: dummy_goods_inspect_task_ship, location: car1, check_action: check_action_unload, staff: staff1)
+# CheckLog.create!(time: Time.now + 7, task_goods: dummy_goods_inspect_task_ship, location: store3, check_action: check_action_warehouse, staff: staff20)
+#
+# CheckLog.create!(time: Time.now + 1, task_goods: dummy_goods_inspect_task_ship, location: shop2, check_action: check_action_receive, staff: staff10)
+# CheckLog.create!(time: Time.now + 2, task_goods: dummy_goods_inspect_task_ship, location: shop2, check_action: check_action_leave, staff: staff10)
+# CheckLog.create!(time: Time.now + 3, task_goods: dummy_goods_inspect_task_ship, location: car3, check_action: check_action_load, staff: staff3)
+# CheckLog.create!(time: Time.now + 4, task_goods: dummy_goods_inspect_task_ship, location: car3, check_action: check_action_unload, staff: staff3)
+# CheckLog.create!(time: Time.now + 5, task_goods: dummy_goods_inspect_task_ship, location: store1, check_action: check_action_warehouse, staff: staff6)
+# CheckLog.create!(time: Time.now + 6, task_goods: dummy_goods_inspect_task_ship, location: store1, check_action: check_action_inspect, staff: staff6)
+# CheckLog.create!(time: Time.now + 7, task_goods: dummy_goods_inspect_task_ship, location: store1, check_action: check_action_inspect, staff: staff6)
+# CheckLog.create!(time: Time.now + 8, task_goods: dummy_goods_inspect_task_ship, location: store1, check_action: check_action_leave, staff: staff6)
+# CheckLog.create!(time: Time.now + 9, task_goods: dummy_goods_inspect_task_ship, location: car2, check_action: check_action_load, staff: staff2)
+# CheckLog.create!(time: Time.now + 10, task_goods: dummy_goods_inspect_task_ship, location: car2, check_action: check_action_unload, staff: staff2)
+# CheckLog.create!(time: Time.now + 11, task_goods: dummy_goods_inspect_task_ship, location: store3, check_action: check_action_warehouse, staff: staff8)
+# CheckLog.create!(time: Time.now + 12, task_goods: dummy_goods_inspect_task_ship, location: store3, check_action: check_action_inspect, staff: staff8)
+# CheckLog.create!(time: Time.now + 13, task_goods: dummy_goods_inspect_task_ship, location: store3, check_action: check_action_leave, staff: staff8)
+# CheckLog.create!(time: Time.now + 14, task_goods: dummy_goods_inspect_task_ship, location: car5, check_action: check_action_load, staff: staff5)
+# CheckLog.create!(time: Time.now + 15, task_goods: dummy_goods_inspect_task_ship, location: car5, check_action: check_action_unload, staff: staff5)
+# CheckLog.create!(time: Time.now + 16, task_goods: dummy_goods_inspect_task_ship, location: specify_address5, check_action: check_action_receive, staff: staff5)
+#
+# CheckLog.create!(time: Time.now + 1, task_goods: dummy_goods_inspect_task_ship, location: specify_address9, check_action: check_action_receive, staff: staff5)
+# CheckLog.create!(time: Time.now + 2, task_goods: dummy_goods_inspect_task_ship, location: car5, check_action: check_action_load, staff: staff5)
+# CheckLog.create!(time: Time.now + 3, task_goods: dummy_goods_inspect_task_ship, location: car5, check_action: check_action_unload, staff: staff5)
+# CheckLog.create!(time: Time.now + 4, task_goods: dummy_goods_inspect_task_ship, location: store3, check_action: check_action_warehouse, staff: staff8)
+# CheckLog.create!(time: Time.now + 5, task_goods: dummy_goods_inspect_task_ship, location: store3, check_action: check_action_inspect, staff: staff8)
+# CheckLog.create!(time: Time.now + 6, task_goods: dummy_goods_inspect_task_ship, location: store3, check_action: check_action_leave, staff: staff8)
+# CheckLog.create!(time: Time.now + 7, task_goods: dummy_goods_inspect_task_ship, location: car5, check_action: check_action_load, staff: staff5)
+# CheckLog.create!(time: Time.now + 8, task_goods: dummy_goods_inspect_task_ship, location: car5, check_action: check_action_unload, staff: staff5)
+# CheckLog.create!(time: Time.now + 9, task_goods: dummy_goods_inspect_task_ship, location: shop8, check_action: check_action_warehouse, staff: staff16)
+# CheckLog.create!(time: Time.now + 10, task_goods: dummy_goods_inspect_task_ship, location: shop8, check_action: check_action_issue, staff: staff16)
+#
+# CheckLog.create!(time: Time.now + 1, task_goods: dummy_goods_inspect_task_ship, location: specify_address9, check_action: check_action_receive, staff: staff5)
+# CheckLog.create!(time: Time.now + 2, task_goods: dummy_goods_inspect_task_ship, location: car5, check_action: check_action_load, staff: staff5)
+# CheckLog.create!(time: Time.now + 3, task_goods: dummy_goods_inspect_task_ship, location: car5, check_action: check_action_unload, staff: staff5)
+# CheckLog.create!(time: Time.now + 4, task_goods: dummy_goods_inspect_task_ship, location: store3, check_action: check_action_warehouse, staff: staff8)
+# CheckLog.create!(time: Time.now + 5, task_goods: dummy_goods_inspect_task_ship, location: store3, check_action: check_action_inspect, staff: staff8)
+# CheckLog.create!(time: Time.now + 6, task_goods: dummy_goods_inspect_task_ship, location: store3, check_action: check_action_leave, staff: staff8)
+# CheckLog.create!(time: Time.now + 7, task_goods: dummy_goods_inspect_task_ship, location: car5, check_action: check_action_load, staff: staff5)
+# CheckLog.create!(time: Time.now + 8, task_goods: dummy_goods_inspect_task_ship, location: car5, check_action: check_action_unload, staff: staff5)
+# CheckLog.create!(time: Time.now + 9, task_goods: dummy_goods_inspect_task_ship, location: shop8, check_action: check_action_warehouse, staff: staff16)
+# CheckLog.create!(time: Time.now + 10, task_goods: dummy_goods_inspect_task_ship, location: shop8, check_action: check_action_issue, staff: staff16)

@@ -1,8 +1,7 @@
 class Staff < RegisteredUser
 	belongs_to(:workplace, polymorphic: true)
-	has_many(:task_workers, ->{ where(task_worker_role: TaskWorkerRole.store_keeper) })
-	has_many(:check_logs)
-	has_many(:goods, class: Goods)
+	has_many(:task_workers)
+	has_many(:goods, class_name: Goods)
 	has_many(:orders)
 	validates_presence_of(:workplace)
 	# @param [Hash] options
@@ -12,11 +11,11 @@ class Staff < RegisteredUser
 	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
-		check_logs.size == 0 && orders.size == 0
+		task_workers.size == 0
 	end
 	# @return [FalseClass, TrueClass]
 	def edit_account(username, password, name, email, phone, workplace_type, workplace_id, addresses, enable)
-		raise(ParameterError, 'workplace_type') unless [Car.to_s, Shop.to_s, Store.to_s].include?(workplace_type)
+		raise(ParameterError, 'workplace_type') unless [Car.name, Shop.name, Store.name].include?(workplace_type)
 		transaction do
 			error('username used') if self.username != username && RegisteredUser.find_by_username(username)
 			self.username = username
@@ -28,6 +27,25 @@ class Staff < RegisteredUser
 			self.enable = enable
 			change_address(addresses)
 		end
+	end
+	# TODO IMPROVE SQL QUERY
+	# @return [ActiveRecord::Relation]
+	def today_task_workers
+		task_worker_table_name = TaskWorker.table_name
+		select = "SELECT `#{task_worker_table_name}`.*"
+		from = " FROM `#{task_worker_table_name}`"
+		where = " WHERE `#{task_worker_table_name}`.`#{:staff_id}` = #{id} AND"
+		join_array = []
+		where_array = []
+		beginning_of_day = Date.today.beginning_of_day.to_s(:db)
+		end_of_day = Date.today.end_of_day.to_s(:db)
+		TaskManager::TASK_CLASS.each do |x|
+			table_name = x.table_name
+			join_array << " LEFT JOIN `#{table_name}` ON `#{table_name}`.`id` = `#{task_worker_table_name}`.`#{:task_id}` AND `#{task_worker_table_name}`.`#{:task_type}` = '#{x.name}'"
+			where_array << " `#{table_name}`.`#{:datetime}` BETWEEN '#{beginning_of_day}' AND '#{end_of_day}'"
+		end
+		sql = select + from + join_array.join + where + ' (' + where_array.join(' OR') + ' )'
+		TaskWorker.find_by_sql(sql)
 	end
 
 	class << self
@@ -60,7 +78,7 @@ class Staff < RegisteredUser
 		# @param [FalseClass, TrueClass] enable
 		# @return [self]
 		def register(username, password, name, email, phone, workplace_type, workplace_id, addresses, enable)
-			raise(ParameterError, 'workplace_type') unless [Car.to_s, Shop.to_s, Store.to_s].include?(workplace_type)
+			raise(ParameterError, 'workplace_type') unless [Car.name, Shop.name, Store.name].include?(workplace_type)
 			ActiveRecord::Base.transaction do
 				error('username used') if RegisteredUser.find_by_username(username)
 				staff = create!(username: username, password: password, name: name, email: email, phone: phone, workplace: Object.const_get(workplace_type).find(workplace_id), enable: enable)

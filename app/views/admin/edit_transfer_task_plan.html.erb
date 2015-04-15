@@ -33,7 +33,7 @@
           <td>
             <select id="input_from_type" name="from_type" onchange="editTransferTaskPlanOnChangeFromType();" required>
               <%= '<option value disabled>--</option>'.html_safe unless @from_type %>
-              <%= [Shop.to_s, Store.to_s].each do |x| %>
+              <%= [Shop.name, Store.name].each do |x| %>
                   <option<%= ' selected'.html_safe if @from_type && @from_type == x %>><%= x %></option>
               <% end %>
             </select>
@@ -53,7 +53,7 @@
           <td>
             <select id="input_to_type" name="to_type" onchange="editTransferTaskPlanOnChangeToType();" required>
               <%= '<option value disabled>--</option>'.html_safe unless @to_type %>
-              <%= [Shop.to_s, Store.to_s].each do |x| %>
+              <%= [Shop.name, Store.name].each do |x| %>
                   <option<%= ' selected'.html_safe if @to_type && @to_type == x %>><%= x %></option>
               <% end %>
             </select>

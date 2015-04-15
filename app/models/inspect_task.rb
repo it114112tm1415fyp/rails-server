@@ -1,5 +1,6 @@
-class InspectTask < Task
-	CRON_TASK_CONTENT = ->(x1) do
+class InspectTask < LogisticTask
+	CHECK_ACTION = [CheckAction.inspect]
+	CRON_TASK_CONTENT = Proc.new do |x1|
 		x1.goods.each { |x2| TASK_OBJECT_CLASS.create!(inspect_task: x1, goods: x2) }
 		x1.generated = true
 		x1.save!
@@ -10,14 +11,26 @@ class InspectTask < Task
 	TASK_PLAN_CLASS = InspectTaskPlan
 	belongs_to(:store)
 	has_many(:goods_inspect_task_ships, dependent: :destroy)
-	has_many(:goods, class: Goods, through: :goods_inspect_task_ships)
+	has_many(:goods, class_name: Goods, through: :goods_inspect_task_ships)
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, except: :store_id, include: [:staffs, :store, :inspect_task_goods], method: :type))
+		super(Option.new(options, except: :store_id, include: [:staffs, :store, {goods: {collect: :string_id, merge_type: :replace}}], method: :type, rename: {goods: :goods_ids}))
 	end
-	def goods
+	def goods_queue
 		Goods.where(location: store)
+	end
+	# @return [ActiveRecord::Relation]
+	def goods_task_ships
+		goods_inspect_task_ships
+	end
+	# @param [Goods] goods
+	# @param [TaskWorker] task_worker
+	# @param [Hash] addition
+	def edit_goods(goods, task_worker, addition)
+		goods.staff = task_worker.staff
+		goods.change_check_action(task_worker.check_action)
+		goods.save!
 	end
 
 	class << self
@@ -35,7 +48,7 @@ class InspectTask < Task
 		# @param [InspectTaskPlan] plan
 		# @param [Hash] task_attributes
 		def generate_task_add_attributes(plan, task_attributes)
-			task_attributes[:task_workers] = plan.store.staffs.collect { |x| TaskWorker.new(staff: x, task_worker_role: TaskWorkerRole.store_keeper) }
+			task_attributes[:task_workers] = plan.store.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.inspect) }
 		end
 	end
 

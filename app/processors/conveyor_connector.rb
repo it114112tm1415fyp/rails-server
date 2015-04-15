@@ -8,7 +8,7 @@ class ConveyorConnector
 					connection = server.accept
 					if connection.remote_address.ip_address == Addrinfo.ip(ip).ip_address || connection.remote_address.ip_address == '127.0.0.1'
 						Rails.logger.info { 'ConveyorConnector conveyor '.fc_n_yellow + name.fc_b_yellow + ' connect to port '.fc_n_yellow + port.to_s.fc_b_yellow + ' at '.fc_n_yellow + connection.remote_address.ip_address.fc_b_yellow }
-						@conveyor_server[id] = connection
+						ConveyorConnector.conveyor_server[id] = connection
 					else
 						Rails.logger.info { 'ConveyorConnector someone connect to port '.fc_n_yellow + port.to_s.fc_b_yellow + ' at '.fc_n_yellow + connection.remote_address.ip_address.fc_b_yellow + ' not match '.fc_n_yellow + Addrinfo.ip(ip).ip_address.fc_b_yellow }
 						connection.close

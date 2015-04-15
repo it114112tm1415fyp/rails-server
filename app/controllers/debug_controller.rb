@@ -65,6 +65,7 @@ class DebugController < ApplicationController
 		render(text: value)
 	end
 	def test
+		p VisitTask.first.goods_visit_task_order_ships
 		render(nothing: true)
 	end
 	private

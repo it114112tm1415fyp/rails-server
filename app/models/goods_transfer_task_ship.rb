@@ -1,9 +1,17 @@
-class GoodsTransferTaskShip < ActiveRecord::Base
+class GoodsTransferTaskShip < GoodsTaskShip
 	belongs_to(:transfer_task)
 	belongs_to(:goods)
+	has_many(:check_logs, as: :task_goods, dependent: :destroy)
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, except: [:id, :transfer_task_id, :goods_id], include: {goods: {collect: :string_id, marge_type: :replace}}, rename: {goods: :goods_id}))
+		super(Option.new(options, only: [], include: [:transfer_task, :goods]))
 	end
+
+	class << self
+		def task
+			:transfer_task
+		end
+	end
+
 end

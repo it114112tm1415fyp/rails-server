@@ -41,7 +41,7 @@ class AdminController < WebApplicationController
 	end
 	def enable_or_disable
 		params_require(:object_type, :object_id, :redirect)
-		raise(ParameterError, 'object_type') unless [Car.to_s, Region.to_s, RegisteredUser.to_s, Shop.to_s, Store.to_s].include?(params[:object_type])
+		raise(ParameterError, 'object_type') unless [Car.name, Region.name, RegisteredUser.name, Shop.name, Store.name].include?(params[:object_type])
 		object = Object.const_get(params[:object_type]).find(params[:object_id])
 		object.enable = !object.enable
 		object.save!
@@ -295,7 +295,7 @@ class AdminController < WebApplicationController
 	def inspect_task_plans
 	end
 	def new_inspect_task_plan
-		if params_exist(:day, :time, :staff, :store)
+		if params_exist(:day, :time, :store)
 			raise(ParameterError, 'time') unless time = params[:time].to_time
 			InspectTaskPlan.create!(day: params[:day], time: time, staff_id: params[:staff], store_id: params[:store])
 			redirect_to(action: :inspect_task_plans)
@@ -304,7 +304,6 @@ class AdminController < WebApplicationController
 		@error_message = [$!.message]
 		@day = params[:day]
 		@time = params[:time]
-		@staff = params[:staff]
 		@store = params[:store]
 	ensure
 		render(template: 'admin/edit_inspect_task_plan') unless performed?
@@ -312,11 +311,10 @@ class AdminController < WebApplicationController
 	def edit_inspect_task_plan
 		params_require(:inspect_task_plan_id)
 		@inspect_task_plan = InspectTaskPlan.find(params[:inspect_task_plan_id])
-		if params_exist(:day, :time, :staff, :store)
+		if params_exist(:day, :time, :store)
 			raise(ParameterError, 'time') unless params[:time].to_time
 			@inspect_task_plan.day = params[:day]
 			@inspect_task_plan.time = params[:time].to_time
-			@inspect_task_plan.staff_id = params[:staff]
 			@inspect_task_plan.store_id = params[:store]
 			@inspect_task_plan.save!
 			redirect_to(action: :inspect_task_plans)
@@ -326,7 +324,6 @@ class AdminController < WebApplicationController
 	ensure
 		@day = params[:day] || @inspect_task_plan.day
 		@time = params[:time] || @inspect_task_plan.time.to_s(:time)
-		@staff = params[:staff] || @inspect_task_plan.staff_id
 		@store = params[:store] || @inspect_task_plan.store_id
 	end
 	def delete_inspect_task_plan
@@ -339,8 +336,8 @@ class AdminController < WebApplicationController
 	def new_transfer_task_plan
 		if params_exist(:day, :time, :car, :from_type, :from_id, :to_type, :to_id, :number)
 			raise(ParameterError, 'time') unless params[:time].to_time
-			raise(ParameterError, 'from_type') unless [Shop.to_s, Store.to_s].include?(params[:from_type])
-			raise(ParameterError, 'to_type') unless [Shop.to_s, Store.to_s].include?(params[:to_type])
+			raise(ParameterError, 'from_type') unless [Shop.name, Store.name].include?(params[:from_type])
+			raise(ParameterError, 'to_type') unless [Shop.name, Store.name].include?(params[:to_type])
 			from = Object.const_get(params[:from_type]).find(params[:from_id])
 			to = Object.const_get(params[:to_type]).find(params[:to_id])
 			TransferTaskPlan.create!(day: params[:day], time: params[:time].to_time, car_id: params[:car], from: from, to: to, number: params[:number])
@@ -364,8 +361,8 @@ class AdminController < WebApplicationController
 		@transfer_task_plan = TransferTaskPlan.find(params[:transfer_task_plan_id])
 		if params_exist(:day, :time, :car, :from_type, :from_id, :to_type, :to_id, :number)
 			raise(ParameterError, 'time') unless params[:time].to_time
-			raise(ParameterError, 'from_type') unless [Shop.to_s, Store.to_s].include?(params[:from_type])
-			raise(ParameterError, 'to_type') unless [Shop.to_s, Store.to_s].include?(params[:to_type])
+			raise(ParameterError, 'from_type') unless [Shop.name, Store.name].include?(params[:from_type])
+			raise(ParameterError, 'to_type') unless [Shop.name, Store.name].include?(params[:to_type])
 			from = Object.const_get(params[:from_type]).find(params[:from_id])
 			to = Object.const_get(params[:to_type]).find(params[:to_id])
 			@transfer_task_plan.day = params[:day]

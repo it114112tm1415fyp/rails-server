@@ -28,28 +28,8 @@ class GoodsController < MobileApplicationController
 		params_require(:goods_id)
 		response_success(qr_code: Goods.find_by_string_id!(params[:goods_id]).qr_code)
 	end
-	def inspect
-		params_require(:goods_id, :store_id)
-		Goods.inspect(params[:goods_id], params[:store_id], @staff)
-	end
-	def leave
-		params_require(:goods_id, :location_id, :location_type)
-		Goods.leave(params[:goods_id], params[:location_id], params[:location_type], @staff)
-	end
-	def load
-		params_require(:goods_id, :car_id)
-		Goods.load(params[:goods_id], params[:car_id], @staff)
-	end
 	def remove
 		params_require(:goods_id, :order_id)
 		Goods.remove(params[:string_id], params[:goods_id])
-	end
-	def unload
-		params_require(:goods_id, :car_id)
-		Goods.unload(params[:goods_id], params[:car_id], @staff)
-	end
-	def warehouse
-		params_require(:goods_id, :location_id, :location_type)
-		Goods.warehouse(params[:goods_id], params[:location_id], params[:location_type], @staff)
 	end
 end

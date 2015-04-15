@@ -1,19 +1,11 @@
 class VisitTaskPlan < ActiveRecord::Base
 	belongs_to(:car)
-	belongs_to(:store)
+	belongs_to(:region)
 	scope(:day, Proc.new { |x| where("(#{table_name}.day >> #{x}) & 1 = 1") })
-	validate(:send_number_is_less_than_or_equal_to_send_receive_number)
 	validates_numericality_of(:day, greater_than_or_equal_to: 0, less_than: 2 ** 7)
-	validates_numericality_of(:send_number, greater_than_or_equal_to: 0)
-	validates_numericality_of(:send_receive_number, greater_than: 0)
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, except: [:car_id, :store_id], include: [:type, :car, :store]))
-	end
-	private
-	# @return [Meaningless]
-	def send_number_is_less_than_or_equal_to_send_receive_number
-		errors.add(:send_number, 'send_number is bigger than send_receive_number') if send_number > send_receive_number
+		super(Option.new(options, except: [:car_id, :region_id], include: [:type, :car, :region]))
 	end
 end

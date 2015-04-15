@@ -20,19 +20,11 @@
           <td><input id="input_time" type="time" size="40" name="time" value="<%= @time %>" required /></td>
         </tr>
         <tr>
-          <th><label for="input_staff">staff：</label></th>
-          <td>
-            <select id="input_staff" name="staff" required onchange="editInspectTaskPlanOnChangeStaff();">
-              <option value disabled>--</option>
-              <%= staffs_select_options(@staff) %>
-            </select>
-          </td>
-        </tr>
-        <tr>
           <th><label for="input_store">store：</label></th>
           <td>
             <select id="input_store" name="store" required>
-              <%= stores_select_options_for_default_staff_workplace(@staff, @store) %>
+              <%= stores_select_options(@store) %>
+              <%# stores_select_options_for_default_staff_workplace(@staff, @store) %>
             </select>
           </td>
         </tr>

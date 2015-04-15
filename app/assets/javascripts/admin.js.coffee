@@ -119,19 +119,6 @@ window.editAccountRemoveAddressesRow = (row) ->
   document.getElementById("th_addresses").setAttribute("rowspan", "#{editAccountAddressesRow + 2}")
   document.getElementById("input_add_addresses").removeAttribute("disabled")
   null
-window.editInspectTaskPlanOnChangeStaff = () ->
-  input_staff = document.getElementById("input_staff")
-  staff_id = input_staff.selectedOptions.item(0).value
-  input_store_option_default = document.getElementById("input_store_option_default")
-  if store = staffStoreList[staff_id]
-    input_store_option_default.value = store.id
-    input_store_option_default.textContent = store.id + " - " + store.name + " (workplace)"
-    input_store_option_default.removeAttribute("disabled")
-  else
-    input_store_option_default.value = ""
-    input_store_option_default.textContent = "--"
-    input_store_option_default.setAttribute("disabled", "")
-  null
 window.editProfileOnSubmit = () ->
   md5Passwrod("input_password")
   md5Passwrod("input_password2")

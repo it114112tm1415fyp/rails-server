@@ -1,5 +1,6 @@
-class TransferTask < Task
-	CRON_TASK_CONTENT = ->(x1) do
+class TransferTask < LogisticTask
+	CHECK_ACTION = [CheckAction.leave, CheckAction.load, CheckAction.unload, CheckAction.warehouse]
+	CRON_TASK_CONTENT = Proc.new do |x1|
 		x1.goods.each { |x2| TASK_OBJECT_CLASS.create!(transfer_task: x1, goods: x2) }
 		x1.generated = true
 		x1.save!
@@ -13,18 +14,43 @@ class TransferTask < Task
 	belongs_to(:from, polymorphic: true)
 	belongs_to(:to, polymorphic: true)
 	has_many(:goods_transfer_task_ships, dependent: :destroy)
-	has_many(:goods, class: Goods, through: :goods_transfer_task_ships)
+	has_many(:goods, class_name: Goods, through: :goods_transfer_task_ships)
 	validate(:from_and_to_are_not_equal)
 	validates_numericality_of(:number, greater_than: 0)
 	# @param [Hash] options
-	# @param [NilClass, Staff] staff
 	# @return [Hash]
-	def as_json(options={}, staff=nil)
+	def as_json(options={})
 		super(Option.new(options, except: [:car_id, :from_id, :from_type, :to_id, :to_type], include: [:staffs, :car, :from, :to], method: :type))
 	end
 	# @return [ActiveRecord::Relation]
-	def goods
-		Goods.where(location: from, next_stop: to).limit(number)
+	def goods_queue
+		Goods.where(location: from, next_stop: to).order(id: :asc).limit(number)
+	end
+	# @return [ActiveRecord::Relation]
+	def goods_task_ships
+		goods_transfer_task_ships
+	end
+	# @param [Goods] goods
+	# @param [TaskWorker] task_worker
+	# @param [Hash] addition
+	def edit_goods(goods, task_worker, addition)
+		goods.change_check_action(task_worker.check_action)
+		case goods.last_action
+			when CheckAction.leave
+				goods.location = from
+				goods.shelf_id = nil
+			when CheckAction.load
+				goods.location = car
+			when CheckAction.unload
+			when CheckAction.warehouse
+				goods.location = to
+				goods.update_next_stop
+				goods.shelf_id = addition['shelf_id']
+			else
+				raise(ArgumentError)
+		end
+		goods.staff = task_worker.staff
+		goods.save!
 	end
 	private
 	# @return [Meaningless]
@@ -50,10 +76,10 @@ class TransferTask < Task
 		# @param [TransferTaskPlan] plan
 		# @param [Hash] task_attributes
 		def generate_task_add_attributes(plan, task_attributes)
-			task_attributes[:task_workers] = plan.car.staffs.collect { |x| TaskWorker.new(staff: x, task_worker_role: TaskWorkerRole.car_driver_load) }
-			task_attributes[:task_workers] += plan.car.staffs.collect { |x| TaskWorker.new(staff: x, task_worker_role: TaskWorkerRole.car_driver_unload) }
-			task_attributes[:task_workers] += plan.from.staffs.collect { |x| TaskWorker.new(staff: x, task_worker_role:  TaskWorkerRole.departure_store_keeper) }
-			task_attributes[:task_workers] += plan.to.staffs.collect { |x| TaskWorker.new(staff: x, task_worker_role: TaskWorkerRole.destination_store_keeper) }
+			task_attributes[:task_workers] = plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.load) }
+			task_attributes[:task_workers] += plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.unload) }
+			task_attributes[:task_workers] += plan.from.staffs.collect { |x| TaskWorker.new(staff: x, check_action:  CheckAction.leave) }
+			task_attributes[:task_workers] += plan.to.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.warehouse) }
 		end
 	end
 

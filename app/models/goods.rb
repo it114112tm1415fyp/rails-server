@@ -1,19 +1,30 @@
 class Goods < ActiveRecord::Base
 	self.table_name = 'goods'
-	belongs_to(:last_action, class_name: CheckAction.name)
+	belongs_to(:last_action, class_name: CheckAction)
 	belongs_to(:location, polymorphic: true)
 	belongs_to(:next_stop, polymorphic: true)
 	belongs_to(:order)
 	belongs_to(:staff)
-	has_many(:check_logs, dependent: :destroy)
+	has_many(:goods_inspect_task_ships, dependent: :destroy)
+	has_many(:goods_visit_task_order_ships, dependent: :destroy)
+	has_many(:goods_transfer_task_ships, dependent: :destroy)
 	validate(:shelf_id_is_less_than_shelf_number_of_store, if: :location_type_is_store )
 	validates_absence_of(:shelf_id, unless: :location_type_is_store)
 	validates_numericality_of(:shelf_id, greater_than_or_equal_to: 0, if: :location_type_is_store )
-	scope(:non_sent, Proc.new { joins(:order).where.not("`#{table_name}`.`location_id` != `#{Order.table_name}`.`destination_id` OR `#{table_name}`.`location_type` != `#{Order.table_name}`.`destination_type`") })
+	before_validation do
+		self.last_action ||= CheckAction.receive
+		self.location ||= order.departure
+		self.next_stop = order.departure.region.store if location == order.departure
+	end
+	scope(:non_sent, Proc.new { joins(:order).where("`#{table_name}`.`#{:location_id}` != `#{Order.table_name}`.`#{:destination_id}` OR `#{table_name}`.`#{:location_type}` != `#{Order.table_name}`.`#{:destination_type}`") })
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, except: [:id, :location_id, :next_stop_id, :next_stop_type, :location_type, :last_action_id, :staff_id, :goods_photo], include: [:location, :last_action, :staff, :check_logs], rename: {string_id: :id}))
+		super(Option.new(options, except: [:id, :location_id, :next_stop_id, :next_stop_type, :location_type, :last_action_id, :staff_id, :goods_photo], include: [:location, :last_action, :staff], method: :check_logs, rename: {string_id: :id}))
+	end
+	# @return [ActiveRecord::Relative]
+	def check_logs
+		(goods_inspect_task_ships.collect_concat(&:check_logs) + goods_visit_task_order_ships.collect_concat(&:check_logs) + goods_transfer_task_ships.collect_concat(&:check_logs)).sort_by(&:time)
 	end
 	# @return [String]
 	def qr_code
@@ -23,14 +34,23 @@ class Goods < ActiveRecord::Base
 	def update_next_stop
 		self.next_stop = GoodsRouter.new(self).next_stop
 	end
+	# @param [CheckAction] check_action
+	# @return [Meaningless]
+	def change_check_action(check_action)
+		if check_action.can_done_after(self.check_action)
+			self.check_action = check_action
+		else
+			error('state not match.')
+		end
+	end
 	private
 	# @return [FalseClass, TrueClass]
 	def location_type_is_store
-		location_type == Store.to_s
+		location_type == Store.name
 	end
 	# @return [Meaningless]
 	def shelf_id_is_less_than_shelf_number_of_store
-		errors.add(:shelf_id, 'shelf_id is bigger than or equal to send_receive_number') if shelf_id > location.shelf_number
+		errors.add(:shelf_id, 'shelf_id is bigger than or equal to shelf_number of store') if shelf_id > location.shelf_number
 	end
 
 	class << self
@@ -45,7 +65,7 @@ class Goods < ActiveRecord::Base
 			order = Order.find(order_id)
 			error('cannot edit order information after confirm') unless order.can_edit
 			error('goods_id used') if find_by_string_id(goods_id)
-			goods = create!(order: order, string_id: goods_id, location: order.departure, next_stop: order.departure.region.store, staff: staff, last_action: CheckAction.receive, weight: weight, fragile: fragile, flammable: flammable, goods_photo: picture)
+			goods = create!(order: order, string_id: goods_id, staff: staff, weight: weight, fragile: fragile, flammable: flammable, goods_photo: picture)
 			CheckLog.create!(goods: goods, location: goods.location, check_action: CheckAction.receive, staff: staff)
 			goods
 		end
@@ -69,11 +89,16 @@ class Goods < ActiveRecord::Base
 		end
 		# @param [Random] random_seed
 		# @return [String]
-		def generate_temporary_qr_code(random_seed=Random.new)
+		def generate_goods_id(random_seed=Random.new)
 			begin
 				goods_id = random_seed.rand(2176782336).to_s(36).rjust(6, '0')
 			end while find_by_string_id(goods_id)
-			'it114112tm1415fyp.temporary_goods_tag' + ActiveSupport::JSON.encode({goods_id: goods_id})
+			goods_id
+		end
+		# @param [Random] random_seed
+		# @return [String]
+		def generate_temporary_qr_code(random_seed=Random.new)
+			'it114112tm1415fyp.temporary_goods_tag' + ActiveSupport::JSON.encode({goods_id: generate_goods_id(random_seed)})
 		end
 		# @param [Integer] number
 		# @return [Array<String>]
@@ -87,7 +112,7 @@ class Goods < ActiveRecord::Base
 		# @param [Staff] staff
 		# @return [Meaningless]
 		def inspect(task_id, goods_id, store_id, staff)
-			log(goods_id, store_id, Store.name, staff, CheckAction.inspect)
+			log(task_id, goods_id, store_id, Store, staff, CheckAction.inspect)
 		end
 		# @param [Integer] task_id
 		# @param [String] goods_id
@@ -96,8 +121,8 @@ class Goods < ActiveRecord::Base
 		# @param [Staff] staff
 		# @return [Meaningless]
 		def leave(task_id, goods_id, location_id, location_type, staff)
-			raise(ParameterError, 'location_type') unless [Shop.to_s, Store.to_s].include?(location_type)
-			log(goods_id, location_id, location_type, staff, CheckAction.leave)
+			raise(ParameterError, 'location_type') unless [Shop.name, Store.name].include?(location_type)
+			log(task_id, goods_id, location_id, location_type, staff, CheckAction.leave)
 		end
 		# @param [Integer] task_id
 		# @param [String] goods_id
@@ -105,13 +130,12 @@ class Goods < ActiveRecord::Base
 		# @param [Staff] staff
 		# @return [Meaningless]
 		def load(task_id, goods_id, car_id, staff)
-			log(goods_id, car_id, Car.name, staff, CheckAction.load)
+			log(task_id, goods_id, car_id, Car, staff, CheckAction.load)
 		end
-		# @param [Integer] task_id
 		# @param [String] goods_id
 		# @param [Integer] order_id
 		# @return [Meaningless]
-		def remove(task_id, goods_id, order_id)
+		def remove(goods_id, order_id)
 			order = Order.find(order_id)
 			error('cannot edit order information after confirm') unless order.can_edit
 			goods = find_by_string_id(goods_id)
@@ -124,7 +148,7 @@ class Goods < ActiveRecord::Base
 		# @param [Staff] staff
 		# @return [Meaningless]
 		def unload(task_id, goods_id, car_id, staff)
-			log(goods_id, car_id, Car.name, staff, CheckAction.unload)
+			log(task_id, goods_id, car_id, Car, staff, CheckAction.unload)
 		end
 		# @param [Integer] task_id
 		# @param [String] goods_id
@@ -133,22 +157,26 @@ class Goods < ActiveRecord::Base
 		# @param [Staff] staff
 		# @return [Meaningless]
 		def warehouse(task_id, goods_id, location_id, location_type, staff)
-			raise(ParameterError, 'location_type') unless [Shop.to_s, Store.to_s].include?(location_type)
-			log(goods_id, location_id, location_type, staff, CheckAction.warehouse)
+			raise(ParameterError, 'location_type') unless [Shop.name, Store.name].include?(location_type)
+			log(task_id, goods_id, location_id, location_type, staff, CheckAction.warehouse)
 		end
 		private
+		# @param [Integer] task_id
 		# @param [String] goods_id
 		# @param [Integer] location_id
 		# @param [String] location_type
 		# @param [Staff] staff
 		# @param [CheckAction] check_action
 		# @return [Meaningless]
-		def log(goods_id, location_id, location_type, staff, check_action)
+		def log(task_id, goods_id, location_id, location_type, staff, check_action)
 			transaction do
 				goods = find_by_string_id(goods_id)
 				error("action '#{check_action.name}' can not be done after '#{goods.last_action.name}'") unless check_action.can_done_after(goods.last_action)
-				CheckLog.create!(goods: goods, location_id: location_id, location_type: location_type, check_action: check_action, staff: staff)
-				goods.location = location
+				task = TaskWorker.find(task_id).task
+				task_goods = task.class::TASK_OBJECT_CLASS.find_by!(goods: goods, task.class::TASK_OBJECT_CLASS.task => task)
+				CheckLog.create!(task_goods: task_goods, location_id: location_id, location_type: location_type, check_action: check_action, staff: staff)
+				goods.location_id = location_id
+				goods.location_type = location_type
 				goods.last_action = check_action
 				goods.save!
 			end

@@ -1,7 +1,10 @@
 class Region < ActiveRecord::Base
 	has_many(:shops)
 	has_many(:specify_addresses)
+	has_many(:visit_task_plans)
+	has_many(:visit_tasks)
 	belongs_to(:store)
+	scope(:enabled, ->{ where(enable: true) })
 	after_save { Goods.non_sent.each(&:update_next_stop) }
 	# @param [Hash] options
 	# @return [Hash]

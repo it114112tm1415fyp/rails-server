@@ -1,6 +1,6 @@
 class CheckAction < ActiveRecord::Base
 	has_many(:check_logs)
-	has_many(:goods, class: Goods)
+	has_many(:goods, class_name: Goods)
 	# @param [Hash] options
 	# @return [String]
 	def as_json(options={})
@@ -35,7 +35,7 @@ class CheckAction < ActiveRecord::Base
 					# @param [self] check_action
 					# @return [FalseClass, TrueClass]
 					def can_done_after(check_action)
-						check_action == CheckAction.unload || check_action == CheckAction.warehouse
+						true
 					end
 				end
 			end

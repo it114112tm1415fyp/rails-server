@@ -1,14 +1,12 @@
 class Store < ActiveRecord::Base
-	has_many(:check_logs, as: :location)
 	has_many(:conveyors)
-	has_many(:goods, as: :location, class: Goods)
-	has_many(:coming_goods, as: :next_stop, class: Goods)
+	has_many(:goods, as: :location, class_name: Goods)
+	has_many(:coming_goods, as: :next_stop, class_name: Goods)
 	has_many(:inspect_task_plans)
 	has_many(:regions)
 	has_many(:staffs, as: :workplace)
-	has_many(:transfer_out_tasks, as: :from, class: TransferTaskPlan)
-	has_many(:transfer_in_tasks, as: :to, class: TransferTaskPlan)
-	has_many(:visit_task_plans)
+	has_many(:transfer_out_task_plans, as: :from, class_name: TransferTaskPlan)
+	has_many(:transfer_in_task_plans, as: :to, class_name: TransferTaskPlan)
 	scope(:enabled, Proc.new { where(enable: true) })
 	validates_numericality_of(:shelf_number, greater_than: 0)
 	# @param [Hash] options
@@ -18,7 +16,7 @@ class Store < ActiveRecord::Base
 	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
-		(check_logs + conveyors + goods + staffs).size == 0
+		(conveyors + goods + staffs).size == 0
 	end
 	# @return [String]
 	def short_name

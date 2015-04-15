@@ -3,7 +3,7 @@ class LocationController < MobileApplicationController
 	include(StaffMobileApplicationModule)
 	before_action(:check_customer_login)
 	def get_list
-		response_success({cars: Car.all, shops: Shop.all, stores: Store.all})
+		response_success({cars: Car.enabled, shops: Shop.enabled, stores: Store.enabled})
 	end
 	def get_specify_address_id
 		params_require(:address, :region_id)

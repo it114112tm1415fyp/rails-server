@@ -41,7 +41,7 @@
               <td>
                 <select id="input_workplace_type" name="workplace_type" onchange="editAccountOnChangeWorkplaceType();" required>
                   <%= '<option value disabled>--</option>'.html_safe unless @workplace_type %>
-                  <%= [Car.to_s, Shop.to_s, Store.to_s].each do |x| %>
+                  <%= [Car.name, Shop.name, Store.name].each do |x| %>
                       <option<%= ' selected'.html_safe if @workplace_type && @workplace_type == x %>><%= x %></option>
                   <% end %>
                 </select>

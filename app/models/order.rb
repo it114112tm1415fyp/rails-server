@@ -4,10 +4,11 @@ class Order < ActiveRecord::Base
 	belongs_to(:destination, polymorphic: true)
 	belongs_to(:order_state)
 	belongs_to(:receiver, polymorphic: true)
-	belongs_to(:sender, class: RegisteredUser, foreign_key: :sender_id)
+	belongs_to(:sender, class_name: RegisteredUser, foreign_key: :sender_id)
 	belongs_to(:staff)
 	has_many(:free_times)
-	has_many(:goods, class: Goods)
+	has_many(:goods, class_name: Goods)
+	has_one(:queue, class_name: OrderQueue)
 	scope(:sending, Proc.new { where(order_state: OrderState.sending) })
 	scope(:submitted, Proc.new { where(order_state: OrderState.submitted) })
 	validates_numericality_of(:goods_number, greater_than_or_equal_to: 1)
@@ -15,7 +16,7 @@ class Order < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, only: [:id, :goods_number, :created_at, :updated_at], include: [:sender, :receiver, :departure, :destination, :staff, :order_state, {goods: {collect: :string_id, marge_type: :replace}}], rename: {goods: :goods_ids}))
+		super(Option.new(options, only: [:id, :goods_number, :created_at, :updated_at], include: [:sender, :receiver, :departure, :destination, :staff, :order_state, { goods: { collect: :string_id, merge_type: :replace } }], rename: { goods: :goods_ids }))
 	end
 	# @return [FalseClass, TrueClass]
 	def can_edit
@@ -40,20 +41,31 @@ class Order < ActiveRecord::Base
 		if order_state == OrderState.submitted || staff
 			self.order_state = OrderState.canceled
 			save!
+			order_queue.destroy if order_queue
 		else
 			error('cannot cancel order after contact, please contact staff to cancel this order')
 		end
 	end
-	# @param [String] sender_sign
+	# @param [String] sign
 	# @return [Meaningless]
-	def confirm(sender_sign)
-		self.sender_sign = sender_sign
-		self.order_state = OrderState.sending
+	def confirm(sign)
+		raise(ArgumentError) unless sign
+		raise(ArgumentError) if goods.empty?
+		case order_state
+			when OrderState.confirmed
+				self.sender_sign = sign
+				self.order_state = OrderState.sending
+			when OrderState.sending
+				self.receiver_sign = sign
+				self.order_state = OrderState.sent
+			else
+				raise(ArgumentError)
+		end
 		save!
 	end
 	# @return [Meaningless]
 	def contact
-		self.order_state = OrderState.after_contact if order_state == OrderState.submitted
+		self.order_state = OrderState.confirmed if order_state == OrderState.submitted
 		save!
 	end
 	# @param [Hash] receiver [Hash{id: [Integer]},Hash{name: [String], email: [String], phone: [String]}]
@@ -66,8 +78,8 @@ class Order < ActiveRecord::Base
 	# @param [Staff] staff
 	# @return [Meaningless]
 	def edit(receiver, goods_number, departure_id, departure_type, destination_id, destination_type, time, staff)
-		raise(ParameterError, 'departure_type') if departure_type && ![Shop.to_s, SpecifyAddress.to_s].include?(departure_type)
-		raise(ParameterError, 'destination_type') if departure_type && ![Shop.to_s, SpecifyAddress.to_s].include?(departure_type)
+		raise(ParameterError, 'departure_type') if departure_type && ![Shop.name, SpecifyAddress.name].include?(departure_type)
+		raise(ParameterError, 'destination_type') if departure_type && ![Shop.name, SpecifyAddress.name].include?(departure_type)
 		raise(ParameterError, 'receiver') if receiver && !receiver.is_a?(Hash)
 		transaction do
 			if receiver
@@ -99,9 +111,8 @@ class Order < ActiveRecord::Base
 	# @return [self]
 	def meaningful_free_times
 		today = Date.today
-		FreeTime.joins(:receive_time_segment).where(order: self, date: today..today + FREE_TIME_DAYS.days).order(date: :asc, receive_time_segment: {start_time: :asc})
+		FreeTime.joins(:receive_time_segment).where(order: self, date: today..today + FREE_TIME_DAYS.days).order(date: :asc).order("`#{:receive_time_segments}`.`#{:start_time}` ASC")
 	end
-
 	class << self
 		# @param [RegisteredUser] sender
 		# @param [Hash] receiver [Hash{id: [Integer]},Hash{name: [String], email: [String], phone: [String]}]
@@ -133,8 +144,21 @@ class Order < ActiveRecord::Base
 				error('destination do not match receive address') if destination.is_a?(SpecifyAddress) && receiver.is_a?(RegisteredUser) && !receiver.specify_addresses.include?(destination)
 				order = create!(sender: sender, receiver: receiver, departure: departure, destination: destination, goods_number: goods_number, order_state: OrderState.submitted)
 				order.change_time(time) if departure_type == SpecifyAddress.name
+				OrderQueue.create!(order: order, queue_times: 1, receive: true) if departure.is_a?(SpecifyAddress)
 				order
 			end
+		end
+		# @param [Store] store
+		# @param [Integer] limit
+		# @return [Array<Order>]
+		def ready_to_issue(store, limit)
+			sending.where(destination_type: SpecifyAddress).joins(:goods).where(goods: { location: store }).order(:id).find_all { |x| x.destination.region.store == store }.first(limit)
+		end
+		# @param [Store] store
+		# @param [Integer] limit
+		# @return [Array<Order>]
+		def ready_to_receive(store, limit)
+			submitted.where(departure_type: SpecifyAddress).order(:id).find_all { |x| x.departure.region.store == store }.first(limit)
 		end
 	end
 
