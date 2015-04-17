@@ -39,9 +39,9 @@ class Staff < RegisteredUser
 		where_array = []
 		beginning_of_day = Date.today.beginning_of_day.to_s(:db)
 		end_of_day = Date.today.end_of_day.to_s(:db)
-		TaskManager::TASK_CLASS.each do |x|
+		TaskManager::TASK_CLASS.collect(&:base_class).uniq.each do |x|
 			table_name = x.table_name
-			join_array << " LEFT JOIN `#{table_name}` ON `#{table_name}`.`id` = `#{task_worker_table_name}`.`#{:task_id}` AND `#{task_worker_table_name}`.`#{:task_type}` = '#{x.name}'"
+			join_array << " LEFT JOIN `#{table_name}` AS `#{table_name}` ON `#{table_name}`.`id` = `#{task_worker_table_name}`.`#{:task_id}` AND `#{task_worker_table_name}`.`#{:task_type}` = '#{x.name}'"
 			where_array << " `#{table_name}`.`#{:datetime}` BETWEEN '#{beginning_of_day}' AND '#{end_of_day}'"
 		end
 		sql = select + from + join_array.join + where + ' (' + where_array.join(' OR') + ' )'

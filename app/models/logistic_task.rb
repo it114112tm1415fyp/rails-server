@@ -1,10 +1,10 @@
 class LogisticTask < ActiveRecord::Base
-	IGNORE_ATTRIBUTES = [:id, :day, :time]
+	IGNORE_ATTRIBUTES = [:id, :type, :day, :time]
 	SUBCLASS = []
 	TASK_PLAN_INCLUDES = nil
 	LogisticTask.abstract_class = true
-	has_many(:task_workers, as: :task, dependent: :destroy)
 	has_many(:staffs, through: :task_workers)
+	has_many(:task_workers, as: :task, dependent: :destroy)
 	after_find(:generate)
 	# @return [GoodsTaskShips]
 	def task_objects
@@ -37,6 +37,7 @@ class LogisticTask < ActiveRecord::Base
 	end
 	# @return [FalseClass, TrueClass]
 	def partly_completed(check_action)
+		return false unless ready(check_action)
 		goods_task_ships.all? { |x| x.has_check_log(check_action) }
 	end
 	# @param [Goods] goods
@@ -44,6 +45,20 @@ class LogisticTask < ActiveRecord::Base
 	# @param [Hash] addition
 	def edit_goods(goods, task_worker, addition)
 		not_implemented
+	end
+	# @return [ActiveRecord::Relation]
+	def goods_task_ships_for_json
+		goods_task_ships
+	end
+	# @return [CheckAction] check_action
+	# @return [FalseClass, TrueClass]
+	def ready(check_action)
+		generated
+	end
+	# @return [CheckAction] check_action
+	# @return [TrueClass]
+	def can_do(check_action)
+		generated && !completed
 	end
 
 	class << self

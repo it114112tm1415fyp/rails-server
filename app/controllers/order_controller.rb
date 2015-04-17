@@ -8,8 +8,8 @@ class OrderController < MobileApplicationController
 		@order.cancel(@staff)
 	end
 	def confirm
-		params_require(:sender_sign)
-		@order.confirm(params[:sender_sign])
+		params_require(:task_id, :sign)
+		@order.confirm(params[:task_id], params[:sign])
 	end
 	def contact
 		@order.contact

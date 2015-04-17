@@ -138,14 +138,14 @@ editAccountOnLoad(#{ActiveSupport::JSON.encode(@addresses)});".html_safe
 	def visit_task_plans_table_contents
 		VisitTaskPlan.all.collect{ |x| "<tr>
   <td>#{x.id}</td>
+  <td>#{x.type}</td>
   <td>#{day_display_html(x.day)}</td>
   <td>#{x.time.to_s(:time)}</td>
   <td>#{x.car_id}</td>
   <td>#{x.car.short_name}</td>
-  <td>#{x.store_id}</td>
-  <td>#{x.store.short_name}</td>
-  <td>#{x.send_receive_number}</td>
-  <td>#{x.send_number}</td>
+  <td>#{x.region_id}</td>
+  <td>#{x.region.name}</td>
+  <td>#{x.number}</td>
   <td>#{link_to('edit', action: :edit_visit_task_plan, visit_task_plan_id: x.id)}</td>
   <td>#{link_to('delete', action: :delete_visit_task_plan, visit_task_plan_id: x.id)}</td>
 </tr>"}.join("\n").html_safe

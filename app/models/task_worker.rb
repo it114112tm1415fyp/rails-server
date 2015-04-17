@@ -37,26 +37,34 @@ class TaskWorker < ActiveRecord::Base
 										except: :completed,
 										method: [
 												:task_code,
+												{
+														can_do: {
+																parameter: [check_action]
+														}
+												},
 												goods_task_ships_options,
 												{
 														order_task_ships: {
 																skip: :if_not_exist,
+																except: :completed,
 																method: [
 																		goods_task_ships_options,
 																		{
-																				completed: {
+																				partly_completed: {
 																						parameter: [check_action]
 																				}
 																		}
 																],
 																rename: {
 																		goods_task_ships: :goods_in_task,
+																		partly_completed: :completed
 																},
 																remove: :goods
 														}
 												},
 												{
 														partly_completed: {
+																skip: :if_not_exist,
 																parameter: [check_action]
 														}
 												}
@@ -67,7 +75,7 @@ class TaskWorker < ActiveRecord::Base
 						rename: {
 								goods_task_ships: :goods_in_task,
 								order_task_ships: :order_in_task,
-								partly_completed: :completed
+								partly_completed: :completed2
 						},
 						remove: :goods_ids
 				)
@@ -79,7 +87,7 @@ class TaskWorker < ActiveRecord::Base
 	def do_task(goods_id, addition)
 		transaction do
 			goods = Goods.find_by_string_id(goods_id)
-			task.edit_goods(goods, self, addition)
+			check_action.edit_goods(goods, self, addition)
 			goods_id = goods.id
 			task_goods = task.goods_task_ships.find_by_goods_id(goods_id)
 			CheckLog.create!(task_worker: self, task_goods: task_goods)
@@ -93,7 +101,7 @@ class TaskWorker < ActiveRecord::Base
 		transaction do
 			raise(TypeError) unless task.is_a?(VisitTask)
 			raise(ArgumentError) unless ['true', 'false'].include?(customer_free)
-			error('this order has been contacted by other staff') if task.confirmed || order_id.to_i != task.next_order.order_id
+			error('this order has been contacted by other staff') if task.contacted || order_id.to_i != task.next_order_for_content.order_id
 			order = Order.find(order_id)
 			order_queue = order.queue
 			raise(ArgumentError) unless order_queue.visit_task == task
@@ -104,7 +112,7 @@ class TaskWorker < ActiveRecord::Base
 				order_queue.again
 			end
 			order_queue.destroy!
-			task.check_confirm
+			task.check_contacted
 		end
 	end
 end

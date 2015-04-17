@@ -4,8 +4,8 @@ class GoodsController < MobileApplicationController
 	before_action(:check_customer_login, only: :get_details)
 	before_action(:check_staff_login, except: :get_details)
 	def add
-		params_require(:goods_id, :order_id, :weight, :fragile, :flammable, :goods_photo)
-		response_success(Goods.add(params[:goods_id], params[:order_id], params[:weight], params[:fragile], params[:flammable], params[:goods_photo], @staff))
+		params_require(:task_id, :goods_id, :order_id, :weight, :fragile, :flammable, :goods_photo)
+		response_success(Goods.add(params[:task_id], params[:goods_id], params[:order_id], params[:weight], params[:fragile], params[:flammable], params[:goods_photo], @staff))
 	end
 	def edit
 		params_require(:goods_id)

@@ -28,7 +28,7 @@ class Option < Hash
 						elsif self[x1].is_a?(Hash) && x2.is_a?(Array)
 							self[x1].merge!(normalize_array_options(x2))
 						elsif self[x1].is_a?(Hash) && x2.is_a?(Hash)
-							self[x1].merge(x2)
+							self[x1].merge!(x2)
 						elsif self[x1].is_a?(Hash) && x2.is_a?(Symbol)
 							self[x1][x2] = {}
 						else

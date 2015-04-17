@@ -12,8 +12,7 @@ class VisitTaskOrder < ActiveRecord::Base
 						except: :visit_task_id,
 						include: {
 								order: {
-										collect: :order_state,
-										merge_type: :replace
+										collect: :order_state
 								},
 								goods: {
 										collect: :string_id
@@ -31,7 +30,11 @@ class VisitTaskOrder < ActiveRecord::Base
 	end
 	# @param [CheckAction] check_action
 	# @return [FalseClass, TrueClass]
-	def completed(check_action)
-		goods_visit_task_order_ships.all? { |x| x.has_check_log(check_action) }
+	def partly_completed(check_action=nil)
+		return false unless visit_task.contacted
+		return true if completed
+		self.completed = check_action == CheckAction.issue && goods_visit_task_order_ships.all? { |x| x.has_check_log(check_action) }
+		save!
+		completed
 	end
 end

@@ -8,9 +8,8 @@ class Goods < ActiveRecord::Base
 	has_many(:goods_inspect_task_ships, dependent: :destroy)
 	has_many(:goods_visit_task_order_ships, dependent: :destroy)
 	has_many(:goods_transfer_task_ships, dependent: :destroy)
-	validate(:shelf_id_is_less_than_shelf_number_of_store, if: :location_type_is_store )
-	validates_absence_of(:shelf_id, unless: :location_type_is_store)
-	validates_numericality_of(:shelf_id, greater_than_or_equal_to: 0, if: :location_type_is_store )
+	validate(:shelf_id_is_less_than_shelf_number_of_store, if: :last_action_is_warehouse )
+	validates_numericality_of(:shelf_id, greater_than_or_equal_to: 0, if: :last_action_is_warehouse )
 	before_validation do
 		self.last_action ||= CheckAction.receive
 		self.location ||= order.departure
@@ -26,6 +25,14 @@ class Goods < ActiveRecord::Base
 	def check_logs
 		(goods_inspect_task_ships.collect_concat(&:check_logs) + goods_visit_task_order_ships.collect_concat(&:check_logs) + goods_transfer_task_ships.collect_concat(&:check_logs)).sort_by(&:time)
 	end
+	# @return [ActiveRecord::Relative]
+	def departure
+		order.departure
+	end
+	# @return [ActiveRecord::Relative]
+	def destination
+		order.destination
+	end
 	# @return [String]
 	def qr_code
 		'it114112tm1415fyp.goods' + ActiveSupport::JSON.encode({goods_id: string_id, order_id: order.id, departure: order.departure.long_name, destination: order.destination.long_name, rfid_tag: rfid_tag, weight: weight, fragile: fragile, flammable: flammable, order_time: created_at})
@@ -34,19 +41,10 @@ class Goods < ActiveRecord::Base
 	def update_next_stop
 		self.next_stop = GoodsRouter.new(self).next_stop
 	end
-	# @param [CheckAction] check_action
-	# @return [Meaningless]
-	def change_check_action(check_action)
-		if check_action.can_done_after(self.check_action)
-			self.check_action = check_action
-		else
-			error('state not match.')
-		end
-	end
 	private
 	# @return [FalseClass, TrueClass]
-	def location_type_is_store
-		location_type == Store.name
+	def last_action_is_warehouse
+		last_action == CheckAction.warehouse
 	end
 	# @return [Meaningless]
 	def shelf_id_is_less_than_shelf_number_of_store
@@ -61,12 +59,20 @@ class Goods < ActiveRecord::Base
 		# @param [String] picture
 		# @param [Staff] staff
 		# @return [self]
-		def add(goods_id, order_id, weight, fragile, flammable, picture, staff)
+		def add(task_id, goods_id, order_id, weight, fragile, flammable, picture, staff)
+			task_worker = TaskWorker.find(task_id)
+			raise(ParameterError 'task_id') unless [ReceiveTask.name, ServeTask.name].include?(task_worker.task_type)
 			order = Order.find(order_id)
 			error('cannot edit order information after confirm') unless order.can_edit
 			error('goods_id used') if find_by_string_id(goods_id)
 			goods = create!(order: order, string_id: goods_id, staff: staff, weight: weight, fragile: fragile, flammable: flammable, goods_photo: picture)
-			CheckLog.create!(goods: goods, location: goods.location, check_action: CheckAction.receive, staff: staff)
+			if task_worker.task_type == ReceiveTask
+				receive_task_order = VisitTaskOrder.find_by!(order: order, visit_task_id: task_worker.task_id)
+				task_goods = GoodsVisitTaskOrderShip.new(goods: goods, visit_task_order: receive_task_order)
+			else
+				task_goods = GoodsServeTaskShip.new(goods: goods, serve_task_id: task_worker.task_id)
+			end
+			CheckLog.create!(task_worker: task_worker, task_goods: task_goods)
 			goods
 		end
 		# @param [String] goods_id

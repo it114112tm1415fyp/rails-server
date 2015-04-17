@@ -177,25 +177,25 @@ class AdminController < WebApplicationController
 	def stores
 	end
 	def new_store
-		if params_exist(:address, :size)
+		if params_exist(:address, :shelf_number)
 			error('This store already exist') if Store.find_by_address(params[:address])
-			Store.create!(address: params[:address], size: params[:size])
+			Store.create!(address: params[:address], shelf_number: params[:shelf_number])
 			redirect_to(action: :stores)
 		end
 	rescue Error
 		@error_message = [$!.message]
 		@address = params[:address]
-		@size = params[:size]
+		@shelf_number = params[:shelf_number]
 	ensure
 		render(template: 'admin/edit_store') unless performed?
 	end
 	def edit_store
 		params_require(:store_id)
 		@store = Store.find(params[:store_id])
-		if params_exist(:address, :size)
+		if params_exist(:address, :shelf_number)
 			error('This store already exist') if @store.address != params[:address] && Store.find_by_address(params[:address])
 			@store.address = params[:address]
-			@store.size = params[:size]
+			@store.shelf_number = params[:shelf_number]
 			@store.save!
 			redirect_to(action: :stores)
 		end
@@ -203,7 +203,7 @@ class AdminController < WebApplicationController
 		@error_message = [$!.message]
 	ensure
 		@address = params[:address] || @store.long_name
-		@size = params[:size] || @store.size
+		@shelf_number = params[:shelf_number] || @store.shelf_number
 	end
 	def delete_store
 		params_require(:store_id)
@@ -394,45 +394,46 @@ class AdminController < WebApplicationController
 	def visit_task_plans
 	end
 	def new_visit_task_plan
-		if params_exist(:day, :time, :car, :store, :send_receive_number, :send_number)
+		if params_exist(:type, :day, :time, :car, :region, :number)
 			raise(ParameterError, 'time') unless params[:time].to_time
-			VisitTaskPlan.create!(day: params[:day], time: params[:time].to_time, car_id: params[:car], store_id: params[:store], send_receive_number: params[:send_receive_number], send_number: params[:send_number])
+			raise(ParameterError, 'type') unless [ReceiveTaskPlan.name, IssueTaskPlan.name].include?(params[:type])
+			Object.const_get(params[:type]).create!(day: params[:day], time: params[:time].to_time, car_id: params[:car], region_id: params[:region], number: params[:number])
 			redirect_to(action: :visit_task_plans)
 		end
 	rescue Error
 		@error_message = [$!.message]
+		@type = params[:type]
 		@day = params[:day]
 		@time = params[:time]
 		@car = params[:car]
-		@store = params[:store]
-		@send_receive_number = params[:send_receive_number]
-		@send_number = params[:send_number]
+		@region = params[:region]
+		@number = params[:number]
 	ensure
 		render(template: 'admin/edit_visit_task_plan') unless performed?
 	end
 	def edit_visit_task_plan
 		params_require(:visit_task_plan_id)
 		@visit_task_plan = VisitTaskPlan.find(params[:visit_task_plan_id])
-		if params_exist(:day, :time, :car, :store, :send_receive_number, :send_number)
+		if params_exist(:type, :day, :time, :car, :region, :number)
 			raise(ParameterError, 'time') unless params[:time].to_time
 			@visit_task_plan.day = params[:day]
 			@visit_task_plan.time = params[:time].to_time
 			@visit_task_plan.car_id = params[:car]
-			@visit_task_plan.store_id = params[:store]
-			@visit_task_plan.send_receive_number = params[:send_receive_number]
-			@visit_task_plan.send_number = params[:send_number]
+			@visit_task_plan.region_id = params[:region]
+			@visit_task_plan.type = params[:type]
+			@visit_task_plan.number = params[:number]
 			@visit_task_plan.save!
 			redirect_to(action: :visit_task_plans)
 		end
 	rescue Error
 		@error_message = [$!.message]
 	ensure
+		@type = params[:type] || @visit_task_plan.type
 		@day = params[:day] || @visit_task_plan.day
 		@time = params[:time] || @visit_task_plan.time.to_s(:time)
 		@car = params[:car] || @visit_task_plan.car_id
-		@store = params[:store] || @visit_task_plan.store_id
-		@send_receive_number = params[:send_receive_number] || @visit_task_plan.send_receive_number
-		@send_number = params[:send_number] || @visit_task_plan.send_number
+		@region = params[:region] || @visit_task_plan.region_id
+		@number = params[:number] || @visit_task_plan.number
 	end
 	def delete_visit_task_plan
 		params_require(:visit_task_plan_id)

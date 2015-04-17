@@ -25,6 +25,10 @@ class DebugController < ApplicationController
 		params_require(:goods_id)
 		render(text: Goods.find_by_string_id(params[:goods_id]).qr_code)
 	end
+	def get_qr_code_for_shelf
+		params_require(:shelf_id)
+		render(text: 		'it114112tm1415fyp.shelf' + ActiveSupport::JSON.encode(shelf_id: params[:shelf_id]))
+	end
 	def make_session_expired
 		session[:expiry_time] = $session_expiry_time.ago.to_s
 		view_session
@@ -64,8 +68,16 @@ class DebugController < ApplicationController
 		times.times { value = Digest::MD5.hexdigest(value) }
 		render(text: value)
 	end
+	def get_task_workers_ids
+		params_require(:task_id, :task_type)
+		render(json: Object.const_get(params[:task_type]).find(params[:task_id]).task_workers.as_json(only: :id, include: :check_action, merge_type: :replace))
+	end
 	def test
-		p VisitTask.first.goods_visit_task_order_ships
+		p ActiveSupport::JSON.encode(nil)
+		p ActiveSupport::JSON.encode(1)
+		p ActiveSupport::JSON.encode('qw')
+		p ActiveSupport::JSON.encode([1,2])
+		p ActiveSupport::JSON.encode({a: :s})
 		render(nothing: true)
 	end
 	private

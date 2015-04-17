@@ -24,14 +24,6 @@ class InspectTask < LogisticTask
 	def goods_task_ships
 		goods_inspect_task_ships
 	end
-	# @param [Goods] goods
-	# @param [TaskWorker] task_worker
-	# @param [Hash] addition
-	def edit_goods(goods, task_worker, addition)
-		goods.staff = task_worker.staff
-		goods.change_check_action(task_worker.check_action)
-		goods.save!
-	end
 
 	class << self
 		# @param [Integer] staff_id

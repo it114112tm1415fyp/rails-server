@@ -1,7 +1,6 @@
 class LocationController < MobileApplicationController
 	include(CustomerMobileApplicationModule)
-	include(StaffMobileApplicationModule)
-	before_action(:check_customer_login)
+	before_action(:check_customer_login, except: :get_list)
 	def get_list
 		response_success({cars: Car.enabled, shops: Shop.enabled, stores: Store.enabled})
 	end

@@ -33,6 +33,13 @@ ActiveRecord::Schema.define(version: 1) do
     t.string   "task_goods_type", limit: 255, null: false
   end
 
+  create_table "constants", force: :cascade do |t|
+    t.string "key",   limit: 255, null: false
+    t.string "value", limit: 255, null: false
+  end
+
+  add_index "constants", ["key"], name: "index_constants_on_key", unique: true, using: :btree
+
   create_table "conveyors", force: :cascade do |t|
     t.string  "name",        limit: 40,  null: false
     t.integer "store_id",    limit: 4,   null: false
@@ -78,6 +85,13 @@ ActiveRecord::Schema.define(version: 1) do
   end
 
   add_index "goods_inspect_task_ships", ["goods_id", "inspect_task_id"], name: "goods_inspect_task_ships_unique", unique: true, using: :btree
+
+  create_table "goods_serve_task_ships", force: :cascade do |t|
+    t.integer "goods_id",      limit: 4, null: false
+    t.integer "serve_task_id", limit: 4, null: false
+  end
+
+  add_index "goods_serve_task_ships", ["goods_id", "serve_task_id"], name: "goods_serve_task_ships_unique", unique: true, using: :btree
 
   create_table "goods_transfer_task_ships", force: :cascade do |t|
     t.integer "goods_id",         limit: 4, null: false
@@ -170,12 +184,12 @@ ActiveRecord::Schema.define(version: 1) do
   add_index "regions", ["name"], name: "index_regions_on_name", unique: true, using: :btree
 
   create_table "registered_users", force: :cascade do |t|
+    t.string   "type",           limit: 40,                 null: false
     t.string   "username",       limit: 20,                 null: false
     t.string   "password",       limit: 32,                 null: false
     t.string   "name",           limit: 40,                 null: false
     t.string   "email",          limit: 255,                null: false
     t.string   "phone",          limit: 17,                 null: false
-    t.string   "type",           limit: 40,                 null: false
     t.integer  "workplace_id",   limit: 4
     t.string   "workplace_type", limit: 255
     t.boolean  "enable",         limit: 1,   default: true, null: false
@@ -188,6 +202,11 @@ ActiveRecord::Schema.define(version: 1) do
   create_table "scheme_versions", force: :cascade do |t|
     t.string   "scheme_name",        limit: 255, null: false
     t.datetime "scheme_update_time",             null: false
+  end
+
+  create_table "serve_tasks", force: :cascade do |t|
+    t.datetime "datetime",           null: false
+    t.integer  "shop_id",  limit: 4, null: false
   end
 
   create_table "shops", force: :cascade do |t|
@@ -262,23 +281,24 @@ ActiveRecord::Schema.define(version: 1) do
   add_index "visit_task_orders", ["order_id", "visit_task_id"], name: "order_visit_task_ships_unique", unique: true, using: :btree
 
   create_table "visit_task_plans", force: :cascade do |t|
-    t.integer "day",       limit: 4, null: false
-    t.time    "time",                null: false
-    t.integer "car_id",    limit: 4, null: false
-    t.integer "region_id", limit: 4, null: false
-    t.boolean "receive",   limit: 1, null: false
-    t.integer "number",    limit: 4, null: false
+    t.string  "type",      limit: 40, null: false
+    t.integer "day",       limit: 4,  null: false
+    t.time    "time",                 null: false
+    t.integer "car_id",    limit: 4,  null: false
+    t.integer "region_id", limit: 4,  null: false
+    t.integer "number",    limit: 4,  null: false
   end
 
   create_table "visit_tasks", force: :cascade do |t|
-    t.datetime "datetime",                            null: false
-    t.integer  "car_id",    limit: 4,                 null: false
-    t.integer  "region_id", limit: 4,                 null: false
-    t.boolean  "receive",   limit: 1,                 null: false
-    t.integer  "number",    limit: 4,                 null: false
-    t.boolean  "generated", limit: 1, default: false, null: false
-    t.boolean  "confirmed", limit: 1, default: false, null: false
-    t.boolean  "completed", limit: 1, default: false, null: false
+    t.string   "type",      limit: 40,                 null: false
+    t.datetime "datetime",                             null: false
+    t.integer  "car_id",    limit: 4,                  null: false
+    t.integer  "region_id", limit: 4,                  null: false
+    t.integer  "number",    limit: 4,                  null: false
+    t.boolean  "generated", limit: 1,  default: false, null: false
+    t.boolean  "contacted", limit: 1,  default: false, null: false
+    t.boolean  "received",  limit: 1,  default: false, null: false
+    t.boolean  "completed", limit: 1,  default: false, null: false
   end
 
 end

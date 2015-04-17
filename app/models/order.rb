@@ -39,28 +39,35 @@ class Order < ActiveRecord::Base
 	# @return [Meaningless]
 	def cancel(staff)
 		if order_state == OrderState.submitted || staff
-			self.order_state = OrderState.canceled
-			save!
-			order_queue.destroy if order_queue
+			transaction do
+				self.order_state = OrderState.canceled
+				queue.destroy if queue
+				save!
+			end
 		else
 			error('cannot cancel order after contact, please contact staff to cancel this order')
 		end
 	end
+	# @param [Integer] task_id
 	# @param [String] sign
 	# @return [Meaningless]
-	def confirm(sign)
-		raise(ArgumentError) unless sign
+	def confirm(task_id, sign)
+		task_worker = TaskWorker.find(task_id)
 		raise(ArgumentError) if goods.empty?
 		case order_state
 			when OrderState.confirmed
+				raise(ArgumentError) unless task_worker.check_action == CheckAction.receive
 				self.sender_sign = sign
 				self.order_state = OrderState.sending
 			when OrderState.sending
+				raise(ArgumentError) unless task_worker.check_action == CheckAction.issue
 				self.receiver_sign = sign
 				self.order_state = OrderState.sent
 			else
 				raise(ArgumentError)
 		end
+		VisitTaskOrder.create!(visit_task: task_worker.task, order: self)
+		task_worker.task.check_received if task_worker.check_action == CheckAction.receive
 		save!
 	end
 	# @return [Meaningless]

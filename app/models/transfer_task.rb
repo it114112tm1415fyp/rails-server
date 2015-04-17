@@ -30,28 +30,6 @@ class TransferTask < LogisticTask
 	def goods_task_ships
 		goods_transfer_task_ships
 	end
-	# @param [Goods] goods
-	# @param [TaskWorker] task_worker
-	# @param [Hash] addition
-	def edit_goods(goods, task_worker, addition)
-		goods.change_check_action(task_worker.check_action)
-		case goods.last_action
-			when CheckAction.leave
-				goods.location = from
-				goods.shelf_id = nil
-			when CheckAction.load
-				goods.location = car
-			when CheckAction.unload
-			when CheckAction.warehouse
-				goods.location = to
-				goods.update_next_stop
-				goods.shelf_id = addition['shelf_id']
-			else
-				raise(ArgumentError)
-		end
-		goods.staff = task_worker.staff
-		goods.save!
-	end
 	private
 	# @return [Meaningless]
 	def from_and_to_are_not_equal

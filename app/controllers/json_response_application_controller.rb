@@ -31,13 +31,13 @@ class JsonResponseApplicationController < ApplicationController
 	# @param [ActiveRecord::Base, Hash] contents
 	# @return [Meaningless]
 	def response_success(contents=nil)
-		json_response({ success: true, content: contents })
+		json_response(success: true, content: contents)
 	end
 	# @param [Exception] error
 	# @param [Hash] contents
 	# @return [Meaningless]
 	def response_error(error, contents={})
-		json_response(contents.update({ success: false, error: error }))
+		json_response(contents.update(success: false, error: error))
 	end
 	# @param [Hash] response
 	# @return [Meaningless]
@@ -47,7 +47,7 @@ class JsonResponseApplicationController < ApplicationController
 	end
 	class << self
 		def skip_printing_response
-			@skip_printing_response
+			@skip_printing_response = true
 		end
 	end
 

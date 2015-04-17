@@ -17,6 +17,27 @@ def add_free_time(order)
 	end
 end
 
+Constant.create!(key: 'price', value: '6')
+
+order_state_canceled = OrderState.create!(name: 'canceled')
+order_state_confirmed = OrderState.create!(name: 'confirmed')
+order_state_sending = OrderState.create!(name: 'sending')
+order_state_sent = OrderState.create!(name: 'sent')
+order_state_submitted = OrderState.create!(name: 'submitted')
+
+check_action_contact = CheckAction.create!(name: 'contact')
+check_action_inspect = CheckAction.create!(name: 'inspect')
+check_action_issue = CheckAction.create!(name: 'issue')
+check_action_leave = CheckAction.create!(name: 'leave')
+check_action_load = CheckAction.create!(name: 'load')
+check_action_receive = CheckAction.create!(name: 'receive')
+check_action_unload = CheckAction.create!(name: 'unload')
+check_action_warehouse = CheckAction.create!(name: 'warehouse')
+
+receive_time_segment1 = ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 10), end_time: Time.new(2000, 1, 1, 12))
+receive_time_segment2 = ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 14), end_time: Time.new(2000, 1, 1, 16))
+receive_time_segment3 = ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 16), end_time: Time.new(2000, 1, 1, 18))
+
 admin = Admin.create!(username: $admin_username, password: Digest::MD5.hexdigest(Digest::MD5.hexdigest($admin_password)), enable: false, name: 'admin', email: 'admin@admin.admin', phone: '+00-0')
 
 car1 = Car.create!(vehicle_registration_mark: 'EA5651')
@@ -205,26 +226,10 @@ InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), store: st
 InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), store: store1) # debug
 TransferTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, from: store1, to: store3, number: 30) # debug
 TransferTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, from: store1, to: store3, number: 30) # debug
-VisitTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, region: region_new_territories, send_receive_number: 3, send_number: 2) # debug
-VisitTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, region: region_new_territories, send_receive_number: 3, send_number: 2) # debug
-
-order_state_canceled = OrderState.create!(name: 'canceled')
-order_state_confirmed = OrderState.create!(name: 'confirmed')
-order_state_sending = OrderState.create!(name: 'sending')
-order_state_sent = OrderState.create!(name: 'sent')
-order_state_submitted = OrderState.create!(name: 'submitted')
-
-check_action_inspect = CheckAction.create!(name: 'inspect')
-check_action_issue = CheckAction.create!(name: 'issue')
-check_action_leave = CheckAction.create!(name: 'leave')
-check_action_load = CheckAction.create!(name: 'load')
-check_action_receive = CheckAction.create!(name: 'receive')
-check_action_unload = CheckAction.create!(name: 'unload')
-check_action_warehouse = CheckAction.create!(name: 'warehouse')
-
-receive_time_segment1 = ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 10), end_time: Time.new(2000, 1, 1, 12))
-receive_time_segment2 = ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 14), end_time: Time.new(2000, 1, 1, 16))
-receive_time_segment3 = ReceiveTimeSegment.create!(start_time: Time.new(2000, 1, 1, 16), end_time: Time.new(2000, 1, 1, 18))
+ReceiveTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, region: region_new_territories, number: 2) # debug
+ReceiveTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, region: region_new_territories, number: 2) # debug
+IssueTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, region: region_new_territories, number: 2) # debug
+IssueTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, region: region_new_territories, number: 2) # debug
 
 order1 = Order.create!(sender: staff1, sender_sign: '', receiver: staff2, goods_number: 1, departure: specify_address1, destination: specify_address2, order_state: order_state_submitted)
 order2 = Order.create!(sender: staff1, sender_sign: '', receiver: staff3, goods_number: 1, departure: shop1, destination: specify_address3, order_state: order_state_confirmed)

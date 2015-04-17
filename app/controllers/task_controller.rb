@@ -12,7 +12,7 @@ class TaskController < MobileApplicationController
 	end
 	def visit_task_get_next_order
 		params_require(:task_id)
-		response_success(TaskWorker.find(params[:task_id]).task.next_order)
+		response_success(TaskWorker.find(params[:task_id]).task.next_order_for_content)
 	end
 	def get_today_tasks
 		response_success(@staff.today_task_workers.sort_by { |x| x.task.datetime })

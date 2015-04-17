@@ -11,6 +11,13 @@
             </tr>
         <% end %>
         <tr>
+          <th>type：</th>
+          <td>
+            <input id="input_type" type="radio" name="type" value="<%= ReceiveTaskPlan.name %>" required<%= ' checked' if @type == ReceiveTaskPlan.name %>><%= ReceiveTaskPlan.name %></input>
+            <input id="input_type" type="radio" name="type" value="<%= IssueTaskPlan.name %>" required<%= ' checked' if @type == IssueTaskPlan.name %>><%= IssueTaskPlan.name %></input>
+          </td>
+        </tr>
+        <tr>
           <th>day：</th>
           <td><%= day_input %></td>
         </tr>
@@ -28,11 +35,11 @@
           </td>
         </tr>
         <tr>
-          <th><label for="input_store">store：</label></th>
+          <th><label for="input_region">region：</label></th>
           <td>
-            <select id="input_store" name="store" required>
+            <select id="input_region" name="region" required>
               <option value disabled>--</option>
-              <%= stores_select_options(@store) %>
+              <%= regions_select_options(@region) %>
             </select>
           </td>
         </tr>

@@ -11,8 +11,38 @@ class CheckAction < ActiveRecord::Base
 	def can_done_after(check_action)
 		not_implemented
 	end
+	# @param [Goods] goods
+	# @param [LogisticTask] task
+	# @param [Hash] addition
+	# @return [Meaningless]
+	def edit_goods(goods, task_worker, addition)
+		change_goods_last_action(goods)
+		CheckAction.send(name).edit_goods_for_action(goods, task_worker.task, addition)
+		goods.staff = task_worker.staff
+		goods.save!
+	end
+	# @param [Goods] goods
+	# @param [LogisticTask] task
+	# @param [Hash] addition
+	# @return [Meaningless]
+	def edit_goods_for_action(goods, task, addition)
+		not_implemented
+	end
+	# @param [Goods] goods
+	# @return [Meaningless]
+	def change_goods_last_action(goods)
+		if CheckAction.send(name).can_done_after(goods.last_action)
+			goods.last_action = self
+		else
+			error('state not match.')
+		end
+	end
 
 	class << self
+		# @return [self]
+		def contact
+			@contact ||= find_by_name!('contact')
+		end
 		# @return [self]
 		def inspect
 			unless @inspect
@@ -22,6 +52,17 @@ class CheckAction < ActiveRecord::Base
 					# @return [FalseClass, TrueClass]
 					def can_done_after(check_action)
 						check_action == CheckAction.inspect || check_action == CheckAction.warehouse
+					end
+					# @param [Goods] goods
+					# @param [LogisticTask] task
+					# @param [Hash] addition
+					# @return [Meaningless]
+					def edit_goods_for_action(goods, task, addition)
+						case task
+							when InspectTask
+							else
+								raise(ArgumentError)
+						end
 					end
 				end
 			end
@@ -37,6 +78,19 @@ class CheckAction < ActiveRecord::Base
 					def can_done_after(check_action)
 						true
 					end
+					# @param [Goods] goods
+					# @param [LogisticTask] task
+					# @param [Hash] addition
+					# @return [Meaningless]
+					def edit_goods_for_action(goods, task, addition)
+						case task
+							when IssueTask
+								goods.location = goods.order.destination
+								goods.next_stop = goods.location
+							else
+								raise(ArgumentError)
+						end
+					end
 				end
 			end
 			@issue
@@ -51,6 +105,21 @@ class CheckAction < ActiveRecord::Base
 					def can_done_after(check_action)
 						check_action == CheckAction.inspect || check_action == CheckAction.receive || check_action == CheckAction.warehouse
 					end
+					# @param [Goods] goods
+					# @param [LogisticTask] task
+					# @param [Hash] addition
+					# @return [Meaningless]
+					def edit_goods_for_action(goods, task, addition)
+						case task
+							when IssueTask
+								goods.location = task.region.store
+							when TransferTask
+								goods.location = task.from
+							else
+								raise(ArgumentError)
+						end
+						goods.shelf_id = nil
+					end
 				end
 			end
 			@leave
@@ -64,6 +133,18 @@ class CheckAction < ActiveRecord::Base
 					# @return [FalseClass, TrueClass]
 					def can_done_after(check_action)
 						check_action == CheckAction.leave || check_action == CheckAction.receive || check_action == CheckAction.unload
+					end
+					# @param [Goods] goods
+					# @param [LogisticTask] task
+					# @param [Hash] addition
+					# @return [Meaningless]
+					def edit_goods_for_action(goods, task, addition)
+						case task
+							when IssueTask, TransferTask
+								goods.location = task.car
+							else
+								raise(ArgumentError)
+						end
 					end
 				end
 			end
@@ -93,6 +174,17 @@ class CheckAction < ActiveRecord::Base
 					def can_done_after(check_action)
 						check_action == CheckAction.load
 					end
+					# @param [Goods] goods
+					# @param [LogisticTask] task
+					# @param [Hash] addition
+					# @return [Meaningless]
+					def edit_goods_for_action(goods, task, addition)
+						case task
+							when ReceiveTask, TransferTask
+							else
+								raise(ArgumentError)
+						end
+					end
 				end
 			end
 			@unload
@@ -106,6 +198,22 @@ class CheckAction < ActiveRecord::Base
 					# @return [FalseClass, TrueClass]
 					def can_done_after(check_action)
 						check_action == CheckAction.leave || check_action == CheckAction.unload
+					end
+					# @param [Goods] goods
+					# @param [LogisticTask] task
+					# @param [Hash] addition
+					# @return [Meaningless]
+					def edit_goods_for_action(goods, task, addition)
+						case task
+							when TransferTask
+								goods.location = task.to
+							when ReceiveTask
+								goods.location = task.store
+							else
+								raise(ArgumentError)
+						end
+						goods.update_next_stop
+						goods.shelf_id = addition['shelf_id']
 					end
 				end
 			end

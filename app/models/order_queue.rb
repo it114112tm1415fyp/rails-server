@@ -12,7 +12,7 @@ class OrderQueue < ActiveRecord::Base
 	# @return [Hash]
 	def as_json(options={})
 		super(
-				Option.new(options, only: :receive, include: :order))
+				Option.new(options, collect: :order))
 	end
 	# @return [Meaningless]
 	def again

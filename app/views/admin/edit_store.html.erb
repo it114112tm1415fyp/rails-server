@@ -15,8 +15,8 @@
           <td><textarea id="input_address" name="address" rows="4" cols="41" required><%= @address %></textarea></td>
         </tr>
         <tr>
-          <th><label for="input_size">size：</label></th>
-          <td><input id="input_size" type="number" name="size" size="40" value="<%= @size %>" min="1" required /></td>
+          <th><label for="input_shelf_number">shelf_number：</label></th>
+          <td><input id="input_shelf_number" type="number" name="shelf_number" size="40" value="<%= @shelf_number %>" min="1" required /></td>
         </tr>
       </table>
       <input id="input_submit" type="submit" value="<%= @store ? 'Edit' : 'New' %>" />

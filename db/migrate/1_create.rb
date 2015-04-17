@@ -14,6 +14,11 @@ class Create < ActiveRecord::Migration
 			x.references(:task_worker, null: false)
 			x.references(:task_goods, polymorphic: true, null: false)
 		end
+		create_table(:constants, bulk: true) do |x|
+			x.column(:key, :string, null: false)
+			x.column(:value, :string, null: false)
+			x.index(:key, unique: true)
+		end
 		create_table(:conveyors, bulk: true) do |x|
 			x.column(:name, :string, limit: 40, null: false)
 			x.references(:store, null: false)
@@ -50,15 +55,20 @@ class Create < ActiveRecord::Migration
 			x.references(:inspect_task, null: false)
 			x.index([:goods_id, :inspect_task_id], unique: true, name: :goods_inspect_task_ships_unique)
 		end
-		create_table(:goods_visit_task_order_ships, bulk: true) do |x|
+		create_table(:goods_serve_task_ships, bulk: true) do |x|
 			x.references(:goods, null: false)
-			x.references(:visit_task_order, null: false)
-			x.index([:goods_id, :visit_task_order_id], unique: true, name: :goods_visit_task_order_ships_unique)
+			x.references(:serve_task, null: false)
+			x.index([:goods_id, :serve_task_id], unique: true, name: :goods_serve_task_ships_unique)
 		end
 		create_table(:goods_transfer_task_ships, bulk: true) do |x|
 			x.references(:goods, null: false)
 			x.references(:transfer_task, null: false)
 			x.index([:goods_id, :transfer_task_id], unique: true, name: :goods_transfer_task_ships_unique)
+		end
+		create_table(:goods_visit_task_order_ships, bulk: true) do |x|
+			x.references(:goods, null: false)
+			x.references(:visit_task_order, null: false)
+			x.index([:goods_id, :visit_task_order_id], unique: true, name: :goods_visit_task_order_ships_unique)
 		end
 		create_table(:inspect_task_plans, bulk: true) do |x|
 			x.column(:day, :integer, null: false)
@@ -113,12 +123,12 @@ class Create < ActiveRecord::Migration
 			x.index([:start_time, :end_time], unique: true)
 		end
 		create_table(:registered_users, bulk: true) do |x|
+			x.column(:type, :string, limit: 40, null: false)
 			x.column(:username, :string, limit: 20, null: false)
 			x.column(:password, :string, limit: 32, null: false)
 			x.column(:name, :string, limit: 40, null: false)
 			x.column(:email, :string, null: false)
 			x.column(:phone, :string, limit: 17, null: false)
-			x.column(:type, :string, limit: 40, null: false)
 			x.references(:workplace, polymorphic: true)
 			x.column(:enable, :boolean, null: false, default: true)
 			x.timestamps(null: false)
@@ -129,6 +139,10 @@ class Create < ActiveRecord::Migration
 			x.references(:store, null: false)
 			x.column(:enable, :boolean, null: false, default: true)
 			x.index(:name, unique: true)
+		end
+		create_table(:serve_tasks, bulk: true) do |x|
+			x.column(:datetime, :datetime, null: false)
+			x.references(:shop, null: false)
 		end
 		create_table(:shops, bulk: true) do |x|
 			x.column(:name, :string, limit: 40, null: false)
@@ -187,21 +201,22 @@ class Create < ActiveRecord::Migration
 			x.index([:order_id, :visit_task_id], unique: true, name: :order_visit_task_ships_unique)
 		end
 		create_table(:visit_task_plans, bulk: true) do |x|
+			x.column(:type, :string, limit: 40, null: false)
 			x.column(:day, :integer, null: false)
 			x.column(:time, :time, null: false)
 			x.references(:car, null: false)
 			x.references(:region, null: false)
-			x.column(:receive, :boolean, null: false)
 			x.column(:number, :integer, null: false)
 		end
 		create_table(:visit_tasks, bulk: true) do |x|
+			x.column(:type, :string, limit: 40, null: false)
 			x.column(:datetime, :datetime, null: false)
 			x.references(:car, null: false)
 			x.references(:region, null: false)
-			x.column(:receive, :boolean, null: false)
 			x.column(:number, :integer, null: false)
 			x.column(:generated, :boolean, null: false, default: false)
-			x.column(:confirmed, :boolean, null: false, default: false)
+			x.column(:contacted, :boolean, null: false, default: false)
+			x.column(:received, :boolean, null: false, default: false)
 			x.column(:completed, :boolean, null: false, default: false)
 		end
 		# execute('ALTER TABLE `specify_address_user_ships` ADD PRIMARY KEY (`specify_address_id`, `user_id`, `user_type`);')
