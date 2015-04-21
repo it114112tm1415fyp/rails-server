@@ -1,10 +1,5 @@
 class InspectTask < LogisticTask
 	CHECK_ACTION = [CheckAction.inspect]
-	CRON_TASK_CONTENT = Proc.new do |x1|
-		x1.goods.each { |x2| TASK_OBJECT_CLASS.create!(inspect_task: x1, goods: x2) }
-		x1.generated = true
-		x1.save!
-	end
 	CRON_TASK_TAG = :inspect_task_generate_goods_list
 	TASK_OBJECT_CLASS = GoodsInspectTaskShip
 	TASK_OBJECT_TYPE = :goods
@@ -26,15 +21,15 @@ class InspectTask < LogisticTask
 	end
 
 	class << self
-		# @param [Integer] staff_id
 		# @param [Integer] store_id
 		# @param [Integer, NilClass] delay_time
 		# @return [self]
-		def add_debug_task(staff_id, store_id, delay_time)
+		def add_debug_task(store_id, delay_time)
 			delay_time ||= 1
+			delay_time = delay_time.to_i
 			task_time = Time.now.at_beginning_of_minute + delay_time.minutes
-			inspect_task = create!(datetime: task_time, staff_id: staff_id, store_id: store_id)
-			Cron.add_delayed_task(CRON_TASK_TAG, task_time.to_ct, inspect_task, &CRON_TASK_CONTENT)
+			inspect_task = create!(datetime: task_time, store_id: store_id)
+			Cron.add_delayed_task(CRON_TASK_TAG, task_time.to_ct, inspect_task, &:generate)
 			inspect_task
 		end
 		# @param [InspectTaskPlan] plan

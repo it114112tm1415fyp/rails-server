@@ -8,7 +8,7 @@ class ServeTask < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, except: :shop_id, include: [:staffs, :shop], method: :type))
+		super(Option.new(options, except: :shop_id, include: [:staffs, :shop, {goods: {collect: :string_id}}], method: :type, rename: {goods: :scanned_goods}))
 	end
 	# @return [Integer]
 	def task_code

@@ -33,7 +33,7 @@ class VisitTaskOrder < ActiveRecord::Base
 	def partly_completed(check_action=nil)
 		return false unless visit_task.contacted
 		return true if completed
-		self.completed = check_action == CheckAction.issue && goods_visit_task_order_ships.all? { |x| x.has_check_log(check_action) }
+		self.completed = order.order_state == visit_task.class::ORDER_STATE && goods_visit_task_order_ships.any? && goods_visit_task_order_ships.all? { |x| x.has_check_log(check_action) }
 		save!
 		completed
 	end

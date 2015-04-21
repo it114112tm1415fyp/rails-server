@@ -34,12 +34,25 @@ class DebugController < ApplicationController
 		view_session
 	end
 	def new_inspect_debug_task
-		params_require(:staff, :store)
-		render(text: InspectTask.add_debug_task(params[:staff], params[:store], params[:delay_time]).id)
+		params_require(:store)
+		render(text: InspectTask.add_debug_task_and_worker(params[:store], params[:delay_time]).id)
 	end
 	def new_transfer_debug_task
-		params_require(:car, :from, :to, :number)
-		render(text: TransferTask.add_debug_task(params[:car], params[:from], params[:to], params[:number], params[:delay_time]).id)
+		params_require(:car, :from_id, :from_type, :to_id, :to_type, :number)
+		render(text: TransferTask.add_debug_task_and_worker(params[:car], params[:from_id], params[:from_type], params[:to_id], params[:to_type], params[:number], params[:delay_time]).id)
+	end
+	def new_receive_debug_task
+		params_require(:car, :region, :number)
+		render(text: ReceiveTask.add_debug_task_and_worker(params[:car], params[:region], params[:number], params[:delay_time]).id)
+	end
+	def receive_task_add_queue
+		params_require(:task, :order)
+		ReceiveTask.find(params[:task]).add_order_to_queue(Order.find(params[:order]))
+		render(nothing: true)
+	end
+	def new_issue_debug_task
+		params_require(:car, :region, :number)
+		render(text: IssueTask.add_debug_task_and_worker(params[:car], params[:region], params[:number], params[:delay_time]).id)
 	end
 	def view_cron_tasks
 		Cron.show_tasks(true)
@@ -73,11 +86,7 @@ class DebugController < ApplicationController
 		render(json: Object.const_get(params[:task_type]).find(params[:task_id]).task_workers.as_json(only: :id, include: :check_action, merge_type: :replace))
 	end
 	def test
-		p ActiveSupport::JSON.encode(nil)
-		p ActiveSupport::JSON.encode(1)
-		p ActiveSupport::JSON.encode('qw')
-		p ActiveSupport::JSON.encode([1,2])
-		p ActiveSupport::JSON.encode({a: :s})
+		p TransferTask.find(29).goods_queue
 		render(nothing: true)
 	end
 	private

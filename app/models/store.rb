@@ -12,7 +12,7 @@ class Store < ActiveRecord::Base
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
-		super(Option.new(options, only: [:id, :shelf_number], method: [:type, :short_name, :long_name]))
+		super(Option.new(options, only: [:id, :shelf_number], method: [:type, :short_name, :long_name, {conveyor: {collect: :id}}], rename: {conveyor: :conveyor_id}))
 	end
 	# @return [FalseClass, TrueClass]
 	def can_destroy
@@ -25,6 +25,10 @@ class Store < ActiveRecord::Base
 	# @return [String]
 	def long_name
 		address
+	end
+	# @return [Conveyor]
+	def conveyor
+		conveyors.first
 	end
 
 	class << self

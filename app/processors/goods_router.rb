@@ -14,7 +14,7 @@ class GoodsRouter
 		@route ||= [@departure, @departure.region.store, @destination.region.store, @destination]
 	end
 	def next_stop
-		return nil if @goods.location == @destination
-		@route[@route.find_index(@goods.location) + 1] || @destination.region.store
+		return @destination if @goods.location == @destination
+		route[route.find_index(@goods.location) + 1] || @destination.region.store
 	end
 end

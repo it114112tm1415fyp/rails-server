@@ -17,7 +17,8 @@ def add_free_time(order)
 	end
 end
 
-Constant.create!(key: 'price', value: '6')
+Constant.create!(key: 'price_base', value: '20')
+Constant.create!(key: 'price_for_weight', value: '20')
 
 order_state_canceled = OrderState.create!(name: 'canceled')
 order_state_confirmed = OrderState.create!(name: 'confirmed')
@@ -212,24 +213,15 @@ TransferTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 14, 30), car
 TransferTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 15), car: car5, from: store3, to: shop9, number: 30)
 TransferTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 15, 30), car: car5, from: shop9, to: store3, number: 30)
 
-# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car3, region: region_hong_kong, send_receive_number: 3, send_number: 2)
-# VisitTaskPlan.create!(day: 0b1101110, time: Time.new(2000, 1, 1, 14, 30), car: car3, region: region_hong_kong, send_receive_number: 5, send_number: 3)
-# VisitTaskPlan.create!(day: 0b1101110, time: Time.new(2000, 1, 1, 16), car: car3, region: region_hong_kong, send_receive_number: 8, send_number: 5)
-# VisitTaskPlan.create!(day: 0b0010000, time: Time.new(2000, 1, 1, 16), car: car3, region: region_others, send_receive_number: 6, send_number: 4)
-# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car4, region: region_kowloon, send_receive_number: 3, send_number: 2)
-# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 15), car: car4, region: region_kowloon, send_receive_number: 3, send_number: 2)
-# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 16), car: car4, region: region_kowloon, send_receive_number: 9, send_number: 6)
-# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car5, region: region_new_territories, send_receive_number: 2, send_number: 1)
-# VisitTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 16), car: car5, region: region_new_territories, send_receive_number: 6, send_number: 4)
-
-InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), store: store1) # debug
-InspectTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), store: store1) # debug
-TransferTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, from: store1, to: store3, number: 30) # debug
-TransferTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, from: store1, to: store3, number: 30) # debug
-ReceiveTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, region: region_new_territories, number: 2) # debug
-ReceiveTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, region: region_new_territories, number: 2) # debug
-IssueTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 0), car: car1, region: region_new_territories, number: 2) # debug
-IssueTaskPlan.create!(day: 0b1111111, time: Time.new(2000, 1, 1, 23, 59), car: car1, region: region_new_territories, number: 2) # debug
+ReceiveTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car3, region: region_hong_kong, number: 2)
+IssueTaskPlan.create!(day: 0b1101110, time: Time.new(2000, 1, 1, 14, 30), car: car3, region: region_hong_kong, number: 3)
+ReceiveTaskPlan.create!(day: 0b1101110, time: Time.new(2000, 1, 1, 16), car: car3, region: region_hong_kong, number: 5)
+ReceiveTaskPlan.create!(day: 0b0010000, time: Time.new(2000, 1, 1, 16), car: car3, region: region_others, number: 4)
+IssueTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car4, region: region_kowloon, number: 2)
+ReceiveTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 15), car: car4, region: region_kowloon, number: 2)
+IssueTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 16), car: car4, region: region_kowloon, number: 6)
+ReceiveTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 10), car: car5, region: region_new_territories, number: 1)
+IssueTaskPlan.create!(day: 0b1111110, time: Time.new(2000, 1, 1, 16), car: car5, region: region_new_territories, number: 4)
 
 order1 = Order.create!(sender: staff1, sender_sign: '', receiver: staff2, goods_number: 1, departure: specify_address1, destination: specify_address2, order_state: order_state_submitted)
 order2 = Order.create!(sender: staff1, sender_sign: '', receiver: staff3, goods_number: 1, departure: shop1, destination: specify_address3, order_state: order_state_confirmed)
@@ -241,11 +233,15 @@ order7 = Order.create!(sender: staff1, sender_sign: '', receiver: staff8, goods_
 order8 = Order.create!(sender: staff1, sender_sign: '', receiver: staff9, goods_number: 1, departure: shop4, destination: specify_address9, order_state: order_state_sending)
 order9 = Order.create!(sender: staff1, sender_sign: '', receiver: staff10, goods_number: 2, departure: specify_address9, destination: shop8, order_state: order_state_sent)
 order10 = Order.create!(sender: staff1, sender_sign: '', receiver: staff11, goods_number: 2, departure: shop5, destination: specify_address11, order_state: order_state_canceled)
-order11 = Order.create!(sender: staff12, sender_sign: '', receiver: staff1, goods_number: 3, departure: specify_address11, destination: specify_address12, order_state: order_state_submitted)
+order11 = Order.create!(sender: staff12, sender_sign: '', receiver: staff1, goods_number: 2, departure: shop4, destination: specify_address9, order_state: order_state_sending)
+order12 = Order.create!(sender: staff1, sender_sign: '', receiver: staff13, goods_number: 2, departure: shop4, destination: specify_address9, order_state: order_state_sending)
+order13 = Order.create!(sender: staff1, sender_sign: '', receiver: staff14, goods_number: 1, departure: specify_address1, destination: specify_address2, order_state: order_state_submitted)
 
 order_queue1 = OrderQueue.create!(order: order1, queue_times: 1, receive: true)
 order_queue2 = OrderQueue.create!(order: order6, queue_times: 1, receive: true)
 order_queue3 = OrderQueue.create!(order: order8, queue_times: 1, receive: false)
+order_queue4 = OrderQueue.create!(order: order12, queue_times: 1, receive: false)
+order_queue5 = OrderQueue.create!(order: order13, queue_times: 1, receive: true)
 
 goods1 = Goods.create!(order: order3, string_id: '33pc1z', location: store1, next_stop: store3, shelf_id: 1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 1D70 0E00 005E', weight: 1.2, fragile: false, flammable: true, goods_photo: @goods_photo)
 goods2 = Goods.create!(order: order3, string_id: 'ejqd5e', location: store1, next_stop: store3, shelf_id: 1, staff: staff6, last_action: check_action_inspect, rfid_tag: 'AD83 1100 45CB 516F 0E00 0065', weight: 0.9, fragile: true, flammable: false, goods_photo: @goods_photo)
@@ -253,12 +249,16 @@ goods3 = Goods.create!(order: order8, string_id: 'h0bw54', location: store3, nex
 goods4 = Goods.create!(order: order4, string_id: '28hd3l', location: specify_address5, next_stop: specify_address5, staff: staff1, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0001', weight: 2.1, fragile: false, flammable: false, goods_photo: @goods_photo)
 goods5 = Goods.create!(order: order9, string_id: '5hs6rw', location: shop8, next_stop: shop8, staff: staff16, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0002', weight: 3.1, fragile: true, flammable: false, goods_photo: @goods_photo)
 goods6 = Goods.create!(order: order9, string_id: '8gek4f', location: shop8, next_stop: shop8, staff: staff16, last_action: check_action_issue, rfid_tag: '0000 0000 0000 0000 0000 0003', weight: 2.7, fragile: false, flammable: false, goods_photo: @goods_photo)
+goods7 = Goods.create!(order: order12, string_id: 'j8ge6f', location: store3, next_stop: specify_address9, shelf_id: 3, staff: staff20, last_action: check_action_warehouse, rfid_tag: '0000 0000 0000 0000 0000 0004', weight: 0.1, fragile: false, flammable: false, goods_photo: @goods_photo)
 
 add_free_time(order1)
 add_free_time(order6)
 
-# dummy_inspect_task = InspectTask.create!(datetime: Time.new(1995, 3, 23, 23, 23, 23), store: store1)
-# dummy_goods_inspect_task_ship = GoodsInspectTaskShip.create!(goods: goods1, inspect_task: dummy_inspect_task)
+receive_task1 = ReceiveTask.create!(datetime: Time.now - 1.day, car: car3, region: region_hong_kong, number: 10)
+visit_task_order1 = VisitTaskOrder.create!(order: order3, visit_task: receive_task1)
+goods_visit_task_order_ship1 = GoodsVisitTaskOrderShip.create!(goods: goods1, visit_task_order: visit_task_order1)
+task_worker1 = TaskWorker.create!(staff: staff3, task: receive_task1, check_action: check_action_receive)
+CheckLog.create!(time: Time.now + 1.minute, task_worker: task_worker1, task_goods: goods_visit_task_order_ship1)
 #
 # CheckLog.create!(time: Time.now + 1, task_goods: dummy_goods_inspect_task_ship, location: specify_address3, check_action: check_action_receive, staff: staff3)
 # CheckLog.create!(time: Time.now + 2, task_goods: dummy_goods_inspect_task_ship, location: car3, check_action: check_action_load, staff: staff3)

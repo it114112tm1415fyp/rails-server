@@ -1,0 +1,20 @@
+<%= render('admin/left_bar') %>
+<%= render('admin/title') %>
+<div class="content">
+  <%= error_message_div %>
+  the calculate method：
+  price = <b>base price</b> + <i>sum of goods weight</i> * <b>goods weight price</b>
+  <%= form_tag('') do %>
+      <table>
+        <tr>
+          <th><label for="input_price_base">base price：</label></th>
+          <td><input id="input_price_base" type="number" name="price_base" value="<%= @price_base %>" required /></td>
+        </tr>
+        <tr>
+          <th><label for="input_price_for_weight">goods weight price：</label></th>
+          <td><input id="input_price_for_weight" type="number" name="price_for_weight" value="<%= @price_for_weight %>" required /></td>
+        </tr>
+      </table>
+      <input id="input_submit" type="submit" value="Edit" />
+  <% end %>
+</div>

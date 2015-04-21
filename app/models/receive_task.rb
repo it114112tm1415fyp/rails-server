@@ -2,9 +2,16 @@ class ReceiveTask < VisitTask
 	CHECK_ACTION = [CheckAction.contact, CheckAction.receive, CheckAction.unload, CheckAction.warehouse]
 	CRON_TASK_TAG = :receive_task_generate_order_list
 	TASK_PLAN_CLASS = ReceiveTaskPlan
+	ORDER_STATE = OrderState.sending
 	# @return [Array<OrderQueue>]
 	def generate_order_queue
 		OrderQueue.receive.find_all { |x| x.order.departure.region_id == region_id }.first(number * 2)
+	end
+	# @params [Order] order
+	# @return [Meaningless]
+	def add_order_to_queue(order)
+		order_queues << order.queue
+		save!
 	end
 	# @return [Meaningless]
 	def check_contacted
@@ -19,6 +26,7 @@ class ReceiveTask < VisitTask
 	# @return [Meaningless]
 	def check_received
 		return unless partly_completed(CheckAction.receive)
+		puts '6y6y6y2'.debug6y
 		self.received = true
 		save!
 	end
@@ -32,7 +40,7 @@ class ReceiveTask < VisitTask
 				goods_visit_task_order_ships.all? { |x| x.has_check_log(check_action) }
 			when CheckAction.receive
 				return false unless contacted
-				visit_task_orders.all?(&:completed)
+				visit_task_orders.all? { |x| x.partly_completed(check_action) }
 			else
 				raise(ArgumentError)
 		end
@@ -57,8 +65,8 @@ class ReceiveTask < VisitTask
 		# @param [Hash] task_attributes
 		def generate_task_add_attributes(plan, task_attributes)
 			task_attributes[:task_workers] = plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.contact) }
-			task_attributes[:task_workers] += plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.unload) }
 			task_attributes[:task_workers] += plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.receive) }
+			task_attributes[:task_workers] += plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.unload) }
 			task_attributes[:task_workers] += plan.region.store.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.warehouse) }
 		end
 	end

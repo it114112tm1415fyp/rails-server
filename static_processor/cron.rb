@@ -61,7 +61,7 @@ class Cron
 		def add_tasks(*tasks)
 			show_tasks(false)
 			if tasks.empty?
-				Rails.logger.info { 'Cron no task added : '.fc_n_green }
+				Rails.logger.info { 'Cron no task added'.fc_n_green }
 			else
 				Rails.logger.info { 'Cron add tasks:'.fc_n_green }
 				tasks.each(&:print)
@@ -101,7 +101,7 @@ class Cron
 		def delete(condition={}, &block)
 			tasks = find(condition, &block)
 			if tasks.empty?
-				Rails.logger.info { 'Cron no task deleted : '.fc_n_green }
+				Rails.logger.info { 'Cron no task deleted'.fc_n_green }
 			else
 				Rails.logger.info { 'Cron delete tasks:'.fc_n_green }
 				tasks.each(&:print)

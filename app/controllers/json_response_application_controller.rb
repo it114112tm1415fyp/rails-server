@@ -4,7 +4,6 @@ class JsonResponseApplicationController < ApplicationController
 	rescue_from(Exception) do |exception|
 		raise if @_request.get?
 		response_error('unknown', exception: exception.class.name, message: exception.message)
-		puts caller
 	end
 	rescue_from(Error) do |x|
 		response_error(x.message, x.details)

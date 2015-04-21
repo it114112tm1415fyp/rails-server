@@ -1,10 +1,5 @@
 class TransferTask < LogisticTask
 	CHECK_ACTION = [CheckAction.leave, CheckAction.load, CheckAction.unload, CheckAction.warehouse]
-	CRON_TASK_CONTENT = Proc.new do |x1|
-		x1.goods.each { |x2| TASK_OBJECT_CLASS.create!(transfer_task: x1, goods: x2) }
-		x1.generated = true
-		x1.save!
-	end
 	CRON_TASK_TAG = :transfer_task_generate_goods_list
 	TASK_OBJECT_CLASS = GoodsTransferTaskShip
 	TASK_OBJECT_TYPE = :goods
@@ -24,7 +19,8 @@ class TransferTask < LogisticTask
 	end
 	# @return [ActiveRecord::Relation]
 	def goods_queue
-		Goods.where(location: from, next_stop: to).order(id: :asc).limit(number)
+		puts '6y'.debug6y
+		p Goods.where(location: from, next_stop: to).order(id: :asc).limit(number)
 	end
 	# @return [ActiveRecord::Relation]
 	def goods_task_ships
@@ -39,24 +35,28 @@ class TransferTask < LogisticTask
 	class << self
 		# @param [Integer] car_id
 		# @param [Integer] from_location_id
+		# @param [String] from_location_type
 		# @param [Integer] to_location_id
+		# @param [String] to_location_type
 		# @param [Integer] number
 		# @param [Integer, NilClass] delay_time
 		# @return [self]
-		def add_debug_task(car_id, from_location_id, to_location_id, number, delay_time)
+		def add_debug_task(car_id, from_location_id, from_location_type, to_location_id, to_location_type, number, delay_time)
+			raise(ParameterError, 'from_location_type') unless [Shop.name, Store.name].include?(from_location_type)
+			raise(ParameterError, 'to_location_id') unless [Shop.name, Store.name].include?(to_location_type)
 			delay_time ||= 1
-			car = Car.find(car_id)
+			delay_time = delay_time.to_i
 			task_time = Time.now.at_beginning_of_minute + delay_time.minutes
-			transfer_task = create!(datetime: task_time, staff: car.staffs.first, car_id: car_id, from_id: from_location_id, to_id: to_location_id, number: number)
-			Cron.add_delayed_task(CRON_TASK_TAG, task_time.to_ct, transfer_task, &CRON_TASK_CONTENT)
+			transfer_task = create!(datetime: task_time, car_id: car_id, from_id: from_location_id, from_type: from_location_type, to_id: to_location_id, to_type: to_location_type, number: number)
+			Cron.add_delayed_task(CRON_TASK_TAG, task_time.to_ct, transfer_task, &:generate)
 			transfer_task
 		end
 		# @param [TransferTaskPlan] plan
 		# @param [Hash] task_attributes
 		def generate_task_add_attributes(plan, task_attributes)
-			task_attributes[:task_workers] = plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.load) }
+			task_attributes[:task_workers] = plan.from.staffs.collect { |x| TaskWorker.new(staff: x, check_action:  CheckAction.leave) }
+			task_attributes[:task_workers] += plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.load) }
 			task_attributes[:task_workers] += plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.unload) }
-			task_attributes[:task_workers] += plan.from.staffs.collect { |x| TaskWorker.new(staff: x, check_action:  CheckAction.leave) }
 			task_attributes[:task_workers] += plan.to.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.warehouse) }
 		end
 	end

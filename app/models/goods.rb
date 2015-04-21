@@ -8,6 +8,7 @@ class Goods < ActiveRecord::Base
 	has_many(:goods_inspect_task_ships, dependent: :destroy)
 	has_many(:goods_visit_task_order_ships, dependent: :destroy)
 	has_many(:goods_transfer_task_ships, dependent: :destroy)
+	validates_format_of(:string_id, with: /[\da-z]{6}/)
 	validate(:shelf_id_is_less_than_shelf_number_of_store, if: :last_action_is_warehouse )
 	validates_numericality_of(:shelf_id, greater_than_or_equal_to: 0, if: :last_action_is_warehouse )
 	before_validation do
@@ -41,10 +42,15 @@ class Goods < ActiveRecord::Base
 	def update_next_stop
 		self.next_stop = GoodsRouter.new(self).next_stop
 	end
+	# @params [String] tag
+	def add_rfid_tag(tag)
+		self.rfid_tag = tag
+		save!
+	end
 	private
 	# @return [FalseClass, TrueClass]
 	def last_action_is_warehouse
-		last_action == CheckAction.warehouse
+		location_type == Store.name && last_action == CheckAction.warehouse
 	end
 	# @return [Meaningless]
 	def shelf_id_is_less_than_shelf_number_of_store
@@ -56,17 +62,18 @@ class Goods < ActiveRecord::Base
 		# @param [Integer] order_id
 		# @param [Numeric] weight
 		# @param [FalseClass, TrueClass] flammable
-		# @param [String] picture
+		# @param [String] goods_photo
 		# @param [Staff] staff
 		# @return [self]
-		def add(task_id, goods_id, order_id, weight, fragile, flammable, picture, staff)
+		def add(task_id, goods_id, order_id, weight, fragile, flammable, goods_photo, staff)
 			task_worker = TaskWorker.find(task_id)
-			raise(ParameterError 'task_id') unless [ReceiveTask.name, ServeTask.name].include?(task_worker.task_type)
+			task = task_worker.task
+			raise(ParameterError, 'task_id') unless task.is_a?(ReceiveTask) || task.is_a?(ServeTask)
 			order = Order.find(order_id)
 			error('cannot edit order information after confirm') unless order.can_edit
 			error('goods_id used') if find_by_string_id(goods_id)
-			goods = create!(order: order, string_id: goods_id, staff: staff, weight: weight, fragile: fragile, flammable: flammable, goods_photo: picture)
-			if task_worker.task_type == ReceiveTask
+			goods = create!(order: order, string_id: goods_id, staff: staff, weight: weight, fragile: fragile, flammable: flammable, goods_photo: goods_photo)
+			if task.is_a?(ReceiveTask)
 				receive_task_order = VisitTaskOrder.find_by!(order: order, visit_task_id: task_worker.task_id)
 				task_goods = GoodsVisitTaskOrderShip.new(goods: goods, visit_task_order: receive_task_order)
 			else
@@ -78,10 +85,10 @@ class Goods < ActiveRecord::Base
 		# @param [String] goods_id
 		# @param [Numeric] weight
 		# @param [FalseClass, TrueClass] flammable
-		# @param [String] picture
+		# @param [String] goods_photo
 		# @param [Staff] staff
 		# @return [self]
-		def edit(goods_id, weight, fragile, flammable, picture, staff)
+		def edit(goods_id, weight, fragile, flammable, goods_photo, staff)
 			goods = find_by_string_id!(goods_id)
 			error('cannot edit order information after confirm') unless goods.order.can_edit
 			goods.string_id = goods_id if goods_id
@@ -89,7 +96,7 @@ class Goods < ActiveRecord::Base
 			goods.weight = weight if weight
 			goods.fragile = fragile if fragile
 			goods.flammable = flammable if flammable
-			goods.picture = picture if picture
+			goods.goods_photo = goods_photo if goods_photo
 			goods.save!
 			goods
 		end

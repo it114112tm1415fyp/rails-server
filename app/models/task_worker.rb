@@ -10,9 +10,12 @@ class TaskWorker < ActiveRecord::Base
 				goods_task_ships: {
 						skip: :if_not_exist,
 						only: [],
-						include: {
+						collect: {
 								goods: {
-										collect: :string_id,
+										only: [
+												:string_id,
+												:shelf_id
+										],
 										merge_type: :replace
 								}
 						},
@@ -22,7 +25,7 @@ class TaskWorker < ActiveRecord::Base
 								}
 						},
 						rename: {
-								goods: :goods_id,
+								string_id: :goods_id,
 								has_check_log: :completed
 						},
 						merge_type: :replace
@@ -75,7 +78,7 @@ class TaskWorker < ActiveRecord::Base
 						rename: {
 								goods_task_ships: :goods_in_task,
 								order_task_ships: :order_in_task,
-								partly_completed: :completed2
+								partly_completed: :completed
 						},
 						remove: :goods_ids
 				)
@@ -88,10 +91,13 @@ class TaskWorker < ActiveRecord::Base
 		transaction do
 			goods = Goods.find_by_string_id(goods_id)
 			check_action.edit_goods(goods, self, addition)
-			goods_id = goods.id
-			task_goods = task.goods_task_ships.find_by_goods_id(goods_id)
+			if task.is_a?(ServeTask)
+				task_goods = task.goods_serve_task_ships.find_by_goods_id(goods.id) || GoodsServeTaskShip.create!(goods: goods, serve_task: task)
+			else
+				task_goods = task.goods_task_ships.find_by_goods_id(goods.id)
+			end
 			CheckLog.create!(task_worker: self, task_goods: task_goods)
-			task.check_completed
+			task.check_completed unless task.is_a?(ServeTask)
 		end
 	end
 	# @param [Integer] order_id

@@ -440,6 +440,14 @@ class AdminController < WebApplicationController
 		VisitTaskPlan.find(params[:visit_task_plan_id]).destroy
 		redirect_to(action: :visit_task_plans)
 	end
+	def price
+		if params_exist(:price_base, :price_for_weight)
+			Constant.price_base.casted_value = params[:price_base].to_i
+			Constant.price_for_weight.casted_value = params[:price_for_weight].to_i
+		end
+		@price_base = Constant.price_base.casted_value
+		@price_for_weight = Constant.price_for_weight.casted_value
+	end
 	private
 	def check_login
 		if @expired

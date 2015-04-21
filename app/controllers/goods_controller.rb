@@ -7,6 +7,10 @@ class GoodsController < MobileApplicationController
 		params_require(:task_id, :goods_id, :order_id, :weight, :fragile, :flammable, :goods_photo)
 		response_success(Goods.add(params[:task_id], params[:goods_id], params[:order_id], params[:weight], params[:fragile], params[:flammable], params[:goods_photo], @staff))
 	end
+	def add_rfid_tag
+		params_require(:goods_id, :rfid_tag)
+		Goods.find_by_string_id!(params[:goods_id]).add_rfid_tag(params[:rfid_tag])
+	end
 	def edit
 		params_require(:goods_id)
 		response_success(Goods.edit(params[:goods_id], params[:weight], params[:fragile], params[:flammable], params[:goods_photo], @staff))
@@ -26,7 +30,7 @@ class GoodsController < MobileApplicationController
 	end
 	def get_qr_code
 		params_require(:goods_id)
-		response_success(qr_code: Goods.find_by_string_id!(params[:goods_id]).qr_code)
+		response_success(Goods.find_by_string_id!(params[:goods_id]).qr_code)
 	end
 	def remove
 		params_require(:goods_id, :order_id)

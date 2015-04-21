@@ -15,6 +15,7 @@ class ApplicationController < ActionController::Base
 		session[:expiry_time] = $session_expiry_time.from_now.to_s
 	end
 	def session_check_expired
+		return if Socket.ip_address_list.any? { |x| x.ip_address == request.remote_ip } || Addrinfo.ip($dns_address).ip_address == request.remote_ip
 		@expired = !session[:expiry_time] || Time.zone.parse(session[:expiry_time]).past?
 		session.destroy if @expired
 	end

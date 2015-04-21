@@ -12,7 +12,7 @@ class Order < ActiveRecord::Base
 	scope(:sending, Proc.new { where(order_state: OrderState.sending) })
 	scope(:submitted, Proc.new { where(order_state: OrderState.submitted) })
 	validates_numericality_of(:goods_number, greater_than_or_equal_to: 1)
-	before_validation { self.receive_time_version = SchemeVersion[ReceiveTimeSegment].scheme_update_time }
+	before_validation { self.receive_time_version ||= SchemeVersion[ReceiveTimeSegment].scheme_update_time }
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
@@ -33,6 +33,7 @@ class Order < ActiveRecord::Base
 		FREE_TIME_DAYS.times do |x1|
 			date = today + x1.days
 			receive_time_segments.each_with_index { |x2, x3| FreeTime.create!(order: self, receive_time_segment: x2, date: date, free: free[x1 * segments_size + x3]) }
+			self.receive_time_version = SchemeVersion[ReceiveTimeSegment].scheme_update_time
 		end
 	end
 	# @param [Staff] staff
@@ -52,23 +53,28 @@ class Order < ActiveRecord::Base
 	# @param [String] sign
 	# @return [Meaningless]
 	def confirm(task_id, sign)
-		task_worker = TaskWorker.find(task_id)
-		raise(ArgumentError) if goods.empty?
-		case order_state
-			when OrderState.confirmed
-				raise(ArgumentError) unless task_worker.check_action == CheckAction.receive
-				self.sender_sign = sign
-				self.order_state = OrderState.sending
-			when OrderState.sending
-				raise(ArgumentError) unless task_worker.check_action == CheckAction.issue
-				self.receiver_sign = sign
-				self.order_state = OrderState.sent
-			else
-				raise(ArgumentError)
+		transaction do
+			task_worker = TaskWorker.find(task_id)
+			task = task_worker.task
+			raise(ArgumentError, 'goods.empty?') if goods.empty?
+			case task_worker.check_action
+				when CheckAction.receive
+					raise(ArgumentError, 'order_state == OrderState.confirmed') unless order_state == OrderState.confirmed
+					if task_worker.task_type == ServeTask.name
+						self.departure = task.shop
+					end
+					self.sender_sign = sign
+					self.order_state = OrderState.sending
+				when CheckAction.issue
+					raise(ArgumentError, 'order_state == OrderState.sending') unless order_state == OrderState.sending
+					self.receiver_sign = sign
+					self.order_state = OrderState.sent
+				else
+					raise(ArgumentError, 'else')
+			end
+			save!
+			task.check_received if task.is_a?(ReceiveTask)
 		end
-		VisitTaskOrder.create!(visit_task: task_worker.task, order: self)
-		task_worker.task.check_received if task_worker.check_action == CheckAction.receive
-		save!
 	end
 	# @return [Meaningless]
 	def contact
@@ -120,6 +126,11 @@ class Order < ActiveRecord::Base
 		today = Date.today
 		FreeTime.joins(:receive_time_segment).where(order: self, date: today..today + FREE_TIME_DAYS.days).order(date: :asc).order("`#{:receive_time_segments}`.`#{:start_time}` ASC")
 	end
+	# @return [Integer]
+	def price
+		Constant.price_base.casted_value + goods.collect { |x| x.weight * Constant.price_for_weight.casted_value }.reduce(:+).to_i
+	end
+
 	class << self
 		# @param [RegisteredUser] sender
 		# @param [Hash] receiver [Hash{id: [Integer]},Hash{name: [String], email: [String], phone: [String]}]

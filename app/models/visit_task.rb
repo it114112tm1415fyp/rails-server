@@ -1,9 +1,4 @@
 class VisitTask < LogisticTask
-	CRON_TASK_CONTENT = Proc.new do |x1|
-		x1.orders.each { |x2| self.class::TASK_OBJECT_CLASS.create!(visit_task: x1, goods: x2) }
-		x1.generated = true
-		x1.save!
-	end
 	TASK_PLAN_INCLUDES = { car: :staffs, region: { store: :staffs } }
 	belongs_to(:car)
 	belongs_to(:region)
@@ -31,8 +26,7 @@ class VisitTask < LogisticTask
 						method: :type,
 						rename: {
 								goods: :goods_in_task
-						},
-				    remove: :goods_task_ships
+						}
 				)
 		)
 	end
@@ -44,7 +38,6 @@ class VisitTask < LogisticTask
 	def goods_task_ships
 		goods_visit_task_order_ships
 	end
-	undef goods_task_ships_for_json
 	# @return [FalseClass, TrueClass]
 	def generate(force=false)
 		if datetime.past? && !generated || force
@@ -82,4 +75,19 @@ class VisitTask < LogisticTask
 			save!
 		end
 	end
+
+	class << self
+		# @param [Integer] car_id
+		# @param [Integer] region_id
+		# @param [Integer] number
+		# @param [Integer, NilClass] delay_time
+		# @return [self]
+		def add_debug_task(car_id, region_id, number, delay_time)
+			delay_time ||= 1
+			delay_time = delay_time.to_i
+			task_time = Time.now.at_beginning_of_minute + delay_time.minutes
+			create!(datetime: task_time, car_id: car_id, region_id: region_id, number: number)
+		end
+	end
+
 end

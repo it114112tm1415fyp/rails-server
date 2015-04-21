@@ -46,10 +46,6 @@ class LogisticTask < ActiveRecord::Base
 	def edit_goods(goods, task_worker, addition)
 		not_implemented
 	end
-	# @return [ActiveRecord::Relation]
-	def goods_task_ships_for_json
-		goods_task_ships
-	end
 	# @return [CheckAction] check_action
 	# @return [FalseClass, TrueClass]
 	def ready(check_action)
@@ -60,8 +56,19 @@ class LogisticTask < ActiveRecord::Base
 	def can_do(check_action)
 		generated && !completed
 	end
-
 	class << self
+		# @param [Array] args
+		# @return [self]
+		def add_debug_task_and_worker(*args)
+			transaction do
+				task = add_debug_task(*args)
+				attributes = {}
+				generate_task_add_attributes(task, attributes)
+				task.task_workers = attributes[:task_workers]
+				task.save!
+				task
+			end
+		end
 		# @return [ActiveRecord::Relation]
 		def today
 			where(datetime: Date.today.beginning_of_day..Date.today.end_of_day)
@@ -71,7 +78,7 @@ class LogisticTask < ActiveRecord::Base
 			unless generate_today_task
 				now = Time.now
 				tasks = today.where(datetime: now..now.at_end_of_day)
-				tasks.collect! { |x| Cron.new(self::CRON_TASK_TAG, x.datetime.to_ct, false, x, &self::CRON_TASK_CONTENT) }
+				tasks.collect! { |x| Cron.new(self::CRON_TASK_TAG, x.datetime.to_ct, false, x, &:generate) }
 				Cron.add_tasks(*tasks)
 			end
 		end
@@ -90,14 +97,14 @@ class LogisticTask < ActiveRecord::Base
 				attributes = self::TASK_PLAN_CLASS.attribute_names.collect(&:to_sym) - self::IGNORE_ATTRIBUTES
 				transaction do
 					self::TASK_PLAN_CLASS.joins(self::TASK_PLAN_INCLUDES).includes(self::TASK_PLAN_INCLUDES).day(day).each do |x1|
-						task = {datetime: x1.time.change(today)}
+						task = { datetime: x1.time.change(today) }
 						attributes.each { |x2| task[x2] = x1.send(x2) }
 						generate_task_add_attributes(x1, task)
 						tasks << create!(task)
 					end
 				end
 				tasks.each do |x|
-					cron_tasks << Cron.new(self::CRON_TASK_TAG, x.datetime.to_ct, false, x, &self::CRON_TASK_CONTENT) if x.datetime >= now.at_beginning_of_minute
+					cron_tasks << Cron.new(self::CRON_TASK_TAG, x.datetime.to_ct, false, x, &:generate) if x.datetime >= now.at_beginning_of_minute
 				end
 				Cron.add_tasks(*cron_tasks)
 			end

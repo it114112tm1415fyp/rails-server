@@ -3,7 +3,7 @@ class OrderController < MobileApplicationController
 	include(StaffMobileApplicationModule)
 	before_action(:check_customer_login, only: [:cancel, :edit, :get_details, :get_receive_orders, :get_send_orders, :make])
 	before_action(:check_staff_login, except: [:cancel, :edit, :get_details, :get_receive_orders, :get_send_orders, :make])
-	before_action(:check_order, except: [:get_details, :get_receive_orders, :get_send_orders, :get_list, :make])
+	before_action(:find_order, except: [:get_details, :get_receive_orders, :get_send_orders, :get_list, :make])
 	def cancel
 		@order.cancel(@staff)
 	end
@@ -29,14 +29,16 @@ class OrderController < MobileApplicationController
 	def get_list
 		response_success(Order.all)
 	end
+	def get_price
+		response_success(@order.price)
+	end
 	def make
 		params_require(:receiver, :goods_number, :departure_id, :departure_type, :destination_id, :destination_type)
 		response_success(id: Order.make(@customer, params[:receiver], params[:goods_number], params[:departure_id], params[:departure_type], params[:destination_id], params[:destination_type], params[:time]).id)
 	end
 	private
-	def check_order
+	def find_order
 		params_require(:order_id)
 		@order = Order.find(params[:order_id])
-		error('cannot edit order information after confirm') unless @order.can_edit
 	end
 end

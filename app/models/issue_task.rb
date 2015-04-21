@@ -2,6 +2,7 @@ class IssueTask < VisitTask
 	CHECK_ACTION = [CheckAction.contact, CheckAction.issue, CheckAction.leave, CheckAction.load]
 	CRON_TASK_TAG = :issue_task_generate_order_list
 	TASK_PLAN_CLASS = IssueTaskPlan
+	ORDER_STATE = OrderState.sent
 	# @param [Hash] options
 	# @return [Hash]
 	def as_json(options={})
@@ -54,9 +55,9 @@ class IssueTask < VisitTask
 		# @param [Hash] task_attributes
 		def generate_task_add_attributes(plan, task_attributes)
 			task_attributes[:task_workers] = plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.contact) }
+			task_attributes[:task_workers] += plan.region.store.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.leave) }
 			task_attributes[:task_workers] += plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.load) }
 			task_attributes[:task_workers] += plan.car.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.issue) }
-			task_attributes[:task_workers] += plan.region.store.staffs.collect { |x| TaskWorker.new(staff: x, check_action: CheckAction.leave) }
 		end
 	end
 

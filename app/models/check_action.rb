@@ -37,7 +37,6 @@ class CheckAction < ActiveRecord::Base
 			error('state not match.')
 		end
 	end
-
 	class << self
 		# @return [self]
 		def contact
@@ -84,7 +83,7 @@ class CheckAction < ActiveRecord::Base
 					# @return [Meaningless]
 					def edit_goods_for_action(goods, task, addition)
 						case task
-							when IssueTask
+							when IssueTask, ServeTask
 								goods.location = goods.order.destination
 								goods.next_stop = goods.location
 							else
@@ -132,7 +131,7 @@ class CheckAction < ActiveRecord::Base
 					# @param [self] check_action
 					# @return [FalseClass, TrueClass]
 					def can_done_after(check_action)
-						check_action == CheckAction.leave || check_action == CheckAction.receive || check_action == CheckAction.unload
+						check_action == CheckAction.leave || check_action == CheckAction.unload
 					end
 					# @param [Goods] goods
 					# @param [LogisticTask] task
@@ -172,7 +171,7 @@ class CheckAction < ActiveRecord::Base
 					# @param [self] check_action
 					# @return [FalseClass, TrueClass]
 					def can_done_after(check_action)
-						check_action == CheckAction.load
+						check_action == CheckAction.load || check_action == CheckAction.receive
 					end
 					# @param [Goods] goods
 					# @param [LogisticTask] task
@@ -208,12 +207,12 @@ class CheckAction < ActiveRecord::Base
 							when TransferTask
 								goods.location = task.to
 							when ReceiveTask
-								goods.location = task.store
+								goods.location = task.region.store
 							else
 								raise(ArgumentError)
 						end
 						goods.update_next_stop
-						goods.shelf_id = addition['shelf_id']
+						goods.shelf_id = addition['shelf_id'].to_i if goods.location.is_a?(Store)
 					end
 				end
 			end

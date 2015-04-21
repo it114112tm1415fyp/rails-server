@@ -15,6 +15,7 @@
   <p><%= link_to_unless(selected == 'inspect_task_plans', 'Inspect task plans', action: :inspect_task_plans) %></p>
   <p><%= link_to_unless(selected == 'transfer_task_plans', 'Transfer task plans', action: :transfer_task_plans) %></p>
   <p><%= link_to_unless(selected == 'visit_task_plans', 'Visit task plans', action: :visit_task_plans) %></p>
+  <p><%= link_to_unless(selected == 'price', 'Price', action: :price) %></p>
   <div class="left_bar_bottom">
     <p><%= link_to_unless(selected == 'edit_profile', 'Edit profile', action: :edit_profile) %></p>
     <p><%= link_to('Logout', action: :logout) %></p>
